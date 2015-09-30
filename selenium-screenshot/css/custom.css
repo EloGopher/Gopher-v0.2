@@ -1,0 +1,149 @@
+
+.checkbox label:after,
+.radio label:after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+.checkbox .cr,
+.radio .cr {
+    position: relative;
+    display: inline-block;
+    border: 1px solid #a9a9a9;
+    border-radius: .25em;
+    width: 1.3em;
+    height: 1.3em;
+    float: left;
+    margin-right: .5em;
+}
+
+.radio .cr {
+    border-radius: 50%;
+}
+
+.checkbox .cr .cr-icon,
+.radio .cr .cr-icon {
+    position: absolute;
+    font-size: .8em;
+    line-height: 0;
+    top: 50%;
+    left: 20%;
+}
+
+.radio .cr .cr-icon {
+    margin-left: 0.04em;
+}
+
+.checkbox label input[type="checkbox"],
+.radio label input[type="radio"] {
+    display: none;
+}
+
+.checkbox label input[type="checkbox"] + .cr > .cr-icon,
+.radio label input[type="radio"] + .cr > .cr-icon {
+    transform: scale(3) rotateZ(-20deg);
+    opacity: 0;
+    transition: all .3s ease-in;
+}
+
+.checkbox label input[type="checkbox"]:checked + .cr > .cr-icon,
+.radio label input[type="radio"]:checked + .cr > .cr-icon {
+    transform: scale(1) rotateZ(0deg);
+    opacity: 1;
+}
+
+.checkbox label input[type="checkbox"]:disabled + .cr,
+.radio label input[type="radio"]:disabled + .cr {
+    opacity: .5;
+}
+
+
+
+/*-------------------------
+	File manager
+-------------------------*/
+
+.filemanager {
+	max-width: 1340px;
+	position: relative;
+	margin: 100px auto 50px;
+}
+
+
+/*-------------------------
+	Thumbnails
+-------------------------*/
+
+.image-scroller {
+	width:242px;
+	height: 242px;
+	overflow: auto;
+}
+
+.thumbnail.with-caption {
+	display: inline-block;
+	vertical-align: top;
+	width:250px;
+}
+
+.thumbnail.with-caption p {
+	margin: 0;
+	padding-top: 0.5em;
+}
+.thumbnail.with-caption small:before {
+	content: '\2014 \00A0';
+}
+.thumbnail.with-caption small {
+	width: 100%;
+	text-align: right;
+	display: inline-block;
+	color: #999;
+}
+.thumbimage {
+	width: 100%;
+}
+
+
+.containerX {
+  overflow: auto;
+  display: block;
+ min-width: 480px;
+}
+.containerX > div {
+  margin-bottom: 20px;
+  float: left;
+
+}
+
+@media (max-width: 560px) {
+  .containerX > div {
+    margin-left: calc((100% - 250px)/2 - 1px);
+    margin-right: 0;
+  }
+}
+
+@media (min-width: 560px) and (max-width: 830px) {
+  .containerX > div {
+    margin-right: calc((100% - 500px)/1 - 1px);
+  }
+  .containerX > div:nth-child(2n) {
+    margin-right: 0;
+  }
+}
+@media (min-width: 830px) and (max-width: 1100px) {
+  .containerX > div {
+    margin-right: calc((100% - 750px)/2 - 1px);
+  }
+  .containerX > div:nth-child(3n) {
+    margin-right: 0;
+  }
+}
+@media (min-width: 1100px) {
+  .containerX > div {
+    margin-right: calc((100% - 1000px)/3 - 1px);
+  }
+  .containerX > div:nth-child(4n) {
+    margin-right: 0;
+  }
+}

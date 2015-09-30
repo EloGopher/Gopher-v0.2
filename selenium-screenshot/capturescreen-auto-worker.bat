@@ -1,0 +1,1 @@
+start node capturescreen-auto-worker %1
