@@ -1,10 +1,23 @@
 var http = require('http');
+var fs = require('fs');
+
+
 var projectOnPort = 80;
-var projectHost = 'testv2.phishproof.com';
+var projectHost = ''; // 'testv2.phishproof.com';
 var gopherHost = 'localhost';
 var gopherPort = 8080;
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
+
+var HelperString = "";
+
+
+fs.readFile('new-gopher-insert.js', 'utf8', function (err,data) {
+  if (err) {
+    return console.log(err);
+  }
+  HelperString = data;
+});
 
 http.createServer(onRequest).listen(gopherPort);
 
@@ -84,6 +97,26 @@ function onRequest(BrowserRequest, BrowserResponse) {
 					chunkStr = chunkStr.replace(regx1, 'http://' + gopherHost);
 					var regx2 = new RegExp('http://' + projectHost + ':' + projectOnPort, 'g');
 					chunkStr = chunkStr.replace(regx2, 'http://' + gopherHost + ':' + gopherPort);
+
+
+					//if url is a real page add gopher helper to the end
+					if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
+						 (BrowserRequest.url.indexOf('.html') != -1) ||
+						 (BrowserRequest.url.indexOf('.php')  != -1))
+					{
+						if (chunkStr.search(new RegExp("<body>", "i")) !== -1)
+						{
+							chunkStr += "<script>"+ HelperString +"</script>";
+						}
+					}
+
+					if (BrowserRequest.url.indexOf('.js')  != -1) {
+						var regx2 = new RegExp('console.log', 'g');
+						chunkStr = chunkStr.replace(regx2, 'gopher.tell');
+
+					}
+
+
 
 					var regx2 = new RegExp('Panel', 'g');
 					chunkStr = chunkStr.replace(regx2, 'Panels');
