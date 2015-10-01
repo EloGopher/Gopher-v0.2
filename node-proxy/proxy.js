@@ -23,136 +23,147 @@ http.createServer(onRequest).listen(gopherPort);
 
 
 function onRequest(BrowserRequest, BrowserResponse) {
-	var options = {
-		host: projectHost,
-		port: projectOnPort,
-		path: BrowserRequest.url,
-		method: BrowserRequest.method,
-		headers: BrowserRequest.headers
-	};
-	//console.log("---------------------------------------------------\n");
-	console.log(BrowserRequest.url);
 
-	//--- force proxy to reload everything and ignore browsers cache stuff
-	delete BrowserRequest.headers['cache-control'];
-	delete BrowserRequest.headers['if-none-match'];
-	delete BrowserRequest.headers['if-modified-since'];
+	if (BrowserRequest.url=="/gopherSave.js") {
 
-	BrowserRequest.headers['pragma'] = 'no-cache';
-	BrowserRequest.headers['cache-control'] = 'no-cache';
-
-	console.log(BrowserRequest.headers['cache-control']);
-
-/*
-	convert:
-
-'cache-control': 'max-age=0',
-'if-none-match': '"b5f8a8-5b18-51e0759a2d040"',
-'if-modified-since': 'Mon, 24 Aug 2015 04:50:01 GMT',
-
-	to:
-
-'pragma': 'no-cache',
-'cache-control': 'no-cache',
-
-*/
-//-------------------------
-
-
-	var BufferData = false;
-
-	if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
-		 (BrowserRequest.url.indexOf('.html') != -1) ||
-		 (BrowserRequest.url.indexOf('.js') != -1) ||
-		 (BrowserRequest.url.indexOf('.php')  != -1))
+		var body = 'All Good';
+		BrowserResponse.writeHead(200, { 'Content-Length': body.length, 'Content-Type': 'text/plain' });
+		//BrowserResponse.write();
+		BrowserResponse.end(body);
+	} else
 	{
-		BufferData = true;
-	}
+		var options = {
+			host: projectHost,
+			port: projectOnPort,
+			path: BrowserRequest.url,
+			method: BrowserRequest.method,
+			headers: BrowserRequest.headers
+		};
+		//console.log("---------------------------------------------------\n");
+		console.log(BrowserRequest.url);
 
-	var BrowserData = [];
-	var ApacheChunk = [];
+		//--- force proxy to reload everything and ignore browsers cache stuff
+		delete BrowserRequest.headers['cache-control'];
+		delete BrowserRequest.headers['if-none-match'];
+		delete BrowserRequest.headers['if-modified-since'];
 
-	BrowserRequest.on('data', function(chunk) {
-		BrowserData.push(chunk);
-	});
+		BrowserRequest.headers['pragma'] = 'no-cache';
+		BrowserRequest.headers['cache-control'] = 'no-cache';
 
-	BrowserRequest.on('end', function() {
-		var NodeProxyRequest = http.request(options, function(ApacheResponse) {
-			//console.log("APACHE HEADER: %j", ApacheResponse.headers);
+	//	console.log(BrowserRequest.headers['cache-control']);
 
-			ApacheResponse.on('data', function(chunk) {
-				console.log("on data... url:" + BrowserRequest.url + '\n');
-				ApacheChunk.push(chunk);
-			});
+	/*
+		convert:
 
-			ApacheResponse.on('end', function() {
+	'cache-control': 'max-age=0',
+	'if-none-match': '"b5f8a8-5b18-51e0759a2d040"',
+	'if-modified-since': 'Mon, 24 Aug 2015 04:50:01 GMT',
 
-				var ApacheBytes = Buffer.concat(ApacheChunk);
+		to:
 
-				if (BufferData)
-				{
-					//modify the urls in the page
-					var chunkStr = decoder.write(ApacheBytes);
-					var regx1 = new RegExp('http://' + projectHost, 'g');
-					chunkStr = chunkStr.replace(regx1, 'http://' + gopherHost);
-					var regx2 = new RegExp('http://' + projectHost + ':' + projectOnPort, 'g');
-					chunkStr = chunkStr.replace(regx2, 'http://' + gopherHost + ':' + gopherPort);
+	'pragma': 'no-cache',
+	'cache-control': 'no-cache',
 
-
-					//if url is a real page add gopher helper to the end
-					if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
-						 (BrowserRequest.url.indexOf('.html') != -1) ||
-						 (BrowserRequest.url.indexOf('.php')  != -1))
-					{
-						if (chunkStr.search(new RegExp("<body>", "i")) !== -1)
-						{
-							chunkStr += "<script>"+ HelperString +"</script>";
-						}
-					}
-
-					if (BrowserRequest.url.indexOf('.js')  != -1) {
-						var regx2 = new RegExp('console.log', 'g');
-						chunkStr = chunkStr.replace(regx2, 'gopher.tell');
-
-					}
+	*/
+	//-------------------------
 
 
+		var BufferData = false;
 
-					var regx2 = new RegExp('Panel', 'g');
-					chunkStr = chunkStr.replace(regx2, 'Panels');
+		if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
+			 (BrowserRequest.url.indexOf('.html') != -1) ||
+			 (BrowserRequest.url.indexOf('.js') != -1) ||
+			 (BrowserRequest.url.indexOf('.php')  != -1) ||
+		    (BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/") )
+		{
+			BufferData = true;
+		}
 
-					//console.log("Chunk:"+chunkStr);
+		var BrowserData = [];
+		var ApacheChunk = [];
 
-					ApacheBytes = new Buffer(chunkStr, 'utf8');
-				}
-
-				//console.log(decoder.write(ApacheChunk));
-
-				console.log('ApacheBytes on end ' + BrowserRequest.url);
-				console.log('ApacheBytes.length ' + ApacheBytes.length);
-				console.log('ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
-
-				ApacheResponse.headers['content-length'] = ApacheBytes.length;
-				BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);
-				BrowserResponse.write(ApacheBytes, 'binary');
-				BrowserResponse.end();
-			});
-
-			ApacheResponse.on('error', function(e) {
-				console.log('problem with proxy response: ' + e.message);
-			});
+		BrowserRequest.on('data', function(chunk) {
+			BrowserData.push(chunk);
 		});
 
-		//console.log("WRITE APACHE:"+decoder.write(BrowserData));
+		BrowserRequest.on('end', function() {
+			var NodeProxyRequest = http.request(options, function(ApacheResponse) {
+				//console.log("APACHE HEADER: %j", ApacheResponse.headers);
 
-		var BrowserBytes = Buffer.concat(BrowserData);
-		NodeProxyRequest.write(BrowserBytes, 'binary');
-		NodeProxyRequest.end();
+				ApacheResponse.on('data', function(chunk) {
+					//console.log("on data... url:" + BrowserRequest.url + '\n');
+					ApacheChunk.push(chunk);
+				});
 
-	});
+				ApacheResponse.on('end', function() {
+
+					var ApacheBytes = Buffer.concat(ApacheChunk);
+
+					if (BufferData)
+					{
+						console.log("star change content for: "+BrowserRequest.url);
+						//modify the urls in the page
+						var chunkStr = decoder.write(ApacheBytes);
+						var regx1 = new RegExp('http://' + projectHost, 'g');
+						chunkStr = chunkStr.replace(regx1, 'http://' + gopherHost);
+						var regx2 = new RegExp('http://' + projectHost + ':' + projectOnPort, 'g');
+						chunkStr = chunkStr.replace(regx2, 'http://' + gopherHost + ':' + gopherPort);
 
 
-	BrowserRequest.on('error', function(e) {
-		console.log('problem with request: ' + e.message);
-	});
+						//if url is a real page add gopher helper to the end
+						if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
+							 (BrowserRequest.url.indexOf('.html') != -1) ||
+							 (BrowserRequest.url.indexOf('.php')  != -1) ||
+						    (BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")  )
+						{
+							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1)
+							{
+								chunkStr += "<script>"+ HelperString +"</script>";
+							}
+						}
+
+						if (BrowserRequest.url.indexOf('.js')  != -1) {
+							var regx2 = new RegExp('console.log', 'g');
+							chunkStr = chunkStr.replace(regx2, 'gopher.tell');
+
+						}
+
+
+
+						var regx2 = new RegExp('Panel', 'g');
+						chunkStr = chunkStr.replace(regx2, 'Panels');
+
+						//console.log("Chunk:"+chunkStr);
+
+						ApacheBytes = new Buffer(chunkStr, 'utf8');
+					}
+
+					//console.log(decoder.write(ApacheChunk));
+
+					console.log('On End ' + BrowserRequest.url+ ' --  ApacheBytes.length ' + ApacheBytes.length + '  -- ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
+
+					ApacheResponse.headers['content-length'] = ApacheBytes.length;
+					BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);
+					BrowserResponse.write(ApacheBytes, 'binary');
+					BrowserResponse.end();
+				});
+
+				ApacheResponse.on('error', function(e) {
+					console.log('problem with proxy response: ' + e.message);
+				});
+			});
+
+			//console.log("WRITE APACHE:"+decoder.write(BrowserData));
+
+			var BrowserBytes = Buffer.concat(BrowserData);
+			NodeProxyRequest.write(BrowserBytes, 'binary');
+			NodeProxyRequest.end();
+
+		});
+
+
+		BrowserRequest.on('error', function(e) {
+			console.log('problem with request: ' + e.message);
+		});
+	}
 }

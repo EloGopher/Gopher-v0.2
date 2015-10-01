@@ -93,7 +93,7 @@ var gopher = new function() {
 			var CurrentDataLength = GopherMsgs.length;
 			var xhr = new XMLHttpRequest();
 			xhr.open('POST',
-			encodeURI('[parentfolder]gopher/gopherMini.php'));
+			encodeURI('/gopherSave.js'));
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 			xhr.onload = function() {
 				if (xhr.status === 200) {
