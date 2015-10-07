@@ -87,7 +87,7 @@ var gopher = new function() {
 		{
 			MaxMessageLoop--;
 			//console.log(GopherMsgs.length);
-			var strdata = JSON.stringify(GopherMsgs);
+			//var strdata = JSON.stringify(GopherMsgs);
 			//console.log("SEND LOG MESSAGES:"+strdata);
 
 			var CurrentDataLength = GopherMsgs.length;
@@ -106,7 +106,8 @@ var gopher = new function() {
 					setTimeout(gopher.sendlog, 1000);
 				}
 			};
-			xhr.send( gopher.param({type:"jslogpost", data:JSON.stringify(GopherMsgs) }) );
+			//xhr.send( gopher.param({ data:JSON.stringify(GopherMsgs) }) );
+         xhr.send( JSON.stringify(GopherMsgs)  ); //testing simple
 		} else
 		{
 			setTimeout(gopher.sendlog, 1000);

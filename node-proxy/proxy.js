@@ -1,7 +1,22 @@
 var http = require('http');
 var fs = require('fs');
+var qs = require('querystring');
+
+var sqlite3 = require('sqlite3').verbose();
+
+var dbPath = 'gopherlog.db';
+var dbConn = function (callBack) {
+    fs.exists(dbPath, function (exists) {
+        if (exists) {
+            return callBack(null,new sqlite3.Database(dbPath));
+        } else {
+            return callBack('Database does not exist.',null);
+        }
+    });
+}
 
 
+var ProjectID = 101;
 var projectOnPort = 80;
 var projectHost = ''; // 'testv2.phishproof.com';
 var gopherHost = 'localhost';
@@ -10,6 +25,48 @@ var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
 var HelperString = "";
+
+
+function regexIndexOf (xstr, regex, startpos) {
+   var indexOf = xstr.substring(startpos || 0).search(regex);
+   return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+}
+
+function lineNumberByIndex(index,string){
+    var line = 0;
+    var  match;
+    var re = /(^)[\S\s]/gm;
+    while (match = re.exec(string)) {
+       if(match.index > index) break;
+       line++;
+    }
+    return line;
+}
+
+function lineNumber(needle,haystack){
+    return lineNumberByIndex(haystack.indexOf(needle),haystack);
+}
+
+function CSVtoArray(text) {
+    var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
+    var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
+    // Return NULL if input string is not well formed CSV string.
+    if (!re_valid.test(text)) return null;
+    var a = [];                     // Initialize array to receive values.
+    text.replace(re_value, // "Walk" the string using replace with callback.
+        function(m0, m1, m2, m3) {
+            // Remove backslash from \' in single quoted values.
+            if      (m1 !== undefined) a.push(m1); //.replace(/\\'/g, "'"));
+            // Remove backslash from \" in double quoted values.
+            else if (m2 !== undefined) a.push(m2); //.replace(/\\"/g, '"'));
+            else if (m3 !== undefined) a.push(m3);
+            return ''; // Return empty string.
+        });
+    // Handle special case of empty last value.
+    if (/,\s*$/.test(text)) a.push('');
+    return a;
+};
+
 
 
 fs.readFile('new-gopher-insert.js', 'utf8', function (err,data) {
@@ -25,11 +82,81 @@ http.createServer(onRequest).listen(gopherPort);
 function onRequest(BrowserRequest, BrowserResponse) {
 
 	if (BrowserRequest.url=="/gopherSave.js") {
+      var body = "";
+      BrowserRequest.on('data', function (data) {
+         body += data;
 
-		var body = 'All Good';
-		BrowserResponse.writeHead(200, { 'Content-Length': body.length, 'Content-Type': 'text/plain' });
-		//BrowserResponse.write();
-		BrowserResponse.end(body);
+         // Too much POST data, kill the connection!
+         if (body.length > 1e6) {
+
+            var ResponesBody = 'All Bad';
+      		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
+      		BrowserResponse.end(ResponesBody);
+
+            BrowserRequest.connection.destroy();
+         }
+      });
+
+      BrowserRequest.on('end', function () {
+         console.log(body);
+
+         var post = qs.parse(body);
+
+         var ResponesBody = 'All Good';
+   		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
+   		BrowserResponse.end(ResponesBody);
+
+
+         // use post['blah'], etc.
+      });
+
+/*
+      $ParentFileName = $_POST["ParentFileName"];
+
+	foreach($data as $d) {
+
+		$InsertStr = "";
+
+		if ($d["Type"]=="vt") {
+			$InsertStr =
+			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,Tags,VarName,VarValue) VALUES (" . $ProjectID . ",now()," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Tags"])) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["VarName"])) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["VarValue"])) ."')";
+//			echo $InsertStr;
+		}
+
+		if ($d["Type"]=="gt") {
+			$InsertStr =
+			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,LogMessage,Tags) VALUES (" . $ProjectID . ",now()," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Msg"])) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Tags"])) ."')";
+//			echo $InsertStr;
+		}
+
+		if ($d["Type"]=="er") {
+			$InsertStr =
+			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,LogMessage) VALUES (" . $ProjectID . ",now()," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
+			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Msg"]))  ."')";
+//			echo $InsertStr;
+		}
+
+//		echo $InsertStr."\n";
+		if ($InsertStr != "") { $dbconn->query($InsertStr); }
+	}
+   */
 	} else
 	{
 		var options = {
@@ -123,15 +250,30 @@ function onRequest(BrowserRequest, BrowserResponse) {
 						}
 
 						if (BrowserRequest.url.indexOf('.js')  != -1) {
-							var regx2 = new RegExp('console.log', 'g');
-							chunkStr = chunkStr.replace(regx2, 'gopher.tell');
+                     var i = 0;
+                     var index=-1;
 
+                     while((index= regexIndexOf(chunkStr,RegExp('console\\.log\\(','i'), index+1)) != -1) {
+
+                        console.log("! "+index);
+
+                        var RegEx5 = RegExp('console\.log\\((.*)\\)','i');
+
+                        var consolbody = RegEx5.exec(chunkStr)[1];
+                        var consolbodyparts = CSVtoArray(consolbody);
+
+
+                        console.log( consolbody + " " + consolbodyparts.length );
+                        if (consolbodyparts.length>0) {
+                           console.log(consolbodyparts[0]);
+                        }
+
+                        chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(index,chunkStr) + ',' );
+                     }
 						}
 
 
 
-						var regx2 = new RegExp('Panel', 'g');
-						chunkStr = chunkStr.replace(regx2, 'Panels');
 
 						//console.log("Chunk:"+chunkStr);
 
