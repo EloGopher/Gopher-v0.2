@@ -9,7 +9,6 @@ window.onerror = function(message, url, lineNumber) {
 		GMsg.FileName = encodeURIComponent(url);
 		GMsg.Msg = encodeURIComponent(message);
 		GopherMsgs.push(GMsg);
-		gopher.sendlog();
     }
     catch(e) {
         // squelch, because we don’t want to prevent method from returning true
@@ -119,11 +118,12 @@ var gopher = new function() {
 	this.tell = function (xCodeLine,xFileName,xMessage,xTags) {
 		if (GopherMsgs.length<GopherLimit) {
 			var GMsg = new Object();
-			GMsg.Type = 'gt';
-			GMsg.CodeLine = xCodeLine;
-			GMsg.FileName = encodeURIComponent(xFileName);
-			GMsg.Msg = encodeURIComponent(xMessage);
-			GMsg.Tags = encodeURIComponent(xTags);
+			GMsg.TY = 'gt';
+         GMsg.TS = gopherTimeStamp;
+			GMsg.LN = xCodeLine;
+			GMsg.FN = encodeURIComponent(xFileName);
+			GMsg.LG = encodeURIComponent(xMessage);
+         if(xTags === undefined) { GMsg.TG = ""; } else { GMsg.TG = encodeURIComponent(xTags); }
 			GopherMsgs.push(GMsg);
 		}
 	};
@@ -132,33 +132,34 @@ var gopher = new function() {
 	this.track = function (xCodeLine,xFileName,xVarName,xVarValue,xTags) {
 		if (GopherMsgs.length<GopherLimit) {
 			var GMsg = new Object();
-			GMsg.Type = 'vt';
-			GMsg.CodeLine = xCodeLine;
-			GMsg.FileName = encodeURIComponent(xFileName);
-			GMsg.VarName = encodeURIComponent(xVarName);
+			GMsg.TY = 'vt';
+         GMsg.TS = gopherTimeStamp;
+			GMsg.LN = xCodeLine;
+			GMsg.FN = encodeURIComponent(xFileName);
+			GMsg.VN = encodeURIComponent(xVarName);
 
 			if (typeof(xVarValue)==="undefined")
 			{
-				GMsg.VarValue = "{UNDEFINED}";
+				GMsg.VV = "{UNDEFINED}";
 			} else
 			if (Array.isArray(xVarValue))
 			{
-				GMsg.VarValue = xVarValue.toString();
+				GMsg.VV = xVarValue.toString();
 			} else
 			if (typeof(xVarValue)==="object")
 			{
-				GMsg.VarValue = JSON.stringifyOnce(xVarValue);
+				GMsg.VV = JSON.stringifyOnce(xVarValue);
 			} else
 			if (isFunction(xVarValue))
 			{
-				GMsg.VarValue = "{FUNCTION}";
+				GMsg.VV = "{FUNCTION}";
 			} else
 			{
-				GMsg.VarValue = xVarValue;
+				GMsg.VV = xVarValue;
 			}
-			GMsg.VarValue = encodeURIComponent(GMsg.VarValue);
+			GMsg.VV = encodeURIComponent(GMsg.VV);
 
-			GMsg.Tags = xTags;
+         if(xTags === undefined) { GMsg.TG = ""; } else { GMsg.TG = encodeURIComponent(xTags); }
 			GopherMsgs.push(GMsg);
 		}
 	};

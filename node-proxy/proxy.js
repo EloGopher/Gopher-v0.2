@@ -4,6 +4,8 @@ var qs = require('querystring');
 
 var sqlite3 = require('sqlite3').verbose();
 
+var CSVToArray = require("./CSVToArray.js")
+
 var dbPath = 'gopherlog.db';
 var dbConn = function (callBack) {
     fs.exists(dbPath, function (exists) {
@@ -47,25 +49,7 @@ function lineNumber(needle,haystack){
     return lineNumberByIndex(haystack.indexOf(needle),haystack);
 }
 
-function CSVtoArray(text) {
-    var re_valid = /^\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*(?:,\s*(?:'[^'\\]*(?:\\[\S\s][^'\\]*)*'|"[^"\\]*(?:\\[\S\s][^"\\]*)*"|[^,'"\s\\]*(?:\s+[^,'"\s\\]+)*)\s*)*$/;
-    var re_value = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\]*(?:\s+[^,'"\s\\]+)*))\s*(?:,|$)/g;
-    // Return NULL if input string is not well formed CSV string.
-    if (!re_valid.test(text)) return null;
-    var a = [];                     // Initialize array to receive values.
-    text.replace(re_value, // "Walk" the string using replace with callback.
-        function(m0, m1, m2, m3) {
-            // Remove backslash from \' in single quoted values.
-            if      (m1 !== undefined) a.push(m1); //.replace(/\\'/g, "'"));
-            // Remove backslash from \" in double quoted values.
-            else if (m2 !== undefined) a.push(m2); //.replace(/\\"/g, '"'));
-            else if (m3 !== undefined) a.push(m3);
-            return ''; // Return empty string.
-        });
-    // Handle special case of empty last value.
-    if (/,\s*$/.test(text)) a.push('');
-    return a;
-};
+
 
 
 
@@ -73,7 +57,7 @@ fs.readFile('new-gopher-insert.js', 'utf8', function (err,data) {
   if (err) {
     return console.log(err);
   }
-  HelperString = data;
+  HelperString = "var gopherTimeStamp = Math.floor(Date.now() / 1000);\n"+data;
 });
 
 http.createServer(onRequest).listen(gopherPort);
@@ -260,20 +244,25 @@ function onRequest(BrowserRequest, BrowserResponse) {
                         var RegEx5 = RegExp('console\.log\\((.*)\\)','i');
 
                         var consolbody = RegEx5.exec(chunkStr)[1];
-                        var consolbodyparts = CSVtoArray(consolbody);
+                        consolbody = consolbody.trim();
 
+                        console.log( consolbody );
 
-                        console.log( consolbody + " " + consolbodyparts.length );
-                        if (consolbodyparts.length>0) {
-                           console.log(consolbodyparts[0]);
+                        var PartsOfConsol = CSVToArray.CSVToArray(consolbody,',');
+                        console.log(PartsOfConsol);
+                        console.log("parts:"+PartsOfConsol[0].length);
+
+                        //we'll for now only parse console.log's with 1 value and 1 tag
+                        if (PartsOfConsol[0].length<=2) {
+                           if ( (consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'") ) {
+                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.tell(' + lineNumberByIndex(index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",' );
+                           } else
+                           {
+                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","'+ PartsOfConsol[0][0] +'",' );
+                           }
                         }
-
-                        chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(index,chunkStr) + ',' );
                      }
 						}
-
-
-
 
 						//console.log("Chunk:"+chunkStr);
 

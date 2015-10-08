@@ -41,8 +41,7 @@ TestCall2();
 		<script src="js/jquery-ui-1.10.4.js"></script>
 
 		<link href="css/style.css" rel="stylesheet">
-
-		<script src="js/calculator.js"></script>
+      <script src="js/calculator.js"></script>
 	</head>
 
 	<body style="overflow:hidden; margin:0px; padding:0px;">
