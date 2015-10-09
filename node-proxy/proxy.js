@@ -23,7 +23,7 @@ var dbConn;
 
 var ProjectID = 101;
 var projectOnPort = 80;
-var projectHost = ''; // 'testv2.phishproof.com';
+var projectHost = 'testv2.phishproof.com'; // 'testv2.phishproof.com';
 var gopherHost = 'localhost';
 var gopherPort = 8080;
 var StringDecoder = require('string_decoder').StringDecoder;
