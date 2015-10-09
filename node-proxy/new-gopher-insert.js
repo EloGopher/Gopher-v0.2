@@ -4,10 +4,10 @@ var GopherMsgs = [];
 window.onerror = function(message, url, lineNumber) {
     try {
 		var GMsg = new Object();
-		GMsg.Type = 'er';
-		GMsg.CodeLine = lineNumber;
-		GMsg.FileName = encodeURIComponent(url);
-		GMsg.Msg = encodeURIComponent(message);
+		GMsg.TY = 'js_er';
+		GMsg.LN = lineNumber;
+		GMsg.FN = encodeURIComponent(url);
+		GMsg.LG = encodeURIComponent(message);
 		GopherMsgs.push(GMsg);
     }
     catch(e) {
@@ -118,7 +118,7 @@ var gopher = new function() {
 	this.tell = function (xCodeLine,xFileName,xMessage,xTags) {
 		if (GopherMsgs.length<GopherLimit) {
 			var GMsg = new Object();
-			GMsg.TY = 'gt';
+			GMsg.TY = 'js_gt';
          GMsg.TS = gopherTimeStamp;
 			GMsg.LN = xCodeLine;
 			GMsg.FN = encodeURIComponent(xFileName);
@@ -132,7 +132,7 @@ var gopher = new function() {
 	this.track = function (xCodeLine,xFileName,xVarName,xVarValue,xTags) {
 		if (GopherMsgs.length<GopherLimit) {
 			var GMsg = new Object();
-			GMsg.TY = 'vt';
+			GMsg.TY = 'js_vt';
          GMsg.TS = gopherTimeStamp;
 			GMsg.LN = xCodeLine;
 			GMsg.FN = encodeURIComponent(xFileName);
@@ -141,21 +141,26 @@ var gopher = new function() {
 			if (typeof(xVarValue)==="undefined")
 			{
 				GMsg.VV = "{UNDEFINED}";
+            GMsg.VT = "undefined";
 			} else
 			if (Array.isArray(xVarValue))
 			{
 				GMsg.VV = xVarValue.toString();
+            GMsg.VT = "array";
 			} else
 			if (typeof(xVarValue)==="object")
 			{
 				GMsg.VV = JSON.stringifyOnce(xVarValue);
+            GMsg.VT = "object";
 			} else
 			if (isFunction(xVarValue))
 			{
-				GMsg.VV = "{FUNCTION}";
+				GMsg.VV = "";
+            GMsg.VT = "function";
 			} else
 			{
 				GMsg.VV = xVarValue;
+            GMsg.VT = "plain";
 			}
 			GMsg.VV = encodeURIComponent(GMsg.VV);
 

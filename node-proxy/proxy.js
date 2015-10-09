@@ -7,15 +7,18 @@ var sqlite3 = require('sqlite3').verbose();
 var CSVToArray = require("./CSVToArray.js")
 
 var dbPath = 'gopherlog.db';
-var dbConn = function (callBack) {
-    fs.exists(dbPath, function (exists) {
-        if (exists) {
-            return callBack(null,new sqlite3.Database(dbPath));
-        } else {
-            return callBack('Database does not exist.',null);
-        }
-    });
-}
+var dbConn;
+
+ fs.exists(dbPath, function (exists) {
+     if (exists) {
+         dbConn = new sqlite3.Database(dbPath);
+     } else {
+         console.log('Database does not exist.');
+     }
+ });
+
+
+
 
 
 var ProjectID = 101;
@@ -82,9 +85,32 @@ function onRequest(BrowserRequest, BrowserResponse) {
       });
 
       BrowserRequest.on('end', function () {
-         console.log(body);
+         //console.log( decodeURIComponent(body) );
+         var dataobj = JSON.parse( body );
 
-         var post = qs.parse(body);
+
+         for (var i=0; i<dataobj.length; i++)
+         {
+            //console.log(i);
+            //console.log(dataobj[i]);
+
+            if (dataobj[i]["TY"]=="js_gt") {
+               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.finalize();
+            } else
+            if (dataobj[i]["TY"]=="js_vt") {
+               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
+               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.finalize();
+            } else
+            if (dataobj[i]["TY"]=="js_er") {
+               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.finalize();
+            }
+
+         }
 
          var ResponesBody = 'All Good';
    		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
@@ -239,18 +265,19 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
                      while((index= regexIndexOf(chunkStr,RegExp('console\\.log\\(','i'), index+1)) != -1) {
 
-                        console.log("! "+index);
+                        //console.log("! "+index);
 
                         var RegEx5 = RegExp('console\.log\\((.*)\\)','i');
 
                         var consolbody = RegEx5.exec(chunkStr)[1];
                         consolbody = consolbody.trim();
 
-                        console.log( consolbody );
+                        //console.log( consolbody );
 
                         var PartsOfConsol = CSVToArray.CSVToArray(consolbody,',');
-                        console.log(PartsOfConsol);
-                        console.log("parts:"+PartsOfConsol[0].length);
+
+                        //console.log(PartsOfConsol);
+                        //console.log("parts:"+PartsOfConsol[0].length);
 
                         //we'll for now only parse console.log's with 1 value and 1 tag
                         if (PartsOfConsol[0].length<=2) {

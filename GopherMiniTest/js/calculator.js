@@ -1,7 +1,7 @@
 $(document).ready( function()
 {
 
-	console.log("start","start-tag");
+	console.log("start","start-tag,multitag");
 
 	// Get all the keys from document
 	var keys = $('#calculator span');
