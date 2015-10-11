@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
+
+        <title>Gopher Manager | My Project</title>
+
+        <script src="Lib/jquery-1.10.2.js"></script>
+        <script src="Lib/jquery-ui-1.10.4.js"></script>
+
+        <!-- Bootstrap core CSS -->
+        <link href="CSS/bootstrap.min.css" rel="stylesheet">
+        <script src="Lib/bootstrap.min.js"></script>
+        <!-- TreeView plugin -->
+        <link href="Lib/jstree/themes/default/style.min.css" rel="stylesheet"/>
+        <script src="Lib/jstree/jstree.min.js" type="text/javascript"></script>
+
+        <!-- Mine -->
+        <link href="CSS/style.css" rel="stylesheet">
+        <script src="js/centralizeDialog.js" type="text/javascript"></script>
+        <script src="js/project.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div data-role="template-bottom-alert" class="bottom-alert" ><div data-role="icon"></div><div data-role="message"></div></div>
+
+
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="index.html">Gopher Manager</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="index.html">My Projects</a>
+                        </li>
+                        <li class="active">
+                            <a href="project.html?projectid=0">Create a New Project</a>
+                        </li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </div>
+
+        <div class="container myContent new-edit-project">
+            <div class="row">
+                <div class="col-md-12" style="padding-bottom: 20px;"><input type="text" class="form-control" placeholder="Project Name" id="in_projectName" style="font-weight: bold;font-size:150%;height:46px;">
+                </div>
+                <div id="new_project_files" class="col-md-12 new-project-files">
+                    <div class="col-md-9 dialog-file-list-header">
+  
+                        <div data-role="fileList_arrow_navigate" data-forid="new_project_files" class="btn-group" role="group" aria-label="...">
+							<a data-role="backward" class="btn btn-default"><span class="glyphicon glyphicon-chevron-left backward-arrow disabled" aria-hidden="true"></span></a>
+							<a data-role="forward" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right forward-arrow" aria-hidden="true"></span></a>
+                        </div>
+                        <div data-role="current directory" class="show-current-dir"></div>  
+                    </div>
+                    <div class="col-md-3">
+                        <input type="hidden" id="project_id" value="0"/>
+                        <input type="hidden" id="selected_project_folder" value=""/>
+                        <button id="btn_open_dir_dialog" type="button" class="btn btn-default btn-block" data-toggle="modal" data-target="#dialog_select_dir" style="height:43px;">
+                            Select Folder
+                        </button>
+                        <button id="btn_close_fileIgnored" class="btn btn-default btn-block" style=";display:none;">Close&nbsp;&nbsp;<span class="glyphicon glyphicon-remove-circle"></span></button>
+                    </div>
+                    <div data-role="display files" class="col-md-12 target-dir" data-forid="new_project_files" data-only_folders="false" data-multi_select="true"></div>
+                    <div id="file_ignored_list" class="col-md-12 target-dir" style="display: none;"></div>
+                </div>
+                <div class="col-md-12" style="text-align: right;">
+                    <button id="btn_view_ignored" class="btn btn-default view-ignored-file" type="button">Files ignored <span class="badge">0</span></button>
+                </div>
+                <div class="col-md-12" style='padding-top: 15px;'>
+                    <div class="checkbox">
+                        <label>
+                          <input type="checkbox" id="is_gopher_html5"> It's an Html5 app, host the project with Gopher.
+                        </label>
+                    </div>
+                </div>
+                <div id="original_project_link" class="col-md-12 set-project-link">
+                    <div class="col-md-1">
+                        <span class="text" style="font-weight: bold;">Original link:</span>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mycol initial">
+                            <span class="text">http://</span>
+                        </div>
+                        <div class="mycol host">
+                            <div class="mycol hostname"><input data-role="host name" type="text" class="form-control standard" value="" placeholder="host name"></div>
+                            <div class="mycol port-seperator"><span class="text">:</span></div>
+                            <div class="input-group mycol port">
+                                <input data-role="port" class="form-control standard" type="text" placeholder="Port" value="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="mycol path-seperator"><span class="text">/</span></div>
+                        <div class="mycol path"><input data-role="path" type="text" class="form-control standard" placeholder=""></div>              
+                    </div>
+                </div>
+                <div id="set_gopher_link" class="col-md-12 set-project-link">
+                    <div class="col-md-1">
+                        <span class="text" style="font-weight: bold;">Gopher link:</span>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mycol initial">
+                            <span class="text">http://</span>
+                        </div>
+                        <div class="mycol host">
+                            <div class="mycol hostname"><input data-role="host name" type="text" class="form-control standard" value="" placeholder="host name"></div>
+                            <div class="mycol port-seperator"><span class="text">:</span></div>
+                            <div class="input-group mycol port">
+                                <input data-role="port" class="form-control standard" type="text" placeholder="Port" value="">
+                                <div class="input-group-addon">
+                                    <button class="port-auto" id="btn_port_auto">Auto</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <!--<div class="col-md-1">
+                        <div class="combo-edit-box gopher-port">
+                                <div class="holder edit-input">
+                                    <input id="gopher_port" class="form-control" value="" style=""/>
+                                </div>
+                                <div id="gopher_port_option" class="combo-edit-box-options">
+                                    <ul>
+                                        <li>1338</li>
+                                    </ul>
+                                </div>
+                                <div class="holder select-arrow" data-role="select arrow"><div class="icon">&nbsp;</div></div>
+                        </div>                        
+                    </div>-->
+                    <div class="col-md-7">
+                        <div class="col-md-1" style="width:2%;text-align: center;"><span class="text">/</span></div>
+                        <div class="col-md-11" style="width:98%;"><input data-role="path" type="text" class="form-control standard" readonly></div>              
+                    </div>
+                </div>
+                
+                <div class="col-md-12" style="padding-top:15px;">
+                    <button type="button" class="btn btn-primary disabled" style="width:250px;" id="btn_save_project">Save</button>
+                </div>
+            </div>
+            <br/><br/>
+        </div><!-- /.container -->
+
+        <!-- Dialog: Select Project Folder -->
+        <div id="dialog_select_dir" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-dialogw="884" data-dialogh="465">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title">Select Project Folder</h4>
+                    </div>
+                    <div class="modal-body" style="margin-bottom:0px; padding-bottom:0px;">
+                        <div class="dialog-file-list-header">
+                            <div data-role="fileList_arrow_navigate" data-forid="dialog_select_dir" class="btn-group" role="group" aria-label="..." style="margin-right:5px;">
+								<a data-role="backward" class="btn btn-default"><span class="glyphicon glyphicon-chevron-left backward-arrow" aria-hidden="true"></span></a>
+								<a data-role="forward" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right forward-arrow" aria-hidden="true"></span></a>
+                            </div>
+							
+							<div class="input-group" style="width:30%">
+								<input class="form-control" id="current_drive" size="16" type="text" >
+                                   <input type="hidden" id="current_drive_val" value="">
+								<a class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">
+									<span class="caret"></span>
+								</a>
+								<ul id="select_drive_option"  class="dropdown-menu">
+									<li><a href="#"><i class="icon-pencil"></i> Edit</a></li>
+									<li><a href="#"><i class="icon-trash"></i> Delete</a></li>
+									<li><a href="#"><i class="icon-ban-circle"></i> Ban</a></li>
+									<li class="divider"></li>
+									<li><a href="#"><i class="i"></i> Make admin</a></li>
+								</ul>
+							</div>
+                            <div data-role="current directory" class="show-current-dir"></div>
+                        </div>
+
+                        <div data-role="display files" class="list-group target-dir" data-forid="dialog_select_dir" data-only_folders="true" data-multi_select="false"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btn_openProjectDir" data-dismiss="modal" data-edit_mode="false">
+                            Open
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="footer">
+            <div class="container">
+                <p class="text-muted">
+                    Place sticky footer content here.
+                </p>
+            </div>
+        </div>
+
+    </body>
+</html>
