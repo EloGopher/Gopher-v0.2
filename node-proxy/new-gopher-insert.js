@@ -105,8 +105,8 @@ var gopher = new function() {
 					setTimeout(gopher.sendlog, 1000);
 				}
 			};
-			//xhr.send( gopher.param({ data:JSON.stringify(GopherMsgs) }) );
-         xhr.send( JSON.stringify(GopherMsgs)  ); //testing simple
+			xhr.send( gopher.param({ ParentFileName: ParentFileName, Data:JSON.stringify(GopherMsgs) }) );
+         //xhr.send( JSON.stringify(GopherMsgs)  ); //testing simple
 		} else
 		{
 			setTimeout(gopher.sendlog, 1000);

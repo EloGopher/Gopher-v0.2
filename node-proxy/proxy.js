@@ -23,8 +23,9 @@ var dbConn;
 
 var ProjectID = 101;
 var projectOnPort = 80;
-var projectHost = 'testv2.phishproof.com'; // 'testv2.phishproof.com';
-var gopherHost = 'localhost';
+var projectHost = 'localhost'; // 'testv2.phishproof.com';
+var projectPath = '/phishproof';
+var gopherHost = 'http://localhost';
 var gopherPort = 8080;
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
@@ -60,7 +61,7 @@ fs.readFile('new-gopher-insert.js', 'utf8', function (err,data) {
   if (err) {
     return console.log(err);
   }
-  HelperString = "var gopherTimeStamp = Math.floor(Date.now() / 1000);\n"+data;
+  HelperString = data;
 });
 
 http.createServer(onRequest).listen(gopherPort);
@@ -86,7 +87,10 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
       BrowserRequest.on('end', function () {
          //console.log( decodeURIComponent(body) );
-         var dataobj = JSON.parse( body );
+         var post = qs.parse(body);
+
+         var ParentFileName = post["ParentFileName"];
+         var dataobj = JSON.parse( post["Data"] );
 
 
          for (var i=0; i<dataobj.length; i++)
@@ -96,88 +100,38 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
             if (dataobj[i]["TY"]=="js_gt") {
                var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
                stmt.finalize();
             } else
             if (dataobj[i]["TY"]=="js_vt") {
                var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
                stmt.finalize();
             } else
             if (dataobj[i]["TY"]=="js_er") {
                var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
                stmt.finalize();
             }
 
          }
 
+
          var ResponesBody = 'All Good';
    		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
    		BrowserResponse.end(ResponesBody);
-
-
-         // use post['blah'], etc.
       });
-
-/*
-      $ParentFileName = $_POST["ParentFileName"];
-
-	foreach($data as $d) {
-
-		$InsertStr = "";
-
-		if ($d["Type"]=="vt") {
-			$InsertStr =
-			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,Tags,VarName,VarValue) VALUES (" . $ProjectID . ",now()," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Tags"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["VarName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["VarValue"])) ."')";
-//			echo $InsertStr;
-		}
-
-		if ($d["Type"]=="gt") {
-			$InsertStr =
-			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,LogMessage,Tags) VALUES (" . $ProjectID . ",now()," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Msg"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Tags"])) ."')";
-//			echo $InsertStr;
-		}
-
-		if ($d["Type"]=="er") {
-			$InsertStr =
-			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,LogMessage) VALUES (" . $ProjectID . ",now()," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Msg"]))  ."')";
-//			echo $InsertStr;
-		}
-
-//		echo $InsertStr."\n";
-		if ($InsertStr != "") { $dbconn->query($InsertStr); }
-	}
-   */
 	} else
 	{
 		var options = {
 			host: projectHost,
 			port: projectOnPort,
-			path: BrowserRequest.url,
+			path: projectPath+BrowserRequest.url,
 			method: BrowserRequest.method,
 			headers: BrowserRequest.headers
 		};
 		//console.log("---------------------------------------------------\n");
-		console.log(BrowserRequest.url);
+		console.log("LOAD: "+BrowserRequest.url);
 
 		//--- force proxy to reload everything and ignore browsers cache stuff
 		delete BrowserRequest.headers['cache-control'];
@@ -186,29 +140,21 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		BrowserRequest.headers['pragma'] = 'no-cache';
 		BrowserRequest.headers['cache-control'] = 'no-cache';
-
-	//	console.log(BrowserRequest.headers['cache-control']);
-
 	/*
 		convert:
-
 	'cache-control': 'max-age=0',
 	'if-none-match': '"b5f8a8-5b18-51e0759a2d040"',
 	'if-modified-since': 'Mon, 24 Aug 2015 04:50:01 GMT',
-
 		to:
-
 	'pragma': 'no-cache',
 	'cache-control': 'no-cache',
-
 	*/
-	//-------------------------
-
 
 		var BufferData = false;
 
 		if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
 			 (BrowserRequest.url.indexOf('.html') != -1) ||
+          (BrowserRequest.url.indexOf('.css') != -1) ||
 			 (BrowserRequest.url.indexOf('.js') != -1) ||
 			 (BrowserRequest.url.indexOf('.php')  != -1) ||
 		    (BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/") )
@@ -238,13 +184,13 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 					if (BufferData)
 					{
-						console.log("star change content for: "+BrowserRequest.url);
+						//console.log("start change content for: "+BrowserRequest.url);
 						//modify the urls in the page
 						var chunkStr = decoder.write(ApacheBytes);
-						var regx1 = new RegExp('http://' + projectHost, 'g');
-						chunkStr = chunkStr.replace(regx1, 'http://' + gopherHost);
-						var regx2 = new RegExp('http://' + projectHost + ':' + projectOnPort, 'g');
-						chunkStr = chunkStr.replace(regx2, 'http://' + gopherHost + ':' + gopherPort);
+						var regx1 = new RegExp(projectHost, 'g');
+						chunkStr = chunkStr.replace(regx1, gopherHost);
+						var regx2 = new RegExp(projectHost + ':' + projectOnPort, 'g');
+						chunkStr = chunkStr.replace(regx2, gopherHost + ':' + gopherPort);
 
 
 						//if url is a real page add gopher helper to the end
@@ -255,24 +201,28 @@ function onRequest(BrowserRequest, BrowserResponse) {
 						{
 							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1)
 							{
-								chunkStr += "<script>"+ HelperString +"</script>";
+                        var tempStr = BrowserRequest.url;
+                        var tempStr = tempStr.replace(/'/g,"\'");
+								chunkStr += "<script>"+ "var gopherTimeStamp = Math.floor(Date.now() / 1000);var ParentFileName='"+ tempStr +"';\n"+HelperString +"</script>";
 							}
 						}
 
 						if (BrowserRequest.url.indexOf('.js')  != -1) {
                      var i = 0;
+
                      var index=-1;
 
-                     while((index= regexIndexOf(chunkStr,RegExp('console\\.log\\(','i'), index+1)) != -1) {
+                     var RegEx5 = RegExp('console\\.log\\((.*)\\)','igm');
+                     var searchRes;
 
-                        //console.log("! "+index);
 
-                        var RegEx5 = RegExp('console\.log\\((.*)\\)','i');
+                     while ( (searchRes = RegEx5.exec(chunkStr))!==null )
+                     {
 
-                        var consolbody = RegEx5.exec(chunkStr)[1];
+                        consolbody = searchRes[1];
                         consolbody = consolbody.trim();
 
-                        //console.log( consolbody );
+                        console.log("BODY: "+ consolbody + " " + RegEx5.lastIndex );
 
                         var PartsOfConsol = CSVToArray.CSVToArray(consolbody,',');
 
@@ -282,10 +232,10 @@ function onRequest(BrowserRequest, BrowserResponse) {
                         //we'll for now only parse console.log's with 1 value and 1 tag
                         if (PartsOfConsol[0].length<=2) {
                            if ( (consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'") ) {
-                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.tell(' + lineNumberByIndex(index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",' );
+                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",' );
                            } else
                            {
-                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","'+ PartsOfConsol[0][0] +'",' );
+                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(RegEx5.index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","'+ PartsOfConsol[0][0] +'",' );
                            }
                         }
                      }
@@ -298,7 +248,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 					//console.log(decoder.write(ApacheChunk));
 
-					console.log('On End ' + BrowserRequest.url+ ' --  ApacheBytes.length ' + ApacheBytes.length + '  -- ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
+					//console.log('On End ' + BrowserRequest.url+ ' --  ApacheBytes.length ' + ApacheBytes.length + '  -- ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
 
 					ApacheResponse.headers['content-length'] = ApacheBytes.length;
 					BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);
