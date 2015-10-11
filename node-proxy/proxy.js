@@ -115,58 +115,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
          var ResponesBody = 'All Good';
    		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
    		BrowserResponse.end(ResponesBody);
-
-
-         // use post['blah'], etc.
       });
-
-/*
-      $ParentFileName = $_POST["ParentFileName"];
-
-	foreach($data as $d) {
-
-		$InsertStr = "";
-
-		if ($d["Type"]=="vt") {
-			$InsertStr =
-			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,Tags,VarName,VarValue) VALUES (" . $ProjectID . ",now()," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Tags"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["VarName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["VarValue"])) ."')";
-//			echo $InsertStr;
-		}
-
-		if ($d["Type"]=="gt") {
-			$InsertStr =
-			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,LogMessage,Tags) VALUES (" . $ProjectID . ",now()," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Msg"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Tags"])) ."')";
-//			echo $InsertStr;
-		}
-
-		if ($d["Type"]=="er") {
-			$InsertStr =
-			"INSERT INTO gopherminimsgs (ProjectID,AddedTime,FileName,ParentFileName,CodeLine,DataType,LogMessage) VALUES (" . $ProjectID . ",now()," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["FileName"])) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($ParentFileName)) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["CodeLine"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, $d["Type"]) ."'," .
-			"'" . mysqli_real_escape_string($dbconn, urldecode($d["Msg"]))  ."')";
-//			echo $InsertStr;
-		}
-
-//		echo $InsertStr."\n";
-		if ($InsertStr != "") { $dbconn->query($InsertStr); }
-	}
-   */
 	} else
 	{
 		var options = {
@@ -186,24 +135,15 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		BrowserRequest.headers['pragma'] = 'no-cache';
 		BrowserRequest.headers['cache-control'] = 'no-cache';
-
-	//	console.log(BrowserRequest.headers['cache-control']);
-
 	/*
 		convert:
-
 	'cache-control': 'max-age=0',
 	'if-none-match': '"b5f8a8-5b18-51e0759a2d040"',
 	'if-modified-since': 'Mon, 24 Aug 2015 04:50:01 GMT',
-
 		to:
-
 	'pragma': 'no-cache',
 	'cache-control': 'no-cache',
-
 	*/
-	//-------------------------
-
 
 		var BufferData = false;
 
