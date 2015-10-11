@@ -686,6 +686,8 @@ function proxyOnHttpRequest(request, response, forwardHostName, forwardHostPort,
 }
 
 
-
+//ServerB.close(function(){
+//	console.log('ServerB is closed');
+//});
 
 
