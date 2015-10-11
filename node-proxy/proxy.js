@@ -61,7 +61,7 @@ fs.readFile('new-gopher-insert.js', 'utf8', function (err,data) {
   if (err) {
     return console.log(err);
   }
-  HelperString = "var gopherTimeStamp = Math.floor(Date.now() / 1000);\n"+data;
+  HelperString = data;
 });
 
 http.createServer(onRequest).listen(gopherPort);
@@ -87,7 +87,10 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
       BrowserRequest.on('end', function () {
          //console.log( decodeURIComponent(body) );
-         var dataobj = JSON.parse( body );
+         var post = qs.parse(body);
+
+         var ParentFileName = post["ParentFileName"];
+         var dataobj = JSON.parse( post["Data"] );
 
 
          for (var i=0; i<dataobj.length; i++)
@@ -97,21 +100,22 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
             if (dataobj[i]["TY"]=="js_gt") {
                var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
                stmt.finalize();
             } else
             if (dataobj[i]["TY"]=="js_vt") {
                var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
                stmt.finalize();
             } else
             if (dataobj[i]["TY"]=="js_er") {
                var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), '', dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
                stmt.finalize();
             }
 
          }
+
 
          var ResponesBody = 'All Good';
    		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
@@ -197,7 +201,9 @@ function onRequest(BrowserRequest, BrowserResponse) {
 						{
 							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1)
 							{
-								chunkStr += "<script>"+ HelperString +"</script>";
+                        var tempStr = BrowserRequest.url;
+                        var tempStr = tempStr.replace(/'/g,"\'");
+								chunkStr += "<script>"+ "var gopherTimeStamp = Math.floor(Date.now() / 1000);var ParentFileName='"+ tempStr +"';\n"+HelperString +"</script>";
 							}
 						}
 
@@ -226,10 +232,10 @@ function onRequest(BrowserRequest, BrowserResponse) {
                         //we'll for now only parse console.log's with 1 value and 1 tag
                         if (PartsOfConsol[0].length<=2) {
                            if ( (consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'") ) {
-                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.tell(' + lineNumberByIndex(index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",' );
+                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",' );
                            } else
                            {
-                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","'+ PartsOfConsol[0][0] +'",' );
+                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(RegEx5.index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","'+ PartsOfConsol[0][0] +'",' );
                            }
                         }
                      }
