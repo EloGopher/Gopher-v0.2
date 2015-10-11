@@ -23,8 +23,9 @@ var dbConn;
 
 var ProjectID = 101;
 var projectOnPort = 80;
-var projectHost = 'testv2.phishproof.com'; // 'testv2.phishproof.com';
-var gopherHost = 'localhost';
+var projectHost = 'localhost'; // 'testv2.phishproof.com';
+var projectPath = '/phishproof';
+var gopherHost = 'http://localhost';
 var gopherPort = 8080;
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
@@ -121,12 +122,12 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		var options = {
 			host: projectHost,
 			port: projectOnPort,
-			path: BrowserRequest.url,
+			path: projectPath+BrowserRequest.url,
 			method: BrowserRequest.method,
 			headers: BrowserRequest.headers
 		};
 		//console.log("---------------------------------------------------\n");
-		console.log(BrowserRequest.url);
+		console.log("LOAD: "+BrowserRequest.url);
 
 		//--- force proxy to reload everything and ignore browsers cache stuff
 		delete BrowserRequest.headers['cache-control'];
@@ -149,6 +150,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
 			 (BrowserRequest.url.indexOf('.html') != -1) ||
+          (BrowserRequest.url.indexOf('.css') != -1) ||
 			 (BrowserRequest.url.indexOf('.js') != -1) ||
 			 (BrowserRequest.url.indexOf('.php')  != -1) ||
 		    (BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/") )
@@ -178,13 +180,13 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 					if (BufferData)
 					{
-						console.log("star change content for: "+BrowserRequest.url);
+						//console.log("start change content for: "+BrowserRequest.url);
 						//modify the urls in the page
 						var chunkStr = decoder.write(ApacheBytes);
-						var regx1 = new RegExp('http://' + projectHost, 'g');
-						chunkStr = chunkStr.replace(regx1, 'http://' + gopherHost);
-						var regx2 = new RegExp('http://' + projectHost + ':' + projectOnPort, 'g');
-						chunkStr = chunkStr.replace(regx2, 'http://' + gopherHost + ':' + gopherPort);
+						var regx1 = new RegExp(projectHost, 'g');
+						chunkStr = chunkStr.replace(regx1, gopherHost);
+						var regx2 = new RegExp(projectHost + ':' + projectOnPort, 'g');
+						chunkStr = chunkStr.replace(regx2, gopherHost + ':' + gopherPort);
 
 
 						//if url is a real page add gopher helper to the end
@@ -201,18 +203,20 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 						if (BrowserRequest.url.indexOf('.js')  != -1) {
                      var i = 0;
+
                      var index=-1;
 
-                     while((index= regexIndexOf(chunkStr,RegExp('console\\.log\\(','i'), index+1)) != -1) {
+                     var RegEx5 = RegExp('console\\.log\\((.*)\\)','igm');
+                     var searchRes;
 
-                        //console.log("! "+index);
 
-                        var RegEx5 = RegExp('console\.log\\((.*)\\)','i');
+                     while ( (searchRes = RegEx5.exec(chunkStr))!==null )
+                     {
 
-                        var consolbody = RegEx5.exec(chunkStr)[1];
+                        consolbody = searchRes[1];
                         consolbody = consolbody.trim();
 
-                        //console.log( consolbody );
+                        console.log("BODY: "+ consolbody + " " + RegEx5.lastIndex );
 
                         var PartsOfConsol = CSVToArray.CSVToArray(consolbody,',');
 
@@ -238,7 +242,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 					//console.log(decoder.write(ApacheChunk));
 
-					console.log('On End ' + BrowserRequest.url+ ' --  ApacheBytes.length ' + ApacheBytes.length + '  -- ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
+					//console.log('On End ' + BrowserRequest.url+ ' --  ApacheBytes.length ' + ApacheBytes.length + '  -- ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
 
 					ApacheResponse.headers['content-length'] = ApacheBytes.length;
 					BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);
