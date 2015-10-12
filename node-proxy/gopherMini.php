@@ -338,6 +338,5 @@ function GopherTrack($xValue,$xTags = "")
 
 $include_file_name = "phptest.php";
 
-include $include_file_name;
-
+require_once $include_file_name;
 ?>
