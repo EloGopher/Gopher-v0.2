@@ -33,7 +33,8 @@ var FileMap = {
 		if (PhysicalDirName !== '/') {
 			PhysicalDirName += '/';
 		}
-		return FileMap.root + PhysicalDirName + FileMap.getCleanFileName(_requestUrl);
+		//return FileMap.root + PhysicalDirName + FileMap.getCleanFileName(_requestUrl);
+		return FileMap.root + FileMap.getCleanFileName(_requestUrl);
 	},
 	getFileExtension: function(_requestUrl) {
 		var DotArr = (FileMap.getCleanFileName(_requestUrl)).split('.');
@@ -52,17 +53,17 @@ var FileMap = {
 
 function onRequest(request, response) {
 	var RequestUrl = request.url;
-
 	if (RequestUrl === '/' || RequestUrl === '/' + gopherViewRoot || RequestUrl === '/' + gopherViewRoot + '/') {
 		RequestUrl = '/gopher-view/index.html';
 	} else if (RequestUrl.search('/' + gopherViewRoot) === -1) {
 		RequestUrl = '/' + gopherViewRoot + '/' + RequestUrl;
 	}
 
-	if (RequestUrl.indexOf('/' + gopherViewRoot) === 0) {
+	/*if (RequestUrl.indexOf('/' + gopherViewRoot) === 0) {
 		mangerOnHttpRequest(request, response, RequestUrl);
-	}
-
+	}*/
+	console.log(FileMap.getFilePath(RequestUrl));
+	mangerOnHttpRequest(request, response, RequestUrl);
 	request.on('end', function() {});
 }
 
@@ -76,7 +77,9 @@ function mangerOnHttpRequest(request, response, requestUrl) {
 
 	} else {
 		if (request.headers['x-requested-with'] !== 'XMLHttpRequest') {
-			var FilePath = FileMap.getFilePath(requestUrl);
+			var FilePath = FileMap.getFilePath(requestUrl); 
+			console.log(FilePath);
+			console.log('***********************');
 			fs.exists(FilePath, function(exists) {
 				if (exists) {
 					fs.readFile(FilePath, function(err, contents) {
@@ -91,7 +94,7 @@ function mangerOnHttpRequest(request, response, requestUrl) {
 						}
 					});
 				} else {
-					consoel.log("404 not found on: " + requestUrl);
+					console.log("404 not found on: " + requestUrl);
 					fs.readFile('./' + gopherViewRoot + '/404.html', function(err, contents) {
 						if (!err) {
 							response.writeHead(404, {
