@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Gopher View</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
+
+		<script src="js/gopherView.js" type="text/javascript"></script>
+		<link rel="stylesheet" href="css/bootstrap.css" type="text/css"/>
+		<link rel="stylesheet" href="css/gopherView.css" type="text/css"/>
+	</head>
+	<body>
+		<div class="status-message">Loading Messages...</div>
+		<div id="time_band" class="time-band">
+			<div class="time-slot" data-template="time-slot" data-starttime="##StartTime##" data-endtime="##EndTime##">
+				&nbsp;
+			</div>
+		</div>
+		<div id="view_container" class="view-container">
+			<div class="view messages-only active">
+				<div class="message-list">
+					<div class="item-log" data-template="log-item">
+						<div class="item-filename">
+							<div class="filename-wrapper">
+								<span class="filename ext-js" data-filepath="" data-language="" data-parent="">insertMiniToDb.js</span>
+							</div>
+						</div>
+						<div class="item-message">
+							<div class="code-line">
+								<span class="repeat-num">0</span><span class="line-number">156</span>
+							</div>
+							<div class="message-wrapper">
+								<div class="message">
+									<div class="message-text">
+										message text
+										<br/>
+										sdlfkdjflkjad
+									</div>
+									<div class="varname ext-js">
+										Variable
+									</div>
+									<div class="varvalue">
+										113,20,30,40
+									</div>
+								</div>
+							</div>
+							<div class="message-tags">
+								<span data-template="tag">tag</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="view messages-source">
+				<div class="message-list">
+					<div class="item-log" data-template="log-item">
+						<div class="item-filename">
+							<div class="filename-wrapper">
+								<span class="filename ext-js" data-filepath="" data-language="" data-parent="">insertMiniToDb.js</span>
+							</div>
+						</div>
+						<div class="item-message">
+							<div class="code-line">
+								<span class="repeat-num">0</span><span class="line-number">156</span>
+							</div>
+							<div class="message-wrapper">
+								<div class="message">
+									<div class="message-text">
+										message text (source view)
+										<br/>
+										sdlfkdjflkjad
+									</div>
+									<div class="varname ext-js">
+										Variable
+									</div>
+									<div class="varvalue">
+										113,20,30,40
+									</div>
+								</div>
+							</div>
+							<div class="message-tags">
+								<span data-template="tag">tag</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="source_code" class="source-code">
+					<input type="hidden" value="" id="source_parent_file">
+					<input type="hidden" value="" id="source_language">
+					<div id="source_title" class="source-title">
+						C:\wamp\www\monkey_thirteen\php_fun\login.php
+					</div>
+
+					<div id="source_content" class="source-content"></div>
+
+				</div>
+			</div>
+
+		</div>
+
+	</body>
+</html>
