@@ -9,11 +9,11 @@ var gopherViewRoot = 'gopher-view';
 var Global = require('./ServerB_Global.js');
 
 var ViewServer = http.createServer(onRequest).listen(1337, function(err) {
-
+	console.log('ViewServer is up.');
 });
 
 var FileMap = {
-	root: __dirname + '/',
+	root: __dirname+'/',
 	getCleanFileName: function(_requestUrl) {
 		var UrlObj = url.parse(_requestUrl);
 		if (UrlObj.pathname !== '') {
@@ -29,12 +29,10 @@ var FileMap = {
 		}
 	},
 	getFilePath: function(_requestUrl) {
-		var PhysicalDirName = path.dirname(_requestUrl);
-		if (PhysicalDirName !== '/') {
-			PhysicalDirName += '/';
+		if(_requestUrl.search('/'+gopherViewRoot) > -1){
+			_requestUrl = _requestUrl.replace('/'+gopherViewRoot,'');
 		}
-		//return FileMap.root + PhysicalDirName + FileMap.getCleanFileName(_requestUrl);
-		return FileMap.root + FileMap.getCleanFileName(_requestUrl);
+		return FileMap.root + _requestUrl;
 	},
 	getFileExtension: function(_requestUrl) {
 		var DotArr = (FileMap.getCleanFileName(_requestUrl)).split('.');
@@ -58,12 +56,12 @@ function onRequest(request, response) {
 	} else if (RequestUrl.search('/' + gopherViewRoot) === -1) {
 		RequestUrl = '/' + gopherViewRoot + '/' + RequestUrl;
 	}
-
-	/*if (RequestUrl.indexOf('/' + gopherViewRoot) === 0) {
+	
+	if (RequestUrl.indexOf('/' + gopherViewRoot) === 0) {
 		mangerOnHttpRequest(request, response, RequestUrl);
-	}*/
-	console.log(FileMap.getFilePath(RequestUrl));
-	mangerOnHttpRequest(request, response, RequestUrl);
+	}
+	
+	//mangerOnHttpRequest(request, response, RequestUrl);
 	request.on('end', function() {});
 }
 
@@ -77,8 +75,7 @@ function mangerOnHttpRequest(request, response, requestUrl) {
 
 	} else {
 		if (request.headers['x-requested-with'] !== 'XMLHttpRequest') {
-			var FilePath = FileMap.getFilePath(requestUrl); 
-			console.log(FilePath);
+			var FilePath = FileMap.getFilePath(requestUrl);
 			console.log('***********************');
 			fs.exists(FilePath, function(exists) {
 				if (exists) {
