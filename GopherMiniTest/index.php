@@ -1,5 +1,7 @@
 <!DOCTYPE HTML>
 <?php
+include_once '../node-proxy/gopherMini.php';
+
 include_once 'funcs.php';
 
 strpos();
@@ -42,6 +44,7 @@ TestCall2();
 
 		<link href="css/style.css" rel="stylesheet">
       <script src="js/calculator.js"></script>
+      <script src="js/app.js"></script>
 	</head>
 
 	<body style="overflow:hidden; margin:0px; padding:0px;">

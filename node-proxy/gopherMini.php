@@ -336,7 +336,12 @@ function GopherTrack($xValue,$xTags = "")
 //	echo $response;
 }
 
-$include_file_name = "phptest.php";
+$GopherIncludeFile = "";
+foreach (getallheaders() as $name => $value) {
+   if ($name == "GopherPHPFile") { $GopherIncludeFile = $value; }
+}
 
-require_once $include_file_name;
+if ($GopherIncludeFile!=="") {
+   require_once $GopherIncludeFile;
+}
 ?>

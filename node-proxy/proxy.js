@@ -24,7 +24,7 @@ var dbConn;
 var ProjectID = 101;
 var projectOnPort = 80;
 var projectHost = 'localhost'; // 'testv2.phishproof.com';
-var projectPath = '/phishproof';
+var projectPath = ''; //'/phishproof'
 var gopherHost = 'http://localhost';
 var gopherPort = 8080;
 var StringDecoder = require('string_decoder').StringDecoder;
@@ -140,6 +140,11 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		BrowserRequest.headers['pragma'] = 'no-cache';
 		BrowserRequest.headers['cache-control'] = 'no-cache';
+
+      if (BrowserRequest.url.indexOf('.php')  != -1)
+      {
+         BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
+      }
 	/*
 		convert:
 	'cache-control': 'max-age=0',
