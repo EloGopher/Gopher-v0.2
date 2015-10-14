@@ -18,6 +18,9 @@ var dbConn;
  });
 
 
+//intereting concept getdefinedvar()
+//http://stackoverflow.com/questions/24448998/is-it-possible-to-get-variables-with-get-defined-vars-but-for-the-actual-runni
+
 
 
 
