@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var qs = require('querystring');
+var url = require("url");
 
 var sqlite3 = require('sqlite3').verbose();
 
@@ -126,14 +127,6 @@ function onRequest(BrowserRequest, BrowserResponse) {
       });
 	} else
 	{
-		var options = {
-			host: projectHost,
-			port: projectOnPort,
-			path: projectPath+BrowserRequest.url,
-			method: BrowserRequest.method,
-			headers: BrowserRequest.headers
-		};
-		//console.log("---------------------------------------------------\n");
 		console.log("LOAD: "+BrowserRequest.url);
 
 		//--- force proxy to reload everything and ignore browsers cache stuff
@@ -146,7 +139,16 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
       if (BrowserRequest.url.indexOf('.php')  != -1)
       {
+         console.log("redirecing php to gophermini.php ........"+BrowserRequest.url);
+
+         var url_parts = url.parse(BrowserRequest.url);
+         // console.log(url_parts);
+         // console.log(url_parts.pathname);
+
+         console.log( url.resolve(url_parts.pathname, 'gopherMini.php')  );
+
          BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
+         BrowserRequest.url = url.resolve(url_parts.pathname, 'gopherMini.php');
       }
 	/*
 		convert:
@@ -173,11 +175,22 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		var BrowserData = [];
 		var ApacheChunk = [];
 
+      var options = {
+			host: projectHost,
+			port: projectOnPort,
+			path: projectPath+BrowserRequest.url,
+			method: BrowserRequest.method,
+			headers: BrowserRequest.headers
+		};
+
+
 		BrowserRequest.on('data', function(chunk) {
 			BrowserData.push(chunk);
 		});
 
 		BrowserRequest.on('end', function() {
+
+         //--------- START ASKING THE FILE FROM APACHE
 			var NodeProxyRequest = http.request(options, function(ApacheResponse) {
 				//console.log("APACHE HEADER: %j", ApacheResponse.headers);
 

@@ -12,6 +12,7 @@ if (isset($_SERVER['HTTP_REFERER'])) { $ParentFileName = htmlentities($_SERVER['
 $PhpParentFileName = $_SERVER['PHP_SELF'];
 if ($PhpParentFileName=="") { $PhpParentFileName = $ParentFileName;}
 
+$PhpHelperRoot = realpath($_SERVER["DOCUMENT_ROOT"]);
 
 
 
@@ -199,7 +200,7 @@ class ErrorHandler
 		$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
 
 		//print_r($phpgopherstore);
-      print_r($data);
+      //print_r($data);
 /*
 		$url = 'http://localhost/gopherA/insertGopherMini2db.php';
 
@@ -289,7 +290,7 @@ function GopherTell($xMessage,$xTags = "")
 
 	$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
 
-	print_r($data);
+//	print_r($data);
 /*
 	$url = 'http://localhost/gopherA/insertGopherMini2db.php';
 
@@ -320,7 +321,7 @@ function GopherTrack($xValue,$xTags = "")
 
 	$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
 
-   print_r($data);
+//   print_r($data);
 /*
 	$url = 'http://localhost/gopherA/insertGopherMini2db.php';
 
@@ -336,12 +337,23 @@ function GopherTrack($xValue,$xTags = "")
 //	echo $response;
 }
 
+
+
+
+//----------------- WILL NEED to change .htaccess or copy GopherMini.php into all folders
+//RewriteRule ^(.*)gopherMini\.php$ /Gopher-v0.2/node-proxy/gopherMini\.php [NC,L]
+//-----------------
+
 $GopherIncludeFile = "";
 foreach (getallheaders() as $name => $value) {
-   if ($name == "GopherPHPFile") { $GopherIncludeFile = $value; }
+   if ($name == "GopherPHPFile") {
+      $GopherIncludeFileOrignal = $value;
+      $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
+   }
 }
 
 if ($GopherIncludeFile!=="") {
-   require_once $GopherIncludeFile;
+   echo "-->  ".$PhpHelperRoot.$GopherIncludeFile;
+//   require_once $PhpHelperRoot.$GopherIncludeFile;
 }
 ?>
