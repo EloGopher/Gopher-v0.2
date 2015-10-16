@@ -139,16 +139,31 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
       if (BrowserRequest.url.indexOf('.php')  != -1)
       {
-         console.log("redirecing php to gophermini.php ........"+BrowserRequest.url);
 
-         var url_parts = url.parse(BrowserRequest.url);
-         // console.log(url_parts);
-         // console.log(url_parts.pathname);
+         var url_parts = url.parse(BrowserRequest.url, true);
+         var query = url_parts.query;
+         var querystring = '';
 
-         console.log( url.resolve(url_parts.pathname, 'gopherMini.php')  );
+         console.log(query);
+         var count = 0;
+         var last=Object.keys(query).length;
+
+         for (namevalue in query)
+         {
+            count++;
+            if (count==1) { querystring = '?'; }
+            querystring += namevalue + '=' + query[namevalue];
+            if (count<last) { querystring += '&'; }
+         }
+
+
+         var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php'+querystring;
+
+         console.log("redirecing php to gophermini.php ........"+BrowserRequest.url+" to "+GopherMiniURL);
+
 
          BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
-         BrowserRequest.url = url.resolve(url_parts.pathname, 'gopherMini.php');
+         BrowserRequest.url = GopherMiniURL;
       }
 	/*
 		convert:

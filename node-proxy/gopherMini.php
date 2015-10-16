@@ -193,7 +193,7 @@ class ErrorHandler
         $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
 
 //		if ($ErrorTypeString!="E_NOTICE") { echo $ReturnValue; }
-		echo "<div style='border:1px solid black; padding:5px; margin:5px;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
+		//echo "<div style='border:1px solid black; padding:5px; margin:5px;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
 
 		$phpgopherstore = array("Msg"=>$ReturnValue, "Tags"=>"", "FileName"=>$ErrorFile, "CodeLine"=>$ErrorLine,"Type"=>"pe" );
 
@@ -340,9 +340,8 @@ function GopherTrack($xValue,$xTags = "")
 
 
 
-//----------------- WILL NEED to change .htaccess or copy GopherMini.php into all folders
-//RewriteRule ^(.*)gopherMini\.php$ /Gopher-v0.2/node-proxy/gopherMini\.php [NC,L]
-//-----------------
+//----------- Make GopherMini.php call the php file if it exists in the header request.
+//----------- Later gopher should offer two different runtimes one where it includes the request in gopherMini.php and other way is direct run.
 
 $GopherIncludeFile = "";
 foreach (getallheaders() as $name => $value) {
@@ -353,7 +352,7 @@ foreach (getallheaders() as $name => $value) {
 }
 
 if ($GopherIncludeFile!=="") {
-   echo "-->  ".$PhpHelperRoot.$GopherIncludeFile;
-//   require_once $PhpHelperRoot.$GopherIncludeFile;
+//   echo "-->  ".$PhpHelperRoot.$GopherIncludeFile;
+   require_once $PhpHelperRoot.$GopherIncludeFile;
 }
 ?>
