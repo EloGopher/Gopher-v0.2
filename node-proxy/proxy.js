@@ -139,26 +139,13 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
       if (BrowserRequest.url.indexOf('.php')  != -1)
       {
-
-         var url_parts = url.parse(BrowserRequest.url, true);
-         var query = url_parts.query;
          var querystring = '';
-
-         console.log(query);
-         var count = 0;
-         var last=Object.keys(query).length;
-
-         for (namevalue in query)
-         {
-            count++;
-            if (count==1) { querystring = '?'; }
-            querystring += namevalue + '=' + query[namevalue];
-            if (count<last) { querystring += '&'; }
+         var OriginalURL = BrowserRequest.url;
+         if (OriginalURL.indexOf('?')>0) {
+            querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
          }
-
-
+         
          var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php'+querystring;
-
          console.log("redirecing php to gophermini.php ........"+BrowserRequest.url+" to "+GopherMiniURL);
 
 
