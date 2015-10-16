@@ -129,14 +129,15 @@ function onRequest(BrowserRequest, BrowserResponse) {
 	{
 		console.log("LOAD: "+BrowserRequest.url);
 
-		//--- force proxy to reload everything and ignore browsers cache stuff
+
+      //--- force apache server to ignore browsers cache headers
 		delete BrowserRequest.headers['cache-control'];
 		delete BrowserRequest.headers['if-none-match'];
 		delete BrowserRequest.headers['if-modified-since'];
-
 		BrowserRequest.headers['pragma'] = 'no-cache';
 		BrowserRequest.headers['cache-control'] = 'no-cache';
 
+      //--- redirect php requests to go through gopherMini.php as icludes so script errors can be tracked
       if (BrowserRequest.url.indexOf('.php')  != -1)
       {
          var querystring = '';
@@ -144,23 +145,13 @@ function onRequest(BrowserRequest, BrowserResponse) {
          if (OriginalURL.indexOf('?')>0) {
             querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
          }
-         
-         var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php'+querystring;
-         console.log("redirecing php to gophermini.php ........"+BrowserRequest.url+" to "+GopherMiniURL);
 
+         var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php'+querystring;
+         console.log("redirecing php to gopherMini.php ........"+BrowserRequest.url+" to "+GopherMiniURL);
 
          BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
          BrowserRequest.url = GopherMiniURL;
       }
-	/*
-		convert:
-	'cache-control': 'max-age=0',
-	'if-none-match': '"b5f8a8-5b18-51e0759a2d040"',
-	'if-modified-since': 'Mon, 24 Aug 2015 04:50:01 GMT',
-		to:
-	'pragma': 'no-cache',
-	'cache-control': 'no-cache',
-	*/
 
 		var BufferData = false;
 
