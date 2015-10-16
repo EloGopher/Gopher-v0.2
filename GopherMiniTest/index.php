@@ -47,7 +47,6 @@ TestCall2();
       <script src="js/app.js"></script>
 	</head>
 
-	<body style="overflow:hidden; margin:0px; padding:0px;">
 
 		<div id="calculator">
 			<!-- Screen and clear key -->
@@ -76,5 +75,14 @@ TestCall2();
 				<span class="operator">x</span>
 			</div>
 		</div>
+
+      <br><br><br><br>
+      <?php echo $_POST["test"]; ?>
+   	<body style="overflow:hidden; margin:0px; padding:0px;">
+         <form action="index.php" method="POST">
+         <input type="hidden" name="test" value="abc">
+         <input type="submit">
+      </form>
+
 	</body>
 </html>
