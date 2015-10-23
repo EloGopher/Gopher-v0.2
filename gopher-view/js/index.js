@@ -89,7 +89,7 @@ function TimeSlot(_layout) {
 
 		TimeSlot.AjaxTimeSlots = $.ajax({
 			type : 'POST',
-			url : 'timeBand.gbn',
+			url : '../backendJs/timeband.js',
 			dataType : 'json',
 			data : {
 				task : 'getAllTimeSlots'

@@ -51,7 +51,7 @@ function onRequest(request, response) {
 	if (RequestUrl === '/' || RequestUrl === '/' + global.gopherViewRoot || RequestUrl === '/' + global.gopherViewRoot + '/') {
 		RequestUrl = '/gopher-view/index.html';
 	} else if (RequestUrl.search('/' + global.gopherViewRoot) === -1) {
-		RequestUrl = '/' + global.gopherViewRoot + '/' + RequestUrl;
+		RequestUrl = '/' + global.gopherViewRoot + RequestUrl;
 	}
 	
 	if (RequestUrl.indexOf('/' + global.gopherViewRoot) === 0) {
@@ -71,6 +71,7 @@ function viewOnHttpRequest(request, response, requestUrl) {
 		response.end("<html><head></head><body>The requested file type is not supported</body></html>");
 
 	} else {
+		console.log(request.url);
 		console.log(requestUrl);
 		console.log(request.headers['x-requested-with']);
 		if (request.headers['x-requested-with'] !== 'XMLHttpRequest') {
@@ -117,7 +118,8 @@ function viewOnHttpRequest(request, response, requestUrl) {
 			
 			request.on('end',function(){
 				if(request.method === 'POST'){
-					console.log = qs.parse(body);
+					var post = qs.parse(body);
+					console.log(post.task);
 				}
 			});
 		}
