@@ -120,6 +120,12 @@ function viewOnHttpRequest(request, response, requestUrl) {
 				if(request.method === 'POST'){
 					var post = qs.parse(body);
 					console.log(post.task);
+					console.log(FileMap.getFilePath(request.url));
+					
+					var recieve = require(FileMap.getFilePath(request.url));
+          var responseBody = recieve.echo();
+    			response.writeHead(200, { 'Content-Length': responseBody.length, 'Content-Type': 'text/plain' });
+    			response.end(responseBody);
 				}
 			});
 		}
