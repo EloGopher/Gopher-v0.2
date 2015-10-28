@@ -1,8 +1,15 @@
 <?php
-GopherTell("PHP Funcs Start");
+require_once(__DIR__.'/../node-proxy/gopherMini.php');
+
+Gopher("Test Call 2");
+Gopher("PHP Funcs Start");
 
 function TestCall2()
 {
-	GopherTell("Test Call 2");
+	$localvar = "12";
+
+	Gopher($localvar);
+	Gopher("Test Call 2");
 }
+
 ?>

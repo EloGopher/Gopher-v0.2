@@ -1,12 +1,14 @@
-<!DOCTYPE HTML>
 <?php
-include_once '../node-proxy/gopherMini.php';
+require_once(__DIR__.'/../node-proxy/gopherMini.php');
+
 
 include_once 'funcs.php';
 
 strpos();
 
-GopherTell("PHP Start");
+$var1 = "xyz";
+
+Gopher("PHP Start ".$var1,"Start Tag");
 
 $cars = array("Volvo", "BMW", "Toyota");
 $car = "Honda";
@@ -28,14 +30,15 @@ $yourCar->type = 'suv';
 $cars2 = array($myCar, $yourCar);
 
 
-GopherTrack($cars);
-GopherTrack($car);
+Gopher($cars);
+Gopher($car);
 
-GopherTrack($cars2);
+Gopher($cars2);
 
 TestCall2();
 
 ?>
+<!DOCTYPE HTML>
 <html>
 <head>
 		<link href="css/ui-lightness/jquery-ui-1.10.4.css" rel="stylesheet">

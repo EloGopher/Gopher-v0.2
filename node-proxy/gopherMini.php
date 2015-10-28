@@ -151,9 +151,9 @@ function PrintError($ErrorLevel,$ErrorMessage,$ErrorFile=null,$ErrorLine=null,$E
 
     $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
 
-	if ($ErrorTypeString!="E_NOTICE") {  }
-		echo "<div style='border:1px solid black; padding:5px; margin:5px;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
-
+	if ($ErrorTypeString!="E_NOTICE") {
+      echo "<div style='border:1px solid black; padding:5px; margin:5px; color:black; background-color:#aaa;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
+   }
 
 	$phpgopherstore = array("Msg"=>$ReturnValue, "Tags"=>"", "FileName"=>$ErrorFile, "CodeLine"=>$ErrorLine,"Type"=>"pe" );
 
@@ -192,8 +192,10 @@ class ErrorHandler
 
         $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
 
-//		if ($ErrorTypeString!="E_NOTICE") { echo $ReturnValue; }
-		//echo "<div style='border:1px solid black; padding:5px; margin:5px;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
+		if ( ($ErrorTypeString!="E_NOTICE") && ($ErrorTypeString!="E_WARNING") ) {
+         echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:black; background-color:#ccc;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
+      }
+
 
 		$phpgopherstore = array("Msg"=>$ReturnValue, "Tags"=>"", "FileName"=>$ErrorFile, "CodeLine"=>$ErrorLine,"Type"=>"pe" );
 
@@ -278,45 +280,53 @@ class ErrorHandler
 $ErrorHandler = new ErrorHandler();
 InitializeErrors();
 
-function GopherTell($xMessage,$xTags = "")
-{
-	global $PhpParentFileName;
-	global $ProjectID;
-	$backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-//  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
-//  echo "Msg:".$xMessage." File:".$backtr[0]['file']." Line:".$backtr[0]['line']."--------------<br>";
-
-	$phpgopherstore = array("Msg"=>$xMessage, "Tags"=>$xTags, "FileName"=>$backtr[0]['file'], "CodeLine"=>$backtr[0]['line'],"Type"=>"pgt" );
-
-	$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
-
-//	print_r($data);
-/*
-	$url = 'http://localhost/gopherA/insertGopherMini2db.php';
-
-	$ch = curl_init( $url );
-	curl_setopt( $ch, CURLOPT_POST, 1);
-	curl_setopt( $ch, CURLOPT_POSTFIELDS, preparePostFields($data));
-	curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-	curl_setopt( $ch, CURLOPT_HEADER, 0);
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-
-	$response = curl_exec( $ch );
-*/
-//	echo $response;
-}
+//------------------------------------------------------
 
 
-function GopherTrack($xValue,$xTags = "")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Gopher($xValue,$xTags = "")
 {
 	global $PhpParentFileName;
 	global $ProjectID;
 
 	$backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-//  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
-//  echo "Val:".json_encode($xValue)." File:".$backtr[0]['file']." Line:".$backtr[0]['line']."--------------<br>";
 
-	$phpgopherstore = array("VarValue"=>json_encode($xValue), "Tags"=>$xTags,  "FileName"=>$backtr[0]['file'], "CodeLine"=>$backtr[0]['line'],"Type"=>"pvt" );
+   $src = file($backtr[0]["file"]);
+   $line = $src[ $backtr[0]['line'] - 1 ];
+   preg_match( "#Gopher\((.+)\)#", $line, $match );
+
+   $max = strlen($match[1]);
+   $varname = "";
+   $c = 0;
+   for($i = 0; $i < $max; $i++) {
+     if(     $match[1]{$i} == "(" ) $c++;
+     elseif( $match[1]{$i} == ")" ) $c--;
+     if($c < 0) break;
+     $varname .=  $match[1]{$i};
+   }
+
+//  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
+   echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:white; font-weight:normal; background-color:#444;'>";
+  echo " Line:".$backtr[0]['line']." ".$varname." = ".json_encode($xValue)." Tags:".$xTags." -- File:".$backtr[0]['file'];
+  echo "</div>";
+
+	$phpgopherstore = array("VarValue"=>json_encode($xValue), "VarName"=>$varname, "Tags"=>$xTags, "FileName"=>$backtr[0]['file'], "CodeLine"=>$backtr[0]['line'],"Type"=>"pvt" );
 
 
 	$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
@@ -336,8 +346,6 @@ function GopherTrack($xValue,$xTags = "")
 */
 //	echo $response;
 }
-
-
 
 
 //----------- Make GopherMini.php call the php file if it exists in the header request.
