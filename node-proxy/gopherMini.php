@@ -30,7 +30,7 @@ function preparePostFields($array) {
 
 
 
-
+//3233  32.33
 
 
 // Moved this line to the bottom of the 'file' for usability -
@@ -151,7 +151,8 @@ function PrintError($ErrorLevel,$ErrorMessage,$ErrorFile=null,$ErrorLine=null,$E
 
     $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
 
-	if ($ErrorTypeString!="E_NOTICE") {
+    if ( ($ErrorTypeString!="E_NOTICE") && ($ErrorTypeString!="E_WARNING") && ($ErrorTypeString!="E_DEPRECATED") )
+    {
       echo "<div style='border:1px solid black; padding:5px; margin:5px; color:black; background-color:#aaa;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
    }
 
@@ -192,7 +193,8 @@ class ErrorHandler
 
         $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
 
-		if ( ($ErrorTypeString!="E_NOTICE") && ($ErrorTypeString!="E_WARNING") ) {
+		if ( ($ErrorTypeString!="E_NOTICE") && ($ErrorTypeString!="E_WARNING") && ($ErrorTypeString!="E_DEPRECATED") )
+      {
          echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:black; background-color:#ccc;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
       }
 

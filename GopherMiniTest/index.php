@@ -1,14 +1,13 @@
 <?php
 require_once(__DIR__.'/../node-proxy/gopherMini.php');
 
-
-include_once 'funcs.php';
+require 'funcs.php';
 
 strpos();
 
 $var1 = "xyz";
 
-Gopher("PHP Start ".$var1,"Start Tag");
+//Gopher("PHP Start ".$var1,"Start Tag");
 
 $cars = array("Volvo", "BMW", "Toyota");
 $car = "Honda";
@@ -30,10 +29,10 @@ $yourCar->type = 'suv';
 $cars2 = array($myCar, $yourCar);
 
 
-Gopher($cars);
-Gopher($car);
+//Gopher($cars);
+//Gopher($car);
 
-Gopher($cars2);
+//Gopher($cars2);
 
 TestCall2();
 
