@@ -1,17 +1,5 @@
-var sqlite3 = require('sqlite3');
-var dbPath = 'ManagerDB.db';
 var fs = exports.fs = require('fs');
 
-
-exports.dbConn = function (callBack) {
-    fs.exists(dbPath, function (exists) {
-        if (exists) {
-            return callBack(null,new sqlite3.Database(dbPath));
-        } else {
-            return callBack('Database does not exist.',null);
-        }
-    });
-};
 
 exports.gopherViewRoot = 'gopher-view';
 

@@ -1,13 +1,22 @@
 var global = require('./ViewServer_Global.js');
+var sqlite3 = require('sqlite3');
 var http = require('http');
 var url = require('url');
 var qs = require('querystring');
+var dbPath = '././node-proxy/gopherlog.db';
+var db = undefined;
 
 var ViewServer = http.createServer(onRequest).listen(1337, function(err) {
 	console.log('ViewServer is up.');
 });
 
-
+global.fs.exists(dbPath, function (exists) {
+	if (exists) {
+		db = new sqlite3.Database(dbPath)
+	} else {
+		console.log('database path does not exist.');
+	}
+});
 
 var FileMap = {
 	root: __dirname+'/',
@@ -76,6 +85,7 @@ function viewOnHttpRequest(request, response, requestUrl) {
 		console.log(request.headers['x-requested-with']);
 		if (request.headers['x-requested-with'] !== 'XMLHttpRequest') {
 			var FilePath = FileMap.getFilePath(requestUrl);
+			console.log(FilePath);
 			console.log('***********************');
 			global.fs.exists(FilePath, function(exists) {
 				if (exists) {
@@ -123,7 +133,7 @@ function viewOnHttpRequest(request, response, requestUrl) {
 					console.log(FileMap.getFilePath(request.url));
 					
 					var recieve = require(FileMap.getFilePath(request.url));
-          var responseBody = recieve.echo();
+          var responseBody = recieve.postThis(post,db);
     			response.writeHead(200, { 'Content-Length': responseBody.length, 'Content-Type': 'text/plain' });
     			response.end(responseBody);
 				}
