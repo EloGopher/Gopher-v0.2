@@ -3,7 +3,7 @@ var sqlite3 = require('sqlite3');
 var http = require('http');
 var url = require('url');
 var qs = require('querystring');
-var dbPath = '././node-proxy/gopherlog.db';
+var dbPath = '../node-proxy/gopherlog.db';
 var db = undefined;
 
 var ViewServer = http.createServer(onRequest).listen(1337, function(err) {
