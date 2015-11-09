@@ -66,11 +66,10 @@ function sendBufferDataToNode($data,$ForceSend)
 
       $response = curl_exec( $ch );
 
-      $GopherPHPLogs = [];
-
-      echo "-------".$response."<br>";
+      if ($response == "All Good") {
+         $GopherPHPLogs = [];
+      }
    }
-
 }
 
 
@@ -318,12 +317,20 @@ function Gopher($xValue, $xTags = '')
         $varname .=  $match[1]{$i};
     }
 
+    $varnames[] = str_getcsv($varname); // explode(",", $varname);
+    $newvarname = $varnames[0][0];
+
 //  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
 //    echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:white; font-weight:normal; background-color:#444;'>";
 //    echo ' Line:'.$backtr[0]['line'].' '.$varname.' = '.json_encode($xValue).' Tags:'.$xTags.' -- File:'.$backtr[0]['file'];
 //    echo '</div>';
 
-    $data = array('TY' => 'phpvar', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $varname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'TS' => microtime(true));
+   if ( (strpos($newvarname,"'") !== false) || (strpos($newvarname,"\"") !== false) || (strpos($newvarname,".") !== false) || (strpos($newvarname,"$") === false) )
+   {
+      $newvarname = "LOG"; //" ".$newvarname;
+   }
+
+    $data = array('TY' => 'phpvar', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'TS' => microtime(true));
     sendBufferDataToNode($data,false);
 }
 

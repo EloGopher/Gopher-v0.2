@@ -7,9 +7,9 @@ strpos();
 
 $var1 = "xyz";
 
-//Gopher("PHP Start ".$var1,"Start Tag");
+Gopher("PHP Start ".$var1,"Start Tag");
 
-$cars = array("Volvo", "BMW", "Toyota");
+$cars = array("Vol vo", "BMW", "Toyota");
 $car = "Honda";
 
 class Car2
@@ -29,12 +29,17 @@ $yourCar->type = 'suv';
 $cars2 = array($myCar, $yourCar);
 
 
-//Gopher($cars);
-//Gopher($car);
 
-//Gopher($cars2);
+Gopher($cars,"Cars Tag");
+Gopher($car,"Cars Tag");
+
+Gopher($cars2,"Cars Tag");
+
+Gopher("Start Timer","Tag 1");
 
 usleep(100000);
+
+Gopher("End Timer","Tag 1");
 
 TestCall2();
 

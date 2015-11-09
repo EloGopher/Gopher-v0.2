@@ -10,6 +10,7 @@ $(document).ready( function() {
 		dataType: "JSON",
 		data: postData,
 		success: function(data) {
+			console.log("ajax response javascript");
 			console.log(data);
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
