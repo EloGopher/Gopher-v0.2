@@ -10,13 +10,13 @@ var CSVToArray = require("./CSVToArray.js")
 var dbPath = 'gopherlog.db';
 var dbConn;
 
- fs.exists(dbPath, function (exists) {
-     if (exists) {
-         dbConn = new sqlite3.Database(dbPath);
-     } else {
-         console.log('Database does not exist.');
-     }
- });
+fs.exists(dbPath, function(exists) {
+	if (exists) {
+		dbConn = new sqlite3.Database(dbPath);
+	} else {
+		console.log('Database does not exist.');
+	}
+});
 
 
 //intereting concept getdefinedvar()
@@ -37,35 +37,35 @@ var decoder = new StringDecoder('utf8');
 var HelperString = "";
 
 
-function regexIndexOf (xstr, regex, startpos) {
-   var indexOf = xstr.substring(startpos || 0).search(regex);
-   return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+function regexIndexOf(xstr, regex, startpos) {
+	var indexOf = xstr.substring(startpos || 0).search(regex);
+	return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
 }
 
-function lineNumberByIndex(index,string){
-    var line = 0;
-    var  match;
-    var re = /(^)[\S\s]/gm;
-    while (match = re.exec(string)) {
-       if(match.index > index) break;
-       line++;
-    }
-    return line;
+function lineNumberByIndex(index, string) {
+	var line = 0;
+	var match;
+	var re = /(^)[\S\s]/gm;
+	while (match = re.exec(string)) {
+		if (match.index > index) break;
+		line++;
+	}
+	return line;
 }
 
-function lineNumber(needle,haystack){
-    return lineNumberByIndex(haystack.indexOf(needle),haystack);
+function lineNumber(needle, haystack) {
+	return lineNumberByIndex(haystack.indexOf(needle), haystack);
 }
 
 
 
 
 
-fs.readFile('new-gopher-insert.js', 'utf8', function (err,data) {
-  if (err) {
-    return console.log(err);
-  }
-  HelperString = data;
+fs.readFile('new-gopher-insert.js', 'utf8', function(err, data) {
+	if (err) {
+		return console.log(err);
+	}
+	HelperString = data;
 });
 
 http.createServer(onRequest).listen(gopherPort);
@@ -73,105 +73,134 @@ http.createServer(onRequest).listen(gopherPort);
 
 function onRequest(BrowserRequest, BrowserResponse) {
 
-	if (BrowserRequest.url=="/gopherSave.js") {
-      var body = "";
-      BrowserRequest.on('data', function (data) {
-         body += data;
+	if ((BrowserRequest.url == "/gopherSave.js") || (BrowserRequest.url == "/gopherPHPsave.js")) {
+		var body = "";
+		BrowserRequest.on('data', function(data) {
+			body += data;
 
-         // Too much POST data, kill the connection!
-         if (body.length > 1e6) {
+			// Too much POST data, kill the connection!
+			if (body.length > 1e6) {
 
-            var ResponesBody = 'All Bad';
-      		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
-      		BrowserResponse.end(ResponesBody);
+				var ResponesBody = 'All Bad';
+				BrowserResponse.writeHead(200, {
+					'Content-Length': ResponesBody.length,
+					'Content-Type': 'text/plain'
+				});
+				BrowserResponse.end(ResponesBody);
 
-            BrowserRequest.connection.destroy();
-         }
-      });
+				BrowserRequest.connection.destroy();
+			}
+		});
 
-      BrowserRequest.on('end', function () {
-         //console.log( decodeURIComponent(body) );
-         var post = qs.parse(body);
+		BrowserRequest.on('end', function() {
+			//console.log( decodeURIComponent(body) );
+			if (BrowserRequest.url == "/gopherPHPsave.js") {
+				console.log("PHP Post");
+				//            console.log(body);
+				//            console.log("----------");
 
-         var ParentFileName = post["ParentFileName"];
-         var dataobj = JSON.parse( post["Data"] );
+				var dataobj = JSON.parse(body);
 
+				for (var i = 0; i < dataobj.length; i++) {
+					console.log(dataobj[i]);
 
-         for (var i=0; i<dataobj.length; i++)
-         {
-            //console.log(i);
-            //console.log(dataobj[i]);
+					if (dataobj[i]["TY"] == "phpvar") {
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
+						stmt.run(dataobj[i]["TS"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), '', decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
+						stmt.finalize();
+					} else
 
-            if (dataobj[i]["TY"]=="js_gt") {
-               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
-               stmt.finalize();
-            } else
-            if (dataobj[i]["TY"]=="js_vt") {
-               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
-               stmt.finalize();
-            } else
-            if (dataobj[i]["TY"]=="js_er") {
-               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
-               stmt.finalize();
-            }
+					if ((dataobj[i]["TY"] == "phperror1") || (dataobj[i]["TY"] == "phperror2")) {
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+						stmt.run(dataobj[i]["TS"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						stmt.finalize();
+					}
 
-         }
+				}
 
+			} else
 
-         var ResponesBody = 'All Good';
-   		BrowserResponse.writeHead(200, { 'Content-Length': ResponesBody.length, 'Content-Type': 'text/plain' });
-   		BrowserResponse.end(ResponesBody);
-      });
-	} else
-	{
-		console.log("LOAD: "+BrowserRequest.url);
+			if (BrowserRequest.url == "/gopherSave.js") {
+				var post = qs.parse(body);
+				var ParentFileName = post["ParentFileName"];
+				var dataobj = JSON.parse(post["Data"]);
 
 
-      //--- force apache server to ignore browsers cache headers
+				for (var i = 0; i < dataobj.length; i++) {
+					//console.log(i);
+					//console.log(dataobj[i]);
+
+					if (dataobj[i]["TY"] == "js_gt") {
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+						stmt.run(dataobj[i]["TS"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						stmt.finalize();
+					} else
+					if (dataobj[i]["TY"] == "js_vt") {
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
+						stmt.run(dataobj[i]["TS"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
+						stmt.finalize();
+					} else
+					if (dataobj[i]["TY"] == "js_er") {
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+						stmt.run(dataobj[i]["TS"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						stmt.finalize();
+					}
+				}
+
+			}
+
+
+			var ResponesBody = 'All Good';
+			BrowserResponse.writeHead(200, {
+				'Content-Length': ResponesBody.length,
+				'Content-Type': 'text/plain'
+			});
+			BrowserResponse.end(ResponesBody);
+		});
+	} else {
+		console.log("LOAD: " + BrowserRequest.url);
+
+
+		//--- force apache server to ignore browsers cache headers
 		delete BrowserRequest.headers['cache-control'];
 		delete BrowserRequest.headers['if-none-match'];
 		delete BrowserRequest.headers['if-modified-since'];
 		BrowserRequest.headers['pragma'] = 'no-cache';
 		BrowserRequest.headers['cache-control'] = 'no-cache';
 
-      //--- redirect php requests to go through gopherMini.php as icludes so script errors can be tracked
-      if (BrowserRequest.url.indexOf('.php')  != -1)
-      {
-         var querystring = '';
-         var OriginalURL = BrowserRequest.url;
-         if (OriginalURL.indexOf('?')>0) {
-            querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
-         }
+		//--- redirect php requests to go through gopherMini.php as icludes so script errors can be tracked
+		if (BrowserRequest.url.indexOf('.php') != -1) {
+			var querystring = '';
+			var OriginalURL = BrowserRequest.url;
+			if (OriginalURL.indexOf('?') > 0) {
+				querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
+			}
 
-         var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php'+querystring;
-         console.log("redirecing php to gopherMini.php ........"+BrowserRequest.url+" to "+GopherMiniURL);
+			var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php' + querystring;
+			console.log("redirecing php to gopherMini.php ........" + BrowserRequest.url + " to " + GopherMiniURL);
 
-         BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
-         BrowserRequest.url = GopherMiniURL;
-      }
+			BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
+			BrowserRequest.url = GopherMiniURL;
+		}
 
 		var BufferData = false;
 
-		if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
-			 (BrowserRequest.url.indexOf('.html') != -1) ||
-          (BrowserRequest.url.indexOf('.css') != -1) ||
-			 (BrowserRequest.url.indexOf('.js') != -1) ||
-			 (BrowserRequest.url.indexOf('.php')  != -1) ||
-		    (BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/") )
-		{
+		if ((BrowserRequest.url.indexOf('.htm') != -1) ||
+			(BrowserRequest.url.indexOf('.html') != -1) ||
+			(BrowserRequest.url.indexOf('.css') != -1) ||
+			(BrowserRequest.url.indexOf('.js') != -1) ||
+			(BrowserRequest.url.indexOf('.php') != -1) ||
+			(BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")) {
 			BufferData = true;
 		}
 
 		var BrowserData = [];
 		var ApacheChunk = [];
 
-      var options = {
+		var options = {
 			host: projectHost,
 			port: projectOnPort,
-			path: projectPath+BrowserRequest.url,
+			path: projectPath + BrowserRequest.url,
 			method: BrowserRequest.method,
 			headers: BrowserRequest.headers
 		};
@@ -183,7 +212,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		BrowserRequest.on('end', function() {
 
-         //--------- START ASKING THE FILE FROM APACHE
+			//--------- START ASKING THE FILE FROM APACHE
 			var NodeProxyRequest = http.request(options, function(ApacheResponse) {
 				//console.log("APACHE HEADER: %j", ApacheResponse.headers);
 
@@ -196,8 +225,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 					var ApacheBytes = Buffer.concat(ApacheChunk);
 
-					if (BufferData)
-					{
+					if (BufferData) {
 						//console.log("start change content for: "+BrowserRequest.url);
 						//modify the urls in the page
 						var chunkStr = decoder.write(ApacheBytes);
@@ -208,51 +236,55 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 
 						//if url is a real page add gopher helper to the end
-						if ((BrowserRequest.url.indexOf('.htm')  != -1) ||
-							 (BrowserRequest.url.indexOf('.html') != -1) ||
-							 (BrowserRequest.url.indexOf('.php')  != -1) ||
-						    (BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")  )
-						{
-							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1)
-							{
-                        var tempStr = BrowserRequest.url;
-                        var tempStr = tempStr.replace(/'/g,"\'");
-								chunkStr += "<script>"+ "var gopherTimeStamp = Math.floor(Date.now() / 1000);var ParentFileName='"+ tempStr +"';\n"+HelperString +"</script>";
+						if ((BrowserRequest.url.indexOf('.htm') != -1) ||
+							(BrowserRequest.url.indexOf('.html') != -1) ||
+							(BrowserRequest.url.indexOf('.php') != -1) ||
+							(BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")) {
+							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1) {
+
+								var tempStr = BrowserRequest.url;
+								var tempStr = tempStr.replace(/'/g, "\'");
+
+								//                        console.log(BrowserRequest.headers);
+
+								if (BrowserRequest.headers["GopherPHPFile"] != undefined) {
+									tempStr = BrowserRequest.headers["GopherPHPFile"];
+								}
+
+								chunkStr += "<script>" + "var gopherTimeStamp = Math.floor(Date.now() / 1000);var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>";
 							}
 						}
 
-						if (BrowserRequest.url.indexOf('.js')  != -1) {
-                     var i = 0;
+						if (BrowserRequest.url.indexOf('.js') != -1) {
+							var i = 0;
 
-                     var index=-1;
+							var index = -1;
 
-                     var RegEx5 = RegExp('console\\.log\\((.*)\\)','igm');
-                     var searchRes;
+							var RegEx5 = RegExp('console\\.log\\((.*)\\)', 'igm');
+							var searchRes;
 
 
-                     while ( (searchRes = RegEx5.exec(chunkStr))!==null )
-                     {
+							while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
 
-                        consolbody = searchRes[1];
-                        consolbody = consolbody.trim();
+								consolbody = searchRes[1];
+								consolbody = consolbody.trim();
 
-                        console.log("BODY: "+ consolbody + " " + RegEx5.lastIndex );
+								console.log("BODY: " + consolbody + " " + RegEx5.lastIndex);
 
-                        var PartsOfConsol = CSVToArray.CSVToArray(consolbody,',');
+								var PartsOfConsol = CSVToArray.CSVToArray(consolbody, ',');
 
-                        //console.log(PartsOfConsol);
-                        //console.log("parts:"+PartsOfConsol[0].length);
+								//console.log(PartsOfConsol);
+								//console.log("parts:"+PartsOfConsol[0].length);
 
-                        //we'll for now only parse console.log's with 1 value and 1 tag
-                        if (PartsOfConsol[0].length<=2) {
-                           if ( (consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'") ) {
-                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",' );
-                           } else
-                           {
-                              chunkStr = chunkStr.replace(RegExp('console\\.log\\(','i'), 'gopher.track(' + lineNumberByIndex(RegEx5.index,chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","'+ PartsOfConsol[0][0] +'",' );
-                           }
-                        }
-                     }
+								//we'll for now only parse console.log's with 1 value and 1 tag
+								if (PartsOfConsol[0].length <= 2) {
+									if ((consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'")) {
+										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.index, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",');
+									} else {
+										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.track(' + lineNumberByIndex(RegEx5.index, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","' + PartsOfConsol[0][0] + '",');
+									}
+								}
+							}
 						}
 
 						//console.log("Chunk:"+chunkStr);

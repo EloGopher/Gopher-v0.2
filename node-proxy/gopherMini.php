@@ -1,187 +1,207 @@
 <?php
-$ProjectID = "105";
 
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-$port      = $_SERVER['SERVER_PORT'];
+$PhpInlineShowErrors = true;
+$LastSend = microtime(true);
+$ProjectID = '105';
+
+$GopherPHPLogs = [];
+
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://';
+$port = $_SERVER['SERVER_PORT'];
 $disp_port = ($protocol == 'http' && $port == 80 || $protocol == 'https' && $port == 443) ? '' : ":$port";
 
-$ParentFileName = "";
-if (isset($_SERVER['HTTP_REFERER'])) { $ParentFileName = htmlentities($_SERVER['HTTP_REFERER']); }
-
-
-$PhpParentFileName = $_SERVER['PHP_SELF'];
-if ($PhpParentFileName=="") { $PhpParentFileName = $ParentFileName;}
-
-$PhpHelperRoot = realpath($_SERVER["DOCUMENT_ROOT"]);
-
-
-
-
-function preparePostFields($array) {
-  $params = array();
-
-  foreach ($array as $key => $value) {
-    $params[] = $key . '=' . urlencode($value);
-  }
-
-  return implode('&', $params);
+$ParentFileName = '';
+if (isset($_SERVER['HTTP_REFERER'])) {
+    $ParentFileName = htmlentities($_SERVER['HTTP_REFERER']);
 }
 
+$PhpParentFileName = $_SERVER['PHP_SELF'];
+if ($PhpParentFileName == '') {
+    $PhpParentFileName = $ParentFileName;
+}
 
+$PhpHelperRoot = realpath($_SERVER['DOCUMENT_ROOT']);
 
+function preparePostFields($array)
+{
+    $params = array();
 
-//3233  32.33
+    foreach ($array as $key => $value) {
+        $params[] = $key.'='.urlencode($value);
+    }
+
+    return implode('&', $params);
+}
+
+function sendBufferDataToNode($data,$ForceSend)
+{
+   global $LastSend,$GopherPHPLogs;
+
+   if (!$ForceSend) {
+      $GopherPHPLogs[] = $data;
+   }
+   //print_r($GopherPHPLogs);
+
+   $ThisSend = microtime(true);
+
+   if ( (($ThisSend-$LastSend) > 3) || ($ForceSend) || (count($GopherPHPLogs)>50) )
+   {
+      $LastSend = $ThisSend;
+      $data_string = json_encode($GopherPHPLogs);
+
+      $url = 'http://localhost:8080/gopherPHPsave.js';
+
+      $ch = curl_init( $url );
+
+   //   echo $data_string;
+
+   //   curl_setopt( $ch, CURLOPT_POST, 1);
+   //   curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+   //   curl_setopt( $ch, CURLOPT_HEADER, 0);
+
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_string)) );
+
+      $response = curl_exec( $ch );
+
+      if ($response == "All Good") {
+         $GopherPHPLogs = [];
+      }
+   }
+}
 
 
 // Moved this line to the bottom of the 'file' for usability -
 // I keep each of the above mentioned 'pieces' in separate files.
 //$ErrorHandler = new ErrorHandler();
 
-$ErrorCallback = "HandleRuntimeError";
-$ExceptionCallback = "HandleException";
-$FatalCallback = "HandleFatalError";
+$ErrorCallback = 'HandleRuntimeError';
+$ExceptionCallback = 'HandleException';
+$FatalCallback = 'HandleFatalError';
 
 $EnableReporting = true;
 $ErrorLevel = E_ALL;
 
-
-
 function InitializeErrors()
 {
-    if($GLOBALS["EnableReporting"])
-    {
-        error_reporting($GLOBALS["ErrorLevel"]);
+    if ($GLOBALS['EnableReporting']) {
+        error_reporting($GLOBALS['ErrorLevel']);
 
-        if( isset($GLOBALS["ErrorCallback"]) && strlen($GLOBALS["ErrorCallback"]) > 0 )
-        {
-            set_error_handler($GLOBALS["ErrorCallback"]);
+        if (isset($GLOBALS['ErrorCallback']) && strlen($GLOBALS['ErrorCallback']) > 0) {
+            set_error_handler($GLOBALS['ErrorCallback']);
 
             // Prevent the PHP engine from displaying runtime errors on its own
-            ini_set('display_errors',false);
+            ini_set('display_errors', false);
+        } else {
+            ini_set('display_errors', true);
         }
-        else
-            ini_set('display_errors',true);
 
-        if( isset($GLOBALS["FatalCallback"]) && strlen($GLOBALS["FatalCallback"]) > 0 )
-        {
-            register_shutdown_function($GLOBALS["FatalCallback"]);
+        if (isset($GLOBALS['FatalCallback']) && strlen($GLOBALS['FatalCallback']) > 0) {
+            register_shutdown_function($GLOBALS['FatalCallback']);
 
             // Prevent the PHP engine from displaying fatal errors on its own
-            ini_set('display_startup_errors',false);
+            ini_set('display_startup_errors', false);
+        } else {
+            ini_set('display_startup_errors', true);
         }
-        else
-            ini_set('display_startup_errors',true);
 
-        if( isset($GLOBALS['ExceptionCallback']) && strlen($GLOBALS['ExceptionCallback']) > 0 )
-            set_exception_handler($GLOBALS["ExceptionCallback"]);
-    }
-    else
-    {
-        ini_set('display_errors',0);
-        ini_set('display_startup_errors',0);
+        if (isset($GLOBALS['ExceptionCallback']) && strlen($GLOBALS['ExceptionCallback']) > 0) {
+            set_exception_handler($GLOBALS['ExceptionCallback']);
+        }
+    } else {
+        ini_set('display_errors', 0);
+        ini_set('display_startup_errors', 0);
         error_reporting(0);
     }
 }
 
-function HandleRuntimeError($ErrorLevel,$ErrorMessage,$ErrorFile=null,$ErrorLine=null,$ErrorContext=null)
+function HandleRuntimeError($ErrorLevel, $ErrorMessage, $ErrorFile = null, $ErrorLine = null, $ErrorContext = null)
 {
-    if( isset($GLOBALS['ErrorHandler']))
-    {
-        //  Pass errors up to the global ErrorHandler to be later inserted into
-        // final output at the appropriate time.
-        $GLOBALS['ErrorHandler']->AppendError($ErrorLevel,"Runtime Error: " . $ErrorMessage,$ErrorFile,$ErrorLine,$ErrorContext);
 
-        return true;
-    }
-    else
-    {
-        PrintError($ErrorLevel,$ErrorMessage,$ErrorFile,$ErrorLine,$ErrorContext);
-        return true;
-    }
+   if (isset($GLOBALS['ErrorHandler'])) {
+      //  Pass errors up to the global ErrorHandler to be later inserted into
+      // final output at the appropriate time.
+      $GLOBALS['ErrorHandler']->AppendError($ErrorLevel, 'Runtime Error: '.$ErrorMessage, $ErrorFile, $ErrorLine, $ErrorContext);
+
+
+      return true;
+   } else {
+      PrintError($ErrorLevel, $ErrorMessage, $ErrorFile, $ErrorLine, $ErrorContext);
+
+      return true;
+   }
 }
 
 function HandleException($Exception)
 {
-    if( isset($GLOBALS['ErrorCallback']))
-    {
+    if (isset($GLOBALS['ErrorCallback'])) {
         // Parse and pass exceptions up to the standard error callback.
-        $GLOBALS['ErrorCallback']($Exception->getCode(), "Exception: " . $Exception->getMessage(), $Exception->getFile(), $Exception->getLine(), $Exception->getTrace());
+        $GLOBALS['ErrorCallback']($Exception->getCode(), 'Exception: '.$Exception->getMessage(), $Exception->getFile(), $Exception->getLine(), $Exception->getTrace());
 
         return true;
-    }
-    else
-    {
-        PrintError($Exception->getCode(), "Exception: " . $Exception->getMessage(), $Exception->getFile(), $Exception->getLine(), $Exception->getTrace());
+    } else {
+        PrintError($Exception->getCode(), 'Exception: '.$Exception->getMessage(), $Exception->getFile(), $Exception->getLine(), $Exception->getTrace());
+
         return true;
     }
 }
 
 function HandleFatalError()
 {
-    $Error = error_get_last();
+   $Error = error_get_last();
 
-    // Unset Error Type and Message implies a proper shutdown.
-    if( !isset($Error['type']) && !isset($Error['message']))
-        exit();
-    else if( isset($GLOBALS['ErrorCallback']))
-    {
-        // Pass fatal errors up to the standard error callback.
-        $GLOBALS["ErrorCallback"]($Error['type'], "Fatal Error: " . $Error['message'],$Error['file'],$Error['line']);
-
-        return null;
-    }
-    else
-    {
-        PrintError($Error['type'], "Fatal Error: " . $Error['message'],$Error['file'],$Error['line']);
-        return null;
-    }
+   // Unset Error Type and Message implies a proper shutdown.
+   if (!isset($Error['type']) && !isset($Error['message'])) {
+      sendBufferDataToNode(null,true);
+      exit();
+   } elseif (isset($GLOBALS['ErrorCallback'])) {
+     // Pass fatal errors up to the standard error callback.
+     $GLOBALS['ErrorCallback']($Error['type'], 'Fatal Error: '.$Error['message'], $Error['file'], $Error['line']);
+     sendBufferDataToNode(null,true);
+     return;
+   } else {
+     PrintError($Error['type'], 'Fatal Error: '.$Error['message'], $Error['file'], $Error['line']);
+     sendBufferDataToNode(null,true);
+     return;
+   }
 }
 
 // In the event that our 'ErrorHandler' class is in fact the generator of the error,
 // we need a plain-Jane method that will still deliver the message.
-function PrintError($ErrorLevel,$ErrorMessage,$ErrorFile=null,$ErrorLine=null,$ErrorContext=null)
+function PrintError($ErrorLevel, $ErrorMessage, $ErrorFile = null, $ErrorLine = null, $ErrorContext = null)
 {
-	global $PhpParentFileName;
-	global $ProjectID;
+    global $PhpParentFileName;
+    global $ProjectID;
+    global $PhpInlineShowErrors;
 
-    if( class_exists("ErrorHandler"))
+    if (class_exists('ErrorHandler')) {
         $ErrorTypeString = ErrorHandler::ErrorTypeString($ErrorLevel);
-    else
+    } else {
         $ErrorTypeString = $ErrorLevel;
+    }
 
-    $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
+    $ReturnValue = $ErrorTypeString.' - '.$ErrorMessage;
 
-    if ( ($ErrorTypeString!="E_NOTICE") && ($ErrorTypeString!="E_WARNING") && ($ErrorTypeString!="E_DEPRECATED") )
-    {
-      echo "<div style='border:1px solid black; padding:5px; margin:5px; color:black; background-color:#aaa;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
+    if ($PhpInlineShowErrors) {
+       if (($ErrorTypeString != 'E_NOTICE') && ($ErrorTypeString != 'E_WARNING') && ($ErrorTypeString != 'E_DEPRECATED')) {
+           echo "<div style='border:1px solid black; padding:5px; margin:5px; color:black; background-color:#aaa;'>".$ErrorFile.' '.$ErrorLine.': '.$ReturnValue.'</div>';
+       }
    }
 
-	$phpgopherstore = array("Msg"=>$ReturnValue, "Tags"=>"", "FileName"=>$ErrorFile, "CodeLine"=>$ErrorLine,"Type"=>"pe" );
+    $data = array('TY' => 'phperror1', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'TS' => microtime(true));
+    sendBufferDataToNode($data,false);
 
-	$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
-
-	//print_r($phpgopherstore);
-   print_r($data);
-/*
-	$url = 'http://localhost/gopherA/insertGopherMini2db.php';
-
-	$ch = curl_init( $url );
-	curl_setopt( $ch, CURLOPT_POST, 1);
-	curl_setopt( $ch, CURLOPT_POSTFIELDS, preparePostFields($data));
-	curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-	curl_setopt( $ch, CURLOPT_HEADER, 0);
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-
-	$response = curl_exec( $ch );
-*/
 }
 
 class ErrorHandler
 {
-    public function AppendError($ErrorLevel,$ErrorMessage,$ErrorFile=null,$ErrorLine=null,$ErrorContext=null)
+    public function AppendError($ErrorLevel, $ErrorMessage, $ErrorFile = null, $ErrorLine = null, $ErrorContext = null)
     {
-		global $PhpParentFileName;
-		global $ProjectID;
+        global $PhpParentFileName;
+        global $ProjectID;
+        global $PhpInlineShowErrors;
 
         // Perhaps evaluate the error level and respond accordingly
         //
@@ -189,44 +209,30 @@ class ErrorHandler
         // determine if you're in a production environment or not, or that
         // determines if you're an admin or not - or something - could belong here.
         // Redirects or response messages accordingly.
-        $ErrorTypeString = ErrorHandler::ErrorTypeString($ErrorLevel);
+        $ErrorTypeString = self::ErrorTypeString($ErrorLevel);
 
-        $ReturnValue = $ErrorTypeString." - ".$ErrorMessage;
+        $ReturnValue = $ErrorTypeString.' - '.$ErrorMessage;
 
-		if ( ($ErrorTypeString!="E_NOTICE") && ($ErrorTypeString!="E_WARNING") && ($ErrorTypeString!="E_DEPRECATED") )
-      {
-         echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:black; background-color:#ccc;'>".$ErrorFile." ".$ErrorLine.": ".$ReturnValue."</div>";
-      }
+        if ($PhpInlineShowErrors) {
+           if (($ErrorTypeString != 'E_NOTICE') && ($ErrorTypeString != 'E_WARNING') && ($ErrorTypeString != 'E_DEPRECATED')) {
+               echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:black; background-color:#ccc;'>".$ErrorFile.' '.$ErrorLine.': '.$ReturnValue.'</div>';
+           }
+        }
 
+        $data = array('TY' => 'phperror2', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'TS' => microtime(true));
+        sendBufferDataToNode($data,false);
 
-		$phpgopherstore = array("Msg"=>$ReturnValue, "Tags"=>"", "FileName"=>$ErrorFile, "CodeLine"=>$ErrorLine,"Type"=>"pe" );
-
-		$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
-
-		//print_r($phpgopherstore);
+        //print_r($phpgopherstore);
       //print_r($data);
-/*
-		$url = 'http://localhost/gopherA/insertGopherMini2db.php';
-
-		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, preparePostFields($data));
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-
-		$response = curl_exec( $ch );
-*/
     }
 
     public static function ErrorTypeString($ErrorType)
     {
-        $ReturnValue = "";
+        $ReturnValue = '';
 
-        switch( $ErrorType )
-        {
+        switch ($ErrorType) {
             default:
-                $ReturnValue = "E_UNSPECIFIED_ERROR";
+                $ReturnValue = 'E_UNSPECIFIED_ERROR';
                 break;
             case E_ERROR: // 1 //
                 $ReturnValue = 'E_ERROR';
@@ -285,84 +291,76 @@ InitializeErrors();
 //------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Gopher($xValue,$xTags = "")
+function Gopher($xValue, $xTags = '')
 {
-	global $PhpParentFileName;
-	global $ProjectID;
+    global $PhpParentFileName;
+    global $ProjectID;
 
-	$backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+    $backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
-   $src = file($backtr[0]["file"]);
-   $line = $src[ $backtr[0]['line'] - 1 ];
-   preg_match( "#Gopher\((.+)\)#", $line, $match );
+    $src = file($backtr[0]['file']);
+    $line = $src[ $backtr[0]['line'] - 1 ];
+    preg_match("#Gopher\((.+)\)#", $line, $match);
 
-   $max = strlen($match[1]);
-   $varname = "";
-   $c = 0;
-   for($i = 0; $i < $max; $i++) {
-     if(     $match[1]{$i} == "(" ) $c++;
-     elseif( $match[1]{$i} == ")" ) $c--;
-     if($c < 0) break;
-     $varname .=  $match[1]{$i};
-   }
+    $max = strlen($match[1]);
+    $varname = '';
+    $c = 0;
+    for ($i = 0; $i < $max; ++$i) {
+        if ($match[1]{$i} == '(') {
+            $c++;
+        } elseif ($match[1]{$i} == ')') {
+            $c--;
+        }
+        if ($c < 0) {
+            break;
+        }
+        $varname .=  $match[1]{$i};
+    }
+
+    $varnames[] = str_getcsv($varname); // explode(",", $varname);
+    $newvarname = $varnames[0][0];
 
 //  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
-   echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:white; font-weight:normal; background-color:#444;'>";
-  echo " Line:".$backtr[0]['line']." ".$varname." = ".json_encode($xValue)." Tags:".$xTags." -- File:".$backtr[0]['file'];
-  echo "</div>";
+//    echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:white; font-weight:normal; background-color:#444;'>";
+//    echo ' Line:'.$backtr[0]['line'].' '.$varname.' = '.json_encode($xValue).' Tags:'.$xTags.' -- File:'.$backtr[0]['file'];
+//    echo '</div>';
 
-	$phpgopherstore = array("VarValue"=>json_encode($xValue), "VarName"=>$varname, "Tags"=>$xTags, "FileName"=>$backtr[0]['file'], "CodeLine"=>$backtr[0]['line'],"Type"=>"pvt" );
+   if ( (strpos($newvarname,"'") !== false) || (strpos($newvarname,"\"") !== false) || (strpos($newvarname,".") !== false) || (strpos($newvarname,"$") === false) )
+   {
+      $newvarname = "LOG"; //" ".$newvarname;
+   }
 
-
-	$data = array('posttype' => 'trackphpdata', 'phpdata' => json_encode($phpgopherstore), 'ProjectID' => $ProjectID, 'ParentFileName' => $PhpParentFileName);
-
-//   print_r($data);
-/*
-	$url = 'http://localhost/gopherA/insertGopherMini2db.php';
-
-	$ch = curl_init( $url );
-	curl_setopt( $ch, CURLOPT_POST, 1);
-	curl_setopt( $ch, CURLOPT_POSTFIELDS, preparePostFields($data));
-	curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-	curl_setopt( $ch, CURLOPT_HEADER, 0);
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-
-	$response = curl_exec( $ch );
-*/
-//	echo $response;
+    $data = array('TY' => 'phpvar', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'TS' => microtime(true));
+    sendBufferDataToNode($data,false);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 //----------- Make GopherMini.php call the php file if it exists in the header request.
 //----------- Later gopher should offer two different runtimes one where it includes the request in gopherMini.php and other way is direct run.
 
-$GopherIncludeFile = "";
+$GopherIncludeFile = '';
 foreach (getallheaders() as $name => $value) {
-   if ($name == "GopherPHPFile") {
-      $GopherIncludeFileOrignal = $value;
-      $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
-   }
+    if ($name == 'GopherPHPFile') {
+        $GopherIncludeFileOrignal = $value;
+        $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
+
+        $PhpParentFileName = $GopherIncludeFileOrignal;
+    }
 }
 
-if ($GopherIncludeFile!=="") {
-//   echo "-->  ".$PhpHelperRoot.$GopherIncludeFile;
+if ($GopherIncludeFile !== '') {
+    //   echo "-->  ".$PhpHelperRoot.$GopherIncludeFile;
+   header('GopherMirrorRequest: '.$GopherIncludeFile);
    require_once $PhpHelperRoot.$GopherIncludeFile;
 }
-?>
