@@ -73,7 +73,7 @@ http.createServer(onRequest).listen(gopherPort);
 
 function onRequest(BrowserRequest, BrowserResponse) {
 
-	if (BrowserRequest.url=="/gopherSave.js") {
+	if ( (BrowserRequest.url=="/gopherSave.js") || (BrowserRequest.url=="/gopherPHPsave.js") ) {
       var body = "";
       BrowserRequest.on('data', function (data) {
          body += data;
@@ -91,31 +91,59 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
       BrowserRequest.on('end', function () {
          //console.log( decodeURIComponent(body) );
-         var post = qs.parse(body);
+         if (BrowserRequest.url=="/gopherPHPsave.js") {
+            console.log("PHP Post");
+//            console.log(body);
+//            console.log("----------");
 
-         var ParentFileName = post["ParentFileName"];
-         var dataobj = JSON.parse( post["Data"] );
+            var dataobj = JSON.parse( body );
+
+            for (var i=0; i<dataobj.length; i++)
+            {
+               console.log(dataobj[i] );
+
+               if (dataobj[i]["TY"]=="phpvar") {
+                  var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
+                  stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), '', decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
+                  stmt.finalize();
+               } else
+
+               if ((dataobj[i]["TY"]=="phperror1") || (dataobj[i]["TY"]=="phperror2")) {
+                  var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+                  stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+                  stmt.finalize();
+               }
+
+            }
+
+         } else
+
+         if (BrowserRequest.url=="/gopherSave.js") {
+            var post = qs.parse(body);
+            var ParentFileName = post["ParentFileName"];
+            var dataobj = JSON.parse( post["Data"] );
 
 
-         for (var i=0; i<dataobj.length; i++)
-         {
-            //console.log(i);
-            //console.log(dataobj[i]);
+            for (var i=0; i<dataobj.length; i++)
+            {
+               //console.log(i);
+               //console.log(dataobj[i]);
 
-            if (dataobj[i]["TY"]=="js_gt") {
-               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
-               stmt.finalize();
-            } else
-            if (dataobj[i]["TY"]=="js_vt") {
-               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
-               stmt.finalize();
-            } else
-            if (dataobj[i]["TY"]=="js_er") {
-               var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
-               stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
-               stmt.finalize();
+               if (dataobj[i]["TY"]=="js_gt") {
+                  var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+                  stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+                  stmt.finalize();
+               } else
+               if (dataobj[i]["TY"]=="js_vt") {
+                  var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
+                  stmt.run(dataobj[i]["TS"] ,  decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]) );
+                  stmt.finalize();
+               } else
+               if (dataobj[i]["TY"]=="js_er") {
+                  var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?)");
+                  stmt.run(dataobj[i]["TS"] , decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]) );
+                  stmt.finalize();
+               }
             }
 
          }
@@ -215,8 +243,14 @@ function onRequest(BrowserRequest, BrowserResponse) {
 						{
 							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1)
 							{
+
                         var tempStr = BrowserRequest.url;
                         var tempStr = tempStr.replace(/'/g,"\'");
+
+                        if (BrowserRequest.headers["GopherMirrorRequest"] != undefined) {
+                           tempStr = BrowserRequest.headers["GopherMirrorRequest"];
+                        }
+
 								chunkStr += "<script>"+ "var gopherTimeStamp = Math.floor(Date.now() / 1000);var ParentFileName='"+ tempStr +"';\n"+HelperString +"</script>";
 							}
 						}

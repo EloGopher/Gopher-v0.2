@@ -34,6 +34,8 @@ $cars2 = array($myCar, $yourCar);
 
 //Gopher($cars2);
 
+usleep(100000);
+
 TestCall2();
 
 ?>
