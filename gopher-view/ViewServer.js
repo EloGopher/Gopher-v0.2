@@ -7,12 +7,14 @@ var dbPath = '../node-proxy/gopherlog.db';
 var db = undefined;
 
 var ViewServer = http.createServer(onRequest).listen(1337, function(err) {
+	console.log('**======================**=======================**=====================**')
 	console.log('ViewServer is up.');
 });
 
 global.fs.exists(dbPath, function (exists) {
 	if (exists) {
-		db = new sqlite3.Database(dbPath)
+		db = new sqlite3.Database(dbPath);
+		console.log('dbPath exists');
 	} else {
 		console.log('database path does not exist.');
 	}
@@ -134,8 +136,9 @@ function viewOnHttpRequest(request, response, requestUrl) {
 					
 					var recieve = require(FileMap.getFilePath(request.url));
           var responseBody = recieve.postThis(post,db);
+					console.log(responseBody);
     			response.writeHead(200, { 'Content-Length': responseBody.length, 'Content-Type': 'text/plain' });
-    			response.end(responseBody);
+    			response.end(JSON.stringify(responseBody));
 				}
 			});
 		}

@@ -99,6 +99,7 @@ function TimeSlot(_layout) {
 				$('#message_list').empty();
 			},
 			success : function(data) {
+				console.log(data);
 				if (data.length > 0) {
 					var timeBand = TimeSlot.RenderTimeSlots(data, (Number($(document).height())));
 					//console.log(timeBand);
