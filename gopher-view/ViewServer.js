@@ -57,6 +57,33 @@ var FileMap = {
 	}
 };
 
+
+function getTimeSlots(_db,response){
+	console.log('getTimeSlots()');
+	_db.serialize(function(){
+		var data = [];
+		console.log('before select query');
+		_db.each('SELECT * FROM Logs ORDER BY ID DESC', function (error, row) {
+			console.log('select query call back');
+			data.push(row);
+			console.log('_db select push row');
+
+		}, function complete() {
+			var xresponse = JSON.stringify(data);
+			console.log(xresponse.length);
+			console.log(data.length);
+
+			response.writeHead(200, { 'Content-Length': xresponse.length, 'Content-Type': 'text/plain' });
+			response.end(xresponse);
+
+//			console.log(data);
+
+			//_callBack(null,result);
+		});
+	});
+}
+
+
 function onRequest(request, response) {
 	var RequestUrl = request.url;
 	if (RequestUrl === '/' || RequestUrl === '/' + global.gopherViewRoot || RequestUrl === '/' + global.gopherViewRoot + '/') {
@@ -64,11 +91,11 @@ function onRequest(request, response) {
 	} else if (RequestUrl.search('/' + global.gopherViewRoot) === -1) {
 		RequestUrl = '/' + global.gopherViewRoot + RequestUrl;
 	}
-	
+
 	if (RequestUrl.indexOf('/' + global.gopherViewRoot) === 0) {
 		viewOnHttpRequest(request, response, RequestUrl);
 	}
-	
+
 	//mangerOnHttpRequest(request, response, RequestUrl);
 	request.on('end', function() {});
 }
@@ -83,9 +110,32 @@ function viewOnHttpRequest(request, response, requestUrl) {
 
 	} else {
 		console.log(request.url);
-		console.log(requestUrl);
-		console.log(request.headers['x-requested-with']);
-		if (request.headers['x-requested-with'] !== 'XMLHttpRequest') {
+
+		if (request.url == "/timeband.js")  {
+
+			console.log('is a XMLhttpRequest');
+
+			var body = '';
+
+			request.on('data',function(data){
+				body += data;
+				if(body.length > 1e6){
+					request.connection.destroy();
+				}
+			});
+
+			request.on('end',function(){
+				if(request.method === 'POST'){
+					var post = qs.parse(body);
+					console.log(post.task);
+					if (post.task=="getAllTimeSlots") { getTimeSlots(db,response); }
+				}
+			});
+
+		} else {
+			console.log(requestUrl);
+			console.log(request.headers['x-requested-with']);
+
 			var FilePath = FileMap.getFilePath(requestUrl);
 			console.log(FilePath);
 			console.log('***********************');
@@ -116,33 +166,7 @@ function viewOnHttpRequest(request, response, requestUrl) {
 					});
 				};
 			});
-		} else {
-			console.log('is a XMLhttpRequest');
-			
-			var body = '';
-			
-			request.on('data',function(data){
-				body += data;
-				if(body.length > 1e6){
-					request.connection.destroy();
-				}
-			});
-			
-			request.on('end',function(){
-				if(request.method === 'POST'){
-					var post = qs.parse(body);
-					console.log(post.task);
-					console.log(FileMap.getFilePath(request.url));
-					
-					var recieve = require(FileMap.getFilePath(request.url));
-          var responseBody = recieve.postThis(post,db);
-					console.log(responseBody);
-    			response.writeHead(200, { 'Content-Length': responseBody.length, 'Content-Type': 'text/plain' });
-    			response.end(JSON.stringify(responseBody));
-				}
-			});
+
 		}
 	}
 }
-
-

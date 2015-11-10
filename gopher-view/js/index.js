@@ -39,20 +39,20 @@ function Layout() {
 			break;
 		}
 	};
-	
+
 	function adjust(){
 		$('#time_band').css('height',$(window).height());
 		$('#view_container').css({
 			'height':$(window).height() +'px'
 		});
-		
+
 		$('.view').css({
 			'width' : $('#view_container').width() + 'px',
 			'height' : $('#view_container').height() + 'px'
 		});
-		
+
 		$('#source_content').css('height',$('#source_code').height()-$('#source_title').height());
-		
+
 		var testme=0;
 	};
 
@@ -62,7 +62,7 @@ function Layout() {
 		Layout.logTag = getTemplate($('.message-list:eq(0)').find('div[data-template="log-item"] span[data-template="tag"]'));
 		$('#view_container').find('[data-template]').remove();
 
-	  adjust();	
+	  adjust();
 	}
 
 	function getTemplate(jqObject) {
@@ -70,7 +70,7 @@ function Layout() {
 		if($(result).data('template') === 'log-item'){
 			$(result).find('span[data-template="tag"]').remove();
 		}
-		$(result).removeAttr('data-template'); 
+		$(result).removeAttr('data-template');
 		return $(result).prop("outerHTML");
 	}
 
@@ -89,7 +89,7 @@ function TimeSlot(_layout) {
 
 		TimeSlot.AjaxTimeSlots = $.ajax({
 			type : 'POST',
-			url : '../backendJs/timeband.js',
+			url : '/timeband.js',
 			dataType : 'json',
 			data : {
 				task : 'getAllTimeSlots'
@@ -454,7 +454,7 @@ $(document).ready(function() {
 
 	$('.message-list').on('click', '.item-log', function() {
 		var selectedFileName = $(this).find('span.filename').text();
-		
+
 		function selectAMessage(_selectedItem){
 			$('.messages-source').find('.item-log').each(function() {
 				if ($(this).find('span.filename').text() !== selectedFileName) {
@@ -463,15 +463,15 @@ $(document).ready(function() {
 					$(this).removeClass('dim');
 				}
 			});
-			
+
 			$('.messages-source .item-log').removeClass('selected');
 			$(_selectedItem).addClass('selected');
 		}
-		
+
 		if ($('.messages-source').hasClass('active')) {
 			console.log('get the source code1');
 			selectAMessage($(this));
-			
+
 		} else {
 			var itemIndex = $(this).index(); console.log('itemIndex '+itemIndex);
 			layout.Switch('messages-source',function(){
