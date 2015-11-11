@@ -10,14 +10,30 @@ var CSVToArray = require("./CSVToArray.js")
 var dbPath = 'gopherlog.db';
 var dbConn;
 
-fs.exists(dbPath, function(exists) {
-	if (exists) {
-		dbConn = new sqlite3.Database(dbPath);
-	} else {
-		console.log('Database does not exist.');
+function sqlerror(tag,error)
+{
+	if (error!=null) {
+		console.log("error tag: "+tag);
+		console.log(error);
+	} else
+	if ((tag!=null) && (error!=null)) {
+		console.log("error tag: N/A");
+		console.log(tag);
 	}
-});
+}
 
+dbConn = new sqlite3.Database(dbPath);
+
+dbConn.serialize(function() {
+	dbConn.run("CREATE TABLE Logs (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, LogTimeStamp BIGINT, LogTime INTEGER DEFAULT (CURRENT_TIMESTAMP), ProjectID INTEGER DEFAULT (0)                          NOT NULL, FileName STRING (255), ParentFileName STRING (255), LogType STRING (10), CodeLine INTEGER, VarName STRING (255), VarType STRING (20), VarValue BLOB, LogMessage BLOB, Tags STRING (255) );", sqlerror );
+
+	dbConn.run("CREATE INDEX LogTimeStamp ON Logs (LogTimeStamp);", sqlerror.bind(this,"2") );
+	dbConn.run("CREATE INDEX LogTime ON Logs (LogTime);", sqlerror.bind(this,"3") );
+	dbConn.run("CREATE INDEX FileName ON Logs (FileName);", sqlerror.bind(this,"4") );
+	dbConn.run("CREATE INDEX CodeLine ON Logs (CodeLine);", sqlerror.bind(this,"5") );
+	dbConn.run("CREATE INDEX Tags ON Logs (Tags);", sqlerror.bind(this,"6") );
+	dbConn.run("CREATE INDEX ProjectID ON Logs (ProjectID);", sqlerror.bind(this,"7") );
+});
 
 //intereting concept getdefinedvar()
 //http://stackoverflow.com/questions/24448998/is-it-possible-to-get-variables-with-get-defined-vars-but-for-the-actual-runni
@@ -31,6 +47,7 @@ var projectHost = 'localhost'; // 'testv2.phishproof.com';
 var projectPath = ''; //'/phishproof'
 var gopherHost = 'http://localhost';
 var gopherPort = 8080;
+
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
@@ -286,15 +303,8 @@ function onRequest(BrowserRequest, BrowserResponse) {
 								}
 							}
 						}
-
-						//console.log("Chunk:"+chunkStr);
-
 						ApacheBytes = new Buffer(chunkStr, 'utf8');
 					}
-
-					//console.log(decoder.write(ApacheChunk));
-
-					//console.log('On End ' + BrowserRequest.url+ ' --  ApacheBytes.length ' + ApacheBytes.length + '  -- ApacheResponse.headers content-length ' + ApacheResponse.headers['content-length']);
 
 					ApacheResponse.headers['content-length'] = ApacheBytes.length;
 					BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);
@@ -308,7 +318,6 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			});
 
 			//console.log("WRITE APACHE:"+decoder.write(BrowserData));
-
 			var BrowserBytes = Buffer.concat(BrowserData);
 			NodeProxyRequest.write(BrowserBytes, 'binary');
 			NodeProxyRequest.end();
