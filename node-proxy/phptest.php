@@ -1,5 +1,5 @@
 <?
-require_once "gopherMini.php";
+require_once "gopher.php";
 
 $j = 1;
 echo $j;

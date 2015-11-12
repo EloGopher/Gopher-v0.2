@@ -1,3 +1,6 @@
+//intereting concept getdefinedvar()
+//http://stackoverflow.com/questions/24448998/is-it-possible-to-get-variables-with-get-defined-vars-but-for-the-actual-runni
+
 var http = require('http');
 var fs = require('fs');
 var qs = require('querystring');
@@ -6,6 +9,78 @@ var url = require("url");
 var sqlite3 = require('sqlite3').verbose();
 
 var CSVToArray = require("./CSVToArray.js")
+
+var StringDecoder = require('string_decoder').StringDecoder;
+var decoder = new StringDecoder('utf8');
+
+function ShowHelpScreen()
+{
+	console.log("");
+	console.log("");
+	console.log("Gopher Help");
+	console.log("-----------------------");
+	console.log("-gopherurl <http://> : No default, this is the location of Gopher.php in the project folder. Should be a full url.");
+	console.log("-pid <integer> : Default is 101, this is the project ID that will be logged with every event.");
+	console.log("-host <http://...> : No defaut, this has to be specified. This is the server gopher will be pulling through it's proxy. ");
+	console.log("-port <integer> : Default is 80. Port of server which gopher will be pulling.");
+	console.log("-path <string> : Default blank. If the project is in a subfolder this can be added in which case you would be able to run your code without writing the folder in the url.");
+	console.log("-gopherhost <http://localhost> : Default localhost. This parameter will be used by the Browser extension. Also all log messages will be sent to the gopher host and port. ");
+	console.log("-gopherport <integer> : Defalth 1337. Port of above parameter.");
+	console.log("-flushdb : Delete all data stored in SQLLite database.");
+	console.log("-redirectphp <yes/no> : Defalut yes. To trap and log all php runtime errors, all php files requested has to go through Gopher.php on the server. If you don't want the Gopher proxy to request php files through Gopher.php then you should set this to \"no\".");
+	console.log("-help : This page.");
+	console.log("");
+	console.log("Example run:");
+	console.log("node gopher -host http://localhost -gopherurl http://localhost/Gopher.php");
+	console.log("");
+	console.log("");
+	process.exit(1);
+
+}
+
+
+var ProjectID = 101;
+if(process.argv.indexOf("-pid") != -1){ /*does our flag exist? grab the next item*/ ProjectID = process.argv[process.argv.indexOf("-c") + 1]; }
+
+var projectHost = ''; // 'localhost' 'testv2.phishproof.com';
+if(process.argv.indexOf("-host") != -1){ projectHost = process.argv[process.argv.indexOf("-host") + 1]; }
+
+var projectOnPort = 80;
+if(process.argv.indexOf("-port") != -1){ projectOnPort = process.argv[process.argv.indexOf("-port") + 1]; }
+
+var projectPath = ''; //'/phishproof'
+if(process.argv.indexOf("-path") != -1){ projectPath = process.argv[process.argv.indexOf("-path") + 1]; }
+
+var gopherHost = 'localhost';
+if(process.argv.indexOf("-gopherhost") != -1){ projectPath = process.argv[process.argv.indexOf("-gopherhost") + 1]; }
+
+var gopherPort = 1337;
+if(process.argv.indexOf("-gopherport") != -1){ projectPath = process.argv[process.argv.indexOf("-gopherport") + 1]; }
+
+var showhelp = "";
+if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
+
+var flushdb = "";
+if(process.argv.indexOf("-flushdb") != -1){ flushdb="yes"; }
+
+var redirectphp = "yes";
+if(process.argv.indexOf("-redirectphp") != -1){ redirectphp = process.argv[process.argv.indexOf("-redirectphp") + 1]; }
+
+var gopherurl = "";
+if(process.argv.indexOf("-gopherurl") != -1){ gopherurl = process.argv[process.argv.indexOf("-gopherurl") + 1]; }
+
+
+if (gopherurl!=="") {
+	options = {method: 'HEAD', host: url.parse(gopherurl).host, port: 80, path: url.parse(gopherurl).pathname};
+	req = http.request(options, function(r) {
+		if (r.statusCode != 200) { console.log("GOPHER: can't locate Gopher.php"); ShowHelpScreen(); } else { console.log("GOPHER: Gopher.php located."); }
+	});
+	req.end();
+}
+
+if ( (projectHost=="") || (showhelp!="") || (gopherurl=="")) {ShowHelpScreen();}
+
+
 
 var dbPath = 'gopherlog.db';
 var dbConn;
@@ -25,31 +100,25 @@ function sqlerror(tag,error)
 dbConn = new sqlite3.Database(dbPath);
 
 dbConn.serialize(function() {
-	dbConn.run("CREATE TABLE Logs (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, LogTimeStamp BIGINT, LogTime INTEGER DEFAULT (CURRENT_TIMESTAMP), ProjectID INTEGER DEFAULT (0)                          NOT NULL, FileName STRING (255), ParentFileName STRING (255), LogType STRING (10), CodeLine INTEGER, VarName STRING (255), VarType STRING (20), VarValue BLOB, LogMessage BLOB, Tags STRING (255) );", sqlerror );
 
-	dbConn.run("CREATE INDEX LogTimeStamp ON Logs (LogTimeStamp);", sqlerror.bind(this,"2") );
-	dbConn.run("CREATE INDEX LogTime ON Logs (LogTime);", sqlerror.bind(this,"3") );
-	dbConn.run("CREATE INDEX FileName ON Logs (FileName);", sqlerror.bind(this,"4") );
-	dbConn.run("CREATE INDEX CodeLine ON Logs (CodeLine);", sqlerror.bind(this,"5") );
-	dbConn.run("CREATE INDEX Tags ON Logs (Tags);", sqlerror.bind(this,"6") );
-	dbConn.run("CREATE INDEX ProjectID ON Logs (ProjectID);", sqlerror.bind(this,"7") );
+	if (flushdb!="") {
+		dbConn.run("DROP TABLE Logs;", sqlerror.bind(this,"Drop Table") );
+	}
+
+	dbConn.run("CREATE TABLE Logs (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, LogTimeStamp BIGINT, LogTime INTEGER DEFAULT (CURRENT_TIMESTAMP), ProjectID INTEGER DEFAULT (0)                          NOT NULL, FileName STRING (255), ParentFileName STRING (255), LogType STRING (10), CodeLine INTEGER, VarName STRING (255), VarType STRING (20), VarValue BLOB, LogMessage BLOB, Tags STRING (255) );", sqlerror.bind(this,"Create Table") );
+
+	dbConn.run("CREATE INDEX LogTimeStamp ON Logs (LogTimeStamp);", sqlerror.bind(this,"Index 1") );
+	dbConn.run("CREATE INDEX LogTime ON Logs (LogTime);", sqlerror.bind(this,"Index 2") );
+	dbConn.run("CREATE INDEX FileName ON Logs (FileName);", sqlerror.bind(this,"Index 3") );
+	dbConn.run("CREATE INDEX CodeLine ON Logs (CodeLine);", sqlerror.bind(this,"Index 4") );
+	dbConn.run("CREATE INDEX Tags ON Logs (Tags);", sqlerror.bind(this,"Index 5") );
+	dbConn.run("CREATE INDEX ProjectID ON Logs (ProjectID);", sqlerror.bind(this,"Index 6") );
+
+	console.log("GOPHER: DB Loaded.");
 });
 
-//intereting concept getdefinedvar()
-//http://stackoverflow.com/questions/24448998/is-it-possible-to-get-variables-with-get-defined-vars-but-for-the-actual-runni
 
 
-
-
-var ProjectID = 101;
-var projectOnPort = 80;
-var projectHost = 'localhost'; // 'testv2.phishproof.com';
-var projectPath = ''; //'/phishproof'
-var gopherHost = 'http://localhost';
-var gopherPort = 8080;
-
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
 
 var HelperString = "";
 
@@ -86,6 +155,7 @@ fs.readFile('new-gopher-insert.js', 'utf8', function(err, data) {
 });
 
 http.createServer(onRequest).listen(gopherPort);
+console.log("GOPHER: Server started on port: "+gopherPort+".");
 
 
 function onRequest(BrowserRequest, BrowserResponse) {
@@ -112,14 +182,14 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		BrowserRequest.on('end', function() {
 			//console.log( decodeURIComponent(body) );
 			if (BrowserRequest.url == "/gopherPHPsave.js") {
-				console.log("PHP Post");
+				//console.log("PHP Post");
 				//            console.log(body);
 				//            console.log("----------");
 
 				var dataobj = JSON.parse(body);
 
 				for (var i = 0; i < dataobj.length; i++) {
-					console.log(dataobj[i]);
+					//console.log(dataobj[i]);
 
 					if (dataobj[i]["TY"] == "phpvar") {
 						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?)");
@@ -185,19 +255,19 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		BrowserRequest.headers['pragma'] = 'no-cache';
 		BrowserRequest.headers['cache-control'] = 'no-cache';
 
-		//--- redirect php requests to go through gopherMini.php as icludes so script errors can be tracked
-		if (BrowserRequest.url.indexOf('.php') != -1) {
+		//--- redirect php requests to go through Gopher.php as icludes so script errors can be tracked
+		if ( (BrowserRequest.url.indexOf('.php') != -1) && (redirectphp=="yes") ) {
 			var querystring = '';
 			var OriginalURL = BrowserRequest.url;
 			if (OriginalURL.indexOf('?') > 0) {
 				querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
 			}
 
-			var GopherMiniURL = '/Gopher-v0.2/node-proxy/gopherMini.php' + querystring;
-			console.log("redirecing php to gopherMini.php ........" + BrowserRequest.url + " to " + GopherMiniURL);
+			var GopherPHPurl = gopherurl + querystring;
+			console.log("redirecing php to Gopher.php ........" + BrowserRequest.url + " to " + GopherPHPurl);
 
 			BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
-			BrowserRequest.url = GopherMiniURL;
+			BrowserRequest.url = GopherPHPurl;
 		}
 
 		var BufferData = false;
@@ -286,7 +356,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 								consolbody = searchRes[1];
 								consolbody = consolbody.trim();
 
-								console.log("BODY: " + consolbody + " " + RegEx5.lastIndex);
+								//console.log("BODY: " + consolbody + " " + RegEx5.lastIndex);
 
 								var PartsOfConsol = CSVToArray.CSVToArray(consolbody, ',');
 

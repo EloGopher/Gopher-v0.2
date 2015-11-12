@@ -1,5 +1,6 @@
 <?php
-require_once(__DIR__.'/../node-proxy/gopherMini.php');
+if (!$GopherIsHere) { require_once('Gopher.php'); }
+
 
 require 'funcs.php';
 

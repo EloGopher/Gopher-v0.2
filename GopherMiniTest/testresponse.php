@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__.'/../node-proxy/gopherMini.php');
+if (!$GopherIsHere) { require_once('Gopher.php'); }
 
 Gopher("This comes from an ajax request php page");
 

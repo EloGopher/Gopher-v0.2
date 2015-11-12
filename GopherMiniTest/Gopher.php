@@ -4,6 +4,8 @@ $PhpInlineShowErrors = true;
 $LastSend = microtime(true);
 $ProjectID = '105';
 
+$GopherIsHere = true;
+
 $GopherPHPLogs = [];
 
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://';
@@ -22,7 +24,7 @@ if ($PhpParentFileName == '') {
 
 $PhpHelperRoot = realpath($_SERVER['DOCUMENT_ROOT']);
 
-function preparePostFields($array)
+function GopherPreparePostFields($array)
 {
     $params = array();
 
@@ -49,7 +51,7 @@ function sendBufferDataToNode($data,$ForceSend)
       $LastSend = $ThisSend;
       $data_string = json_encode($GopherPHPLogs);
 
-      $url = 'http://localhost:8080/gopherPHPsave.js';
+      $url = 'http://localhost:1337/gopherPHPsave.js';
 
       $ch = curl_init( $url );
 
@@ -364,3 +366,4 @@ if ($GopherIncludeFile !== '') {
    header('GopherMirrorRequest: '.$GopherIncludeFile);
    require_once $PhpHelperRoot.$GopherIncludeFile;
 }
+?>
