@@ -1,5 +1,5 @@
 <?php
-if (!$GopherIsHere) { require_once('Gopher.php'); }
+require_once('Gopher.php');
 
 
 require 'funcs.php';
