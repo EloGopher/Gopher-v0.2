@@ -293,7 +293,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		var DataFileName = UniversalScriptTimeStampTemp+'R'+randomInt(1,1000);
 
 		var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags, DataFileName  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
-		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NET BEGIN', '0', '', '', '"+ DataFileName +"');
+		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NETWORK', '0', '', '', DataFileName );
 		stmt.finalize();
 
 		fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', BrowserRequest.url+"\n\n"+stringifyObject(BrowserRequest.headers));
