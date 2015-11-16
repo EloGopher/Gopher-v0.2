@@ -1,4 +1,22 @@
 <?php
+if ($_POST["op"]=="copyself") {
+
+   echo "Starting copy self. \n";
+
+   $directories = glob(__DIR__ . '/*' , GLOB_ONLYDIR);
+
+   foreach ( $directories as $directory )
+   {
+      $phpfiles = glob($directory.'/*.php');
+
+      if (count($phpfiles) > 0 )
+      {
+         echo "copying Gopher.php to ... ". $directory . "\n";
+         copy(__FILE__,$directory.'/Gopher.php');
+      }
+   }
+   die(1);
+}
 
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
 
@@ -6,7 +24,6 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
    $PhpInlineShowErrors = true;
    $LastSend = microtime(true);
-   $ProjectID = '105';
 
    $GopherPHPLogs = [];
 
@@ -177,7 +194,6 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    function PrintError($ErrorLevel, $ErrorMessage, $ErrorFile = null, $ErrorLine = null, $ErrorContext = null)
    {
        global $PhpParentFileName;
-       global $ProjectID;
        global $PhpInlineShowErrors;
 
        if (class_exists('ErrorHandler')) {
@@ -194,7 +210,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
           }
       }
 
-       $data = array('TY' => 'phperror1', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'TS' => microtime(true));
+       $data = array('TY' => 'phperror1', 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'TS' => microtime(true));
        sendBufferDataToNode($data,false);
 
    }
@@ -204,7 +220,6 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
        public function AppendError($ErrorLevel, $ErrorMessage, $ErrorFile = null, $ErrorLine = null, $ErrorContext = null)
        {
            global $PhpParentFileName;
-           global $ProjectID;
            global $PhpInlineShowErrors;
 
            // Perhaps evaluate the error level and respond accordingly
@@ -223,7 +238,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
               }
            }
 
-           $data = array('TY' => 'phperror2', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'TS' => microtime(true));
+           $data = array('TY' => 'phperror2', 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'TS' => microtime(true));
            sendBufferDataToNode($data,false);
 
            //print_r($phpgopherstore);
@@ -298,7 +313,6 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    function Gopher($xValue, $xTags = '')
    {
        global $PhpParentFileName;
-       global $ProjectID;
 
        $backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
@@ -334,7 +348,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
          $newvarname = "LOG"; //" ".$newvarname;
       }
 
-       $data = array('TY' => 'phpvar', 'ProjectID' => $ProjectID, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'TS' => microtime(true));
+       $data = array('TY' => 'phpvar', 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'TS' => microtime(true));
        sendBufferDataToNode($data,false);
    }
 
@@ -346,22 +360,44 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    //----------- Later gopher should offer two different runtimes one where it includes the request in gopherMini.php and other way is direct run.
 
    $GopherIncludeFile = '';
+   $GopherRedirect = 'z';
    foreach (getallheaders() as $name => $value) {
        if ($name == 'GopherPHPFile') {
            $GopherIncludeFileOrignal = $value;
            $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
 
            $PhpParentFileName = $GopherIncludeFileOrignal;
+       } else
+       if ($name == 'GopherPHPRedirect') {
+          $GopherRedirect = "yes";
        }
    }
 
    if ($GopherIncludeFile !== '') {
-       //   echo "-->  ".$PhpHelperRoot.$GopherIncludeFile;
+/*
+      if ($GopherRedirect !== '')
+      {
+         echo $GopherIncludeFileOrignal."<br>";
+         echo "a:".getcwd() ."<br>";
+         echo "-->  ".$PhpHelperRoot." -- ".$GopherIncludeFile."<br>";
+         echo "b:".dirname($PhpHelperRoot.$GopherIncludeFile)."<br>";
+      }
+
+
+      if ( getcwd() != dirname($PhpHelperRoot.$GopherIncludeFile) )
+      {
+         copy(getcwd()."/Gopher.php",dirname($PhpHelperRoot.$GopherIncludeFile)."/Gopher.php");
+
+         header('GopherPHPFile: '.$GopherIncludeFileOrignal);
+         header('GopherPHPRedirect: '.$GopherIncludeFileOrignal);
+         header("Location: ".dirname($GopherIncludeFileOrignal)."/Gopher.php" );
+         die();
+      }
+*/
+
       header('GopherMirrorRequest: '.$GopherIncludeFile);
       require_once $PhpHelperRoot.$GopherIncludeFile;
    }
 
 }
-
-
 ?>
