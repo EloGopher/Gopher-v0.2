@@ -38,7 +38,7 @@ Gopher($cars2,"Cars Tag");
 
 Gopher("Start Timer","Tag 1");
 
-usleep(100000);
+usleep(1500000);
 
 Gopher("End Timer","Tag 1");
 

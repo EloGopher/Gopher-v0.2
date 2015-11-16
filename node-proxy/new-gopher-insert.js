@@ -5,7 +5,6 @@ window.onerror = function(message, url, lineNumber) {
 	try {
 		var GMsg = new Object();
 		GMsg.TY = 'js_er';
-		GMsg.TS = gopherTimeStamp;
 		GMsg.LN = lineNumber;
 		GMsg.FN = encodeURIComponent(url);
 		GMsg.LG = encodeURIComponent(message);
@@ -119,7 +118,6 @@ var gopher = new function() {
 		if (GopherMsgs.length < GopherLimit) {
 			var GMsg = new Object();
 			GMsg.TY = 'js_gt';
-			GMsg.TS = gopherTimeStamp;
 			GMsg.LN = xCodeLine;
 			GMsg.FN = encodeURIComponent(xFileName);
 			GMsg.LG = encodeURIComponent(xMessage);
@@ -137,7 +135,6 @@ var gopher = new function() {
 		if (GopherMsgs.length < GopherLimit) {
 			var GMsg = new Object();
 			GMsg.TY = 'js_vt';
-			GMsg.TS = gopherTimeStamp;
 			GMsg.LN = xCodeLine;
 			GMsg.FN = encodeURIComponent(xFileName);
 			GMsg.VN = encodeURIComponent(xVarName);

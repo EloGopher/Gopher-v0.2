@@ -13,6 +13,12 @@ var CSVToArray = require("./CSVToArray.js")
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
+var now2 = new Date();
+var offset = now2.getTimezoneOffset() * 60 * 1000;
+var UniversalScriptTimeStamp = +now2 - offset;
+
+UniversalScriptTimeStamp = 0;
+
 function ShowHelpScreen()
 {
 	console.log("");
@@ -214,14 +220,14 @@ function onRequest(BrowserRequest, BrowserResponse) {
 					//console.log(dataobj[i]);
 
 					if (dataobj[i]["TY"] == "phpvar") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?,?)");
-						stmt.run(dataobj[i]["TS"], ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), '', decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", datetime('now','localtime')),?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), '', decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					} else
 
 					if ((dataobj[i]["TY"] == "phperror1") || (dataobj[i]["TY"] == "phperror2")) {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?)");
-						stmt.run(dataobj[i]["TS"], ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", datetime('now','localtime')),?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					}
 
@@ -240,18 +246,18 @@ function onRequest(BrowserRequest, BrowserResponse) {
 					//console.log(dataobj[i]);
 
 					if (dataobj[i]["TY"] == "js_gt") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?)");
-						stmt.run(dataobj[i]["TS"], ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", datetime('now','localtime')),?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					} else
 					if (dataobj[i]["TY"] == "js_vt") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?,?,?)");
-						stmt.run(dataobj[i]["TS"], ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,strftime(\"%s\", datetime('now','localtime')),?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					} else
 					if (dataobj[i]["TY"] == "js_er") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", CURRENT_TIME),?,?,?,?,?,?,?)");
-						stmt.run(dataobj[i]["TS"], ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,strftime(\"%s\", datetime('now','localtime')),?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					}
 				}
@@ -308,6 +314,21 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			(BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")) {
 			BufferData = true;
 		}
+
+		if ((BrowserRequest.url.indexOf('.htm') != -1) ||
+			(BrowserRequest.url.indexOf('.html') != -1) ||
+			(BrowserRequest.url.indexOf('.php') != -1)) {
+
+				if (BrowserRequest.headers["x-requested-with"] == 'XMLHttpRequest') {
+				    //is ajax request so don't update UniversalScriptTimeStamp
+				} else {
+					var now2 = new Date();
+					var offset = now2.getTimezoneOffset() * 60 * 1000;
+					UniversalScriptTimeStamp = +now2 - offset;
+
+				}
+		}
+
 
 		var BrowserData = [];
 		var ApacheChunk = [];
@@ -366,7 +387,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 									tempStr = BrowserRequest.headers["GopherPHPFile"];
 								}
 
-								chunkStr += "<script>" + "var gopherTimeStamp = Math.floor(Date.now() / 1000);var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>";
+								chunkStr += "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>";
 							}
 						}
 
