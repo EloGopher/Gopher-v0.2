@@ -1,0 +1,39 @@
+$(document).ready( function() {
+
+
+	var postData = {
+		task: 'getCampaignImages'
+	};
+	$.ajax({
+		type: 'post',
+		url: "testresponse.php",
+		dataType: "JSON",
+		data: postData,
+		success: function(data) {
+			gopher.tell(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","ajax response javascript");
+			gopher.track(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","data",data);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+		},
+		complete: function(jqXHR, textStatus) {}
+	});
+
+	var blockA = {firstName:'John', lastName:'Doe', age:50, eyeColor:'blue'};
+	var blockB = ['hi 2','hello 2'];
+
+	gopher.track(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","blockA",blockA);
+	gopher.track(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","blockB",blockB);
+
+/*
+	var j=0;
+	var k=100;
+	for (var i=0; i<100; i++) {
+		j=j+i;
+		gopher.track(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","i",i,"loop");
+		gopher.track(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","j",j,"sum");
+		gopher.tell(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","this is k:"+k,"mix");
+	}
+*/
+	gopher.track(39,"/Gopher-v0.2/GopherMiniTest/js/app.js","NotExists",NotExists);
+
+});
