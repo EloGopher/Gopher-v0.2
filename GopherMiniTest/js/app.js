@@ -1,5 +1,5 @@
 $(document).ready( function() {
-
+	console.log("document start","Ekim");
 
 	var postData = {
 		task: 'getCampaignImages'
