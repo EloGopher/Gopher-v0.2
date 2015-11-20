@@ -148,7 +148,7 @@ dbConn.serialize(function() {
 		dbConn.run("DROP TABLE Logs;", sqlerror.bind(this,"Drop Table") );
 	}
 
-	dbConn.run("CREATE TABLE Logs (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, LogTimeStamp BIGINT, LogTime INTEGER DEFAULT (CURRENT_TIMESTAMP), ProjectID INTEGER DEFAULT (0)                          NOT NULL, FileName STRING (255), ParentFileName STRING (255), LogType STRING (10), CodeLine INTEGER, VarName STRING (255), VarType STRING (20), VarValue BLOB, LogMessage BLOB, Tags STRING (255), DataFileName STRING (255) );", sqlerror.bind(this,"Create Table") );
+	dbConn.run("CREATE TABLE Logs (ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, LogTimeStamp BIGINT, LogTime INTEGER DEFAULT (CURRENT_TIMESTAMP), ProjectID INTEGER DEFAULT (0)                          NOT NULL, LogCount INTEGER DEFAULT (1) NOT NULL, FileName STRING (255), ParentFileName STRING (255), LogType STRING (10), CodeLine INTEGER, VarName STRING (255), VarType STRING (20), VarValue BLOB, LogMessage BLOB, Tags STRING (255), DataFileName STRING (255) );", sqlerror.bind(this,"Create Table") );
 
 	dbConn.run("CREATE INDEX LogTimeStamp ON Logs (LogTimeStamp);", sqlerror.bind(this,"Index 1") );
 	dbConn.run("CREATE INDEX LogTime ON Logs (LogTime);", sqlerror.bind(this,"Index 2") );
@@ -157,6 +157,7 @@ dbConn.serialize(function() {
 	dbConn.run("CREATE INDEX Tags ON Logs (Tags);", sqlerror.bind(this,"Index 5") );
 	dbConn.run("CREATE INDEX ProjectID ON Logs (ProjectID);", sqlerror.bind(this,"Index 6") );
 	dbConn.run("CREATE INDEX DataFileName ON Logs (DataFileName);", sqlerror.bind(this,"Index 7") );
+   dbConn.run("CREATE INDEX LogCount ON Logs (LogCount);", sqlerror.bind(this,"Index 8") );
 
 	console.log("GOPHER: DB Loaded.");
 });
@@ -174,7 +175,6 @@ if (stopclearcache=="") {
 
 
 var HelperString = "";
-
 
 function regexIndexOf(xstr, regex, startpos) {
 	var indexOf = xstr.substring(startpos || 0).search(regex);
@@ -240,22 +240,21 @@ function onRequest(BrowserRequest, BrowserResponse) {
 				//            console.log("----------");
 
 				var dataobj = JSON.parse(body);
-
 				for (var i = 0; i < dataobj.length; i++) {
 					//console.log(dataobj[i]);
 
 					if (dataobj[i]["TY"] == "phpvar") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-						stmt.run(UniversalScriptTimeStamp, decodeURIComponent(dataobj[i]["PHPTS"]), ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), '', decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, LogCount, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, decodeURIComponent(dataobj[i]["PHPTS"]), ProjectID, decodeURIComponent(dataobj[i]["RE"]), decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), '', decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					} else
 
 					if ((dataobj[i]["TY"] == "phperror1") || (dataobj[i]["TY"] == "phperror2")) {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,?,?,?,?,?,?,?,?)");
-						stmt.run(UniversalScriptTimeStamp, decodeURIComponent(dataobj[i]["PHPTS"]) , ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, LogCount, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, decodeURIComponent(dataobj[i]["PHPTS"]) , ProjectID, decodeURIComponent(dataobj[i]["RE"]), decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(dataobj[i]["PFN"]), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					}
-
 				}
 
 			} else
@@ -275,24 +274,35 @@ function onRequest(BrowserRequest, BrowserResponse) {
 					//console.log(dataobj[i]);
 
 					if (dataobj[i]["TY"] == "js_gt") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,?,?,?,?,?,?,?,?)");
-						stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, LogCount, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, dataobj[i]["RE"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]),
+                     function(err, rows){
+                        if (err==null) {
+                           LastInsertJSLogID = this.lastID;
+                        }
+                  });
 						stmt.finalize();
 					} else
+
 					if (dataobj[i]["TY"] == "js_vt") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
-						stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]));
-						stmt.finalize();
+
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, LogCount, FileName, ParentFileName, LogType, CodeLine, VarName, VarType, VarValue, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, dataobj[i]["RE"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["VN"]), dataobj[i]["VT"], decodeURIComponent(dataobj[i]["VV"]), decodeURIComponent(dataobj[i]["TG"]),
+                     function(err, rows){
+                        if (err==null) {
+                           LastInsertJSVarID = this.lastID;
+                        }
+                  });
+   					stmt.finalize();
 					} else
 					if (dataobj[i]["TY"] == "js_er") {
-						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,?,?,?,?,?,?,?,?)");
-						stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
+						var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, LogCount, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
+						stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, dataobj[i]["RE"], decodeURIComponent(dataobj[i]["FN"]), decodeURIComponent(ParentFileName), dataobj[i]["TY"], dataobj[i]["LN"], decodeURIComponent(dataobj[i]["LG"]), decodeURIComponent(dataobj[i]["TG"]));
 						stmt.finalize();
 					}
 				}
-
 			}
-
 
 			var ResponesBody = 'All Good';
 			BrowserResponse.writeHead(200, {

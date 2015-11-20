@@ -3,12 +3,28 @@ var GopherMsgs = [];
 
 window.onerror = function(message, url, lineNumber) {
 	try {
-		var GMsg = new Object();
-		GMsg.TY = 'js_er';
-		GMsg.LN = lineNumber;
-		GMsg.FN = encodeURIComponent(url);
-		GMsg.LG = encodeURIComponent(message);
-		GopherMsgs.push(GMsg);
+
+		var DuplicateDontAdd = false;
+		if (GopherMsgs.length>0) {
+			if ( (GopherMsgs[GopherMsgs.length-1].LN==lineNumber ) &&
+				  (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(url) ) &&
+				  (GopherMsgs[GopherMsgs.length-1].LG==encodeURIComponent(message) ) )
+			{
+				GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
+				DuplicateDontAdd=true;
+			}
+		}
+
+		if (!DuplicateDontAdd) {
+			var GMsg = new Object();
+			GMsg.RE = 1;
+
+			GMsg.TY = 'js_er';
+			GMsg.LN = lineNumber;
+			GMsg.FN = encodeURIComponent(url);
+			GMsg.LG = encodeURIComponent(message);
+			GopherMsgs.push(GMsg);
+		}
 	} catch (e) {
 		// squelch, because we don’t want to prevent method from returning true
 	}
@@ -117,28 +133,40 @@ var gopher = new function() {
 	this.tell = function(xCodeLine, xFileName, xMessage, xTags) {
 		if (GopherMsgs.length < GopherLimit) {
 			var GMsg = new Object();
-			GMsg.TY = 'js_gt';
-			GMsg.LN = xCodeLine;
-			GMsg.FN = encodeURIComponent(xFileName);
-			GMsg.LG = encodeURIComponent(xMessage);
 			if (xTags === undefined) {
 				GMsg.TG = "";
 			} else {
 				GMsg.TG = encodeURIComponent(xTags);
 			}
-			GopherMsgs.push(GMsg);
+
+			var DuplicateDontAdd = false;
+			if (GopherMsgs.length>0) {
+				if ( (GopherMsgs[GopherMsgs.length-1].LN==xCodeLine ) &&
+				     (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(xFileName) ) &&
+					  (GopherMsgs[GopherMsgs.length-1].LG==encodeURIComponent(xMessage) ) &&
+					  (GopherMsgs[GopherMsgs.length-1].TG==GMsg.TG ) )
+				{
+					GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
+					DuplicateDontAdd=true;
+				}
+			}
+			
+			if (!DuplicateDontAdd) {
+				GMsg.RE = 1;
+				GMsg.TY = 'js_gt';
+				GMsg.LN = xCodeLine;
+				GMsg.FN = encodeURIComponent(xFileName);
+				GMsg.LG = encodeURIComponent(xMessage);
+				GopherMsgs.push(GMsg);
+			}
 		}
 	};
 
 	//------------------------------------------------------------------------------
 	this.track = function(xCodeLine, xFileName, xVarName, xVarValue, xTags) {
 		if (GopherMsgs.length < GopherLimit) {
-			var GMsg = new Object();
-			GMsg.TY = 'js_vt';
-			GMsg.LN = xCodeLine;
-			GMsg.FN = encodeURIComponent(xFileName);
-			GMsg.VN = encodeURIComponent(xVarName);
 
+			var GMsg = new Object();
 			if (typeof(xVarValue) === "undefined") {
 				GMsg.VV = "{UNDEFINED}";
 				GMsg.VT = "undefined";
@@ -159,13 +187,36 @@ var gopher = new function() {
 				GMsg.VT = "plain";
 			}
 			GMsg.VV = encodeURIComponent(GMsg.VV);
-
 			if (xTags === undefined) {
 				GMsg.TG = "";
 			} else {
 				GMsg.TG = encodeURIComponent(xTags);
 			}
-			GopherMsgs.push(GMsg);
+
+
+			var DuplicateDontAdd = false;
+			if (GopherMsgs.length>0) {
+				if ( (GopherMsgs[GopherMsgs.length-1].LN==xCodeLine ) &&
+				     (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(xFileName) ) &&
+					  (GopherMsgs[GopherMsgs.length-1].VN==encodeURIComponent(xVarName) ) &&
+					  (GopherMsgs[GopherMsgs.length-1].VV==GMsg.VV ) &&
+					  (GopherMsgs[GopherMsgs.length-1].VT==GMsg.VT ) &&
+					  (GopherMsgs[GopherMsgs.length-1].TG==GMsg.TG ) )
+				{
+					GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
+					DuplicateDontAdd=true;
+				}
+			}
+
+			if (!DuplicateDontAdd) {
+				GMsg.RE = 1;
+				GMsg.TY = 'js_vt';
+				GMsg.LN = xCodeLine;
+				GMsg.FN = encodeURIComponent(xFileName);
+				GMsg.VN = encodeURIComponent(xVarName);
+
+				GopherMsgs.push(GMsg);
+			}
 		}
 	};
 }

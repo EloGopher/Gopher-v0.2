@@ -13,7 +13,7 @@ if (isset($_POST["op"]))
 
          if (count($phpfiles) > 0 )
          {
-            echo "copying Gopher.php to ... ". $directory . "\n";
+            echo "GOPHER: copying Gopher.php to ... ". $directory . "\n";
             copy(__FILE__,$directory.'/Gopher.php');
          }
       }
@@ -61,8 +61,22 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    {
       global $LastSend,$GopherPHPLogs;
 
-      if (!$ForceSend) {
-         $GopherPHPLogs[] = $data;
+      if (!$ForceSend) { //if forcesend data should be null and not added - search fo sendBufferDataToNode( in file to see examples
+
+         if (count($GopherPHPLogs)>0) {
+            $TempData = $data;
+            $TempDataToCheck = $GopherPHPLogs[ count($GopherPHPLogs)-1 ];
+
+            unset($TempData['RE']);
+            unset($TempDataToCheck['RE']);
+
+            unset($TempData['PHPTS']);
+            unset($TempDataToCheck['PHPTS']);
+
+            if ($TempData==$TempDataToCheck) { $GopherPHPLogs[ count($GopherPHPLogs)-1 ]['RE'] = $GopherPHPLogs[ count($GopherPHPLogs)-1 ]['RE']+1; } {$GopherPHPLogs[] = $data;}
+         } else {
+            $GopherPHPLogs[] = $data;
+         }
       }
       //print_r($GopherPHPLogs);
 
@@ -213,7 +227,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
           }
       }
 
-       $data = array('TY' => 'phperror1', 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'PHPTS' => microtime(true));
+       $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'PHPTS' => microtime(true));
        sendBufferDataToNode($data,false);
 
    }
@@ -241,7 +255,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
               }
            }
 
-           $data = array('TY' => 'phperror2', 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'PHPTS' => microtime(true));
+           $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'PHPTS' => microtime(true));
            sendBufferDataToNode($data,false);
 
            //print_r($phpgopherstore);
@@ -351,7 +365,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
          $newvarname = "LOG"; //" ".$newvarname;
       }
 
-       $data = array('TY' => 'phpvar', 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
+       $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
        sendBufferDataToNode($data,false);
    }
 
