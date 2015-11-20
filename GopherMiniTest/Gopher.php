@@ -73,7 +73,11 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
             unset($TempData['PHPTS']);
             unset($TempDataToCheck['PHPTS']);
 
-            if ($TempData==$TempDataToCheck) { $GopherPHPLogs[ count($GopherPHPLogs)-1 ]['RE'] = $GopherPHPLogs[ count($GopherPHPLogs)-1 ]['RE']+1; } {$GopherPHPLogs[] = $data;}
+            if ($TempData==$TempDataToCheck) {
+               $GopherPHPLogs[ count($GopherPHPLogs)-1 ]['RE'] = $GopherPHPLogs[ count($GopherPHPLogs)-1 ]['RE']+1;
+            } else {
+               $GopherPHPLogs[] = $data;
+            }
          } else {
             $GopherPHPLogs[] = $data;
          }
