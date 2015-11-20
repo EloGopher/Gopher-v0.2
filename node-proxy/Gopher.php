@@ -13,7 +13,7 @@ if (isset($_POST["op"]))
 
          if (count($phpfiles) > 0 )
          {
-            echo "copying Gopher.php to ... ". $directory . "\n";
+            echo "GOPHER: copying Gopher.php to ... ". $directory . "\n";
             copy(__FILE__,$directory.'/Gopher.php');
          }
       }

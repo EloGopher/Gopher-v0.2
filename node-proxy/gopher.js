@@ -3,6 +3,7 @@
 
 var http = require('http');
 var fs = require('fs');
+var path = require("path");
 var qs = require('querystring');
 var url = require("url");
 
@@ -33,26 +34,31 @@ function ShowHelpScreen()
 	console.log("-----------------------");
 	console.log("-gopherurl <http://> : No default, this is the location of Gopher.php in the project folder. Should be a full url.");
 	console.log("-pid <integer> : Default is 101, this is the project ID that will be logged with every event.");
-	console.log("-host <http://...> : No defaut, this has to be specified. This is the server gopher will be pulling through it's proxy. ");
+	console.log("-host <localhost> : No defaut, this has to be specified. This is the server gopher will be pulling through it's proxy. ");
 	console.log("-port <integer> : Default is 80. Port of server which gopher will be pulling.");
 	console.log("-path <string> : Default blank. If the project is in a subfolder this can be added in which case you would be able to run your code without writing the folder in the url.");
 	console.log("-gopherhost <http://localhost> : Default localhost. This parameter will be used by the Browser extension. Also all log messages will be sent to the gopher host and port. ");
 	console.log("-gopherport <integer> : Defalth 1337. Port of above parameter.");
 	console.log("-flushdb : Delete all data stored in SQLLite database.");
+   console.log("-stopclearcache : If this is not specified all network activity saved to the temp folder will be deleted.");
 	console.log("-redirectphp <yes/no> : Defalut yes. To trap and log all php runtime errors, all php files requested has to go through Gopher.php on the server. If you don't want the Gopher proxy to request php files through Gopher.php then you should set this to \"no\".");
-	console.log("-help : This page.");
+   console.log("-log <integer>: gopher log to console level ");
+console.log("-help : This page.");
 	console.log("");
 	console.log("Example run:");
-	console.log("node gopher -host http://localhost -gopherurl http://localhost/Gopher.php");
+	console.log("node gopher -flushdb -pid 2000 -host localhost -gopherurl http://localhost/Gopher.php");
 	console.log("");
 	console.log("");
 	process.exit(1);
 
 }
 
+var ConsoleLogLvl = 1;
+if(process.argv.indexOf("-log") != -1){ /*does our flag exist? grab the next item*/ ConsoleLogLvl = process.argv[process.argv.indexOf("-log") + 1]; }
+
 
 var ProjectID = 101;
-if(process.argv.indexOf("-pid") != -1){ /*does our flag exist? grab the next item*/ ProjectID = process.argv[process.argv.indexOf("-c") + 1]; }
+if(process.argv.indexOf("-pid") != -1){ ProjectID = process.argv[process.argv.indexOf("-pid") + 1]; }
 
 var projectHost = ''; // 'localhost' 'testv2.phishproof.com';
 if(process.argv.indexOf("-host") != -1){ projectHost = process.argv[process.argv.indexOf("-host") + 1]; }
@@ -74,6 +80,9 @@ if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
 
 var flushdb = "";
 if(process.argv.indexOf("-flushdb") != -1){ flushdb="yes"; }
+
+var stopclearcache = "";
+if(process.argv.indexOf("-stopclearcache") != -1){ stopclearcache="yes"; }
 
 var redirectphp = "yes";
 if(process.argv.indexOf("-redirectphp") != -1){ redirectphp = process.argv[process.argv.indexOf("-redirectphp") + 1]; }
@@ -97,7 +106,7 @@ if (gopherurl!=="") {
 
 	var post_req = http.request(options, function(r) {
 		r.on('data', function (chunk) {
-          console.log('Gopher PHP Response: ' + chunk);
+          console.log('GOPHER: PHP Response = ' + chunk);
       });
 
 		if (r.statusCode != 200) {
@@ -152,6 +161,15 @@ dbConn.serialize(function() {
 	console.log("GOPHER: DB Loaded.");
 });
 
+
+if (stopclearcache=="") {
+   console.log("GOPHER: Deleting Network Cache Files.");
+   fs.readdirSync(__dirname + '/temp/').forEach(function(fileName) {
+           if (path.extname(fileName) === ".txt") {
+               fs.unlinkSync(__dirname + '/temp/'+fileName);
+           }
+       });
+}
 
 
 
@@ -284,7 +302,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			BrowserResponse.end(ResponesBody);
 		});
 	} else {
-		console.log("LOAD: " + BrowserRequest.url);
+      if (ConsoleLogLvl>3) { console.log("LOAD: " + BrowserRequest.url); }
 
 		var now2 = new Date();
 		var offset = now2.getTimezoneOffset() * 60 * 1000;
@@ -296,7 +314,9 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NETWORK', '0', '', '', DataFileName );
 		stmt.finalize();
 
-		fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', BrowserRequest.url+"\n\n"+stringifyObject(BrowserRequest.headers));
+      if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
+		   fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', BrowserRequest.url+"\n\n"+stringifyObject(BrowserRequest.headers));
+      }
 
 		//--- force apache server to ignore browsers cache headers
 		delete BrowserRequest.headers['cache-control'];
@@ -320,9 +340,9 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			var GopherPHPurl = WithoutFilename + 'Gopher.php' + querystring;
 
 
-			console.log("redirecing php to Gopher.php ........" + BrowserRequest.url + " to " + GopherPHPurl);
+			if (ConsoleLogLvl>0) { console.log("redirecing php to Gopher.php ........" + BrowserRequest.url + " to " + GopherPHPurl); }
 
-			BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
+			BrowserRequest.headers["GopherPHPFile"] = projectPath + BrowserRequest.url;
 			BrowserRequest.url = GopherPHPurl;
 		}
 
@@ -371,6 +391,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		BrowserRequest.on('end', function() {
 
 			//--------- START ASKING THE FILE FROM APACHE
+         //console.log("Request page from server");
 			var NodeProxyRequest = http.request(options, function(ApacheResponse) {
 				//console.log("APACHE HEADER: %j", ApacheResponse.headers);
 
@@ -403,7 +424,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 								var tempStr = BrowserRequest.url;
 								var tempStr = tempStr.replace(/'/g, "\'");
 
-								//                        console.log(BrowserRequest.headers);
+								//console.log(BrowserRequest.headers);
 
 								if (BrowserRequest.headers["GopherPHPFile"] != undefined) {
 									tempStr = BrowserRequest.headers["GopherPHPFile"];
@@ -447,8 +468,10 @@ function onRequest(BrowserRequest, BrowserResponse) {
 						ApacheBytes = new Buffer(chunkStr, 'utf8');
 					}
 
-					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response-headers.txt', ApacheResponse.statusCode+"\n"+stringifyObject(ApacheResponse.headers));
-					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response.txt', chunkStr);
+               if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
+   					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response-headers.txt', ApacheResponse.statusCode+"\n"+stringifyObject(ApacheResponse.headers));
+   					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response.txt', chunkStr);
+               }
 
 					ApacheResponse.headers['content-length'] = ApacheBytes.length;
 					BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);
@@ -464,7 +487,9 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			//console.log("WRITE APACHE:"+decoder.write(BrowserData));
 			var BrowserBytes = Buffer.concat(BrowserData);
 
-			fs.writeFile(__dirname + '/temp/'+DataFileName+'-post.txt', BrowserBytes);
+         if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
+			   fs.writeFile(__dirname + '/temp/'+DataFileName+'-post.txt', BrowserBytes);
+         }
 
 			NodeProxyRequest.write(BrowserBytes, 'binary');
 			NodeProxyRequest.end();
