@@ -213,6 +213,26 @@ console.log("GOPHER: Server started on port: "+gopherPort+".");
 
 function onRequest(BrowserRequest, BrowserResponse) {
 
+   if (BrowserRequest.url == "/gopherdata.js") {
+      var stmt = "SELECT * FROM logs ORDER BY ID DESC LIMIT 50";
+      var DataArray = [];
+      dbConn.each(stmt, function(err, row) {
+         DataArray.push( row );
+         //console.log(row.FileName);
+      }, function() {
+         var ResponesBody= JSON.stringify(DataArray);
+
+         BrowserResponse.writeHead(200, {
+            'Content-Length': ResponesBody.length,
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'X-Requested-With'
+         });
+         BrowserResponse.end(ResponesBody);
+      });
+
+   } else
+
 	if ((BrowserRequest.url == "/gopherSave.js") || (BrowserRequest.url == "/gopherPHPsave.js")) {
 		var body = "";
 		BrowserRequest.on('data', function(data) {
