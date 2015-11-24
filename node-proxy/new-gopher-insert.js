@@ -1,6 +1,13 @@
 var GopherLimit = 500;
 var GopherMsgs = [];
 
+// Only Chrome & Opera have an error attribute on the event.
+/*
+window.addEventListener("error", function (e) {
+    console.log(e.error.message, "from", e.error.stack);
+});
+*/
+
 window.onerror = function(message, url, lineNumber) {
 	try {
 
@@ -27,6 +34,7 @@ window.onerror = function(message, url, lineNumber) {
 		}
 	} catch (e) {
 		// squelch, because we don’t want to prevent method from returning true
+
 	}
 
 	//return true;
@@ -150,7 +158,7 @@ var gopher = new function() {
 					DuplicateDontAdd=true;
 				}
 			}
-			
+
 			if (!DuplicateDontAdd) {
 				GMsg.RE = 1;
 				GMsg.TY = 'js_gt';

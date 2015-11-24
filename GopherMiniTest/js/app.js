@@ -34,6 +34,6 @@ $(document).ready( function() {
 		console.log("this is k:"+k,"mix");
 	}
 */
-	console.log(NotExists);
+//	console.log(NotExists);
 
 });

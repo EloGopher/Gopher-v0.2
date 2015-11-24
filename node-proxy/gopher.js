@@ -409,9 +409,14 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 			if (OriginalURL.indexOf('?') > 0) {
 				querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
+
+            withoutQueryURL = OriginalURL.substring(0,OriginalURL.indexOf('?')-1);
+            var WithoutFilename = withoutQueryURL.substring(0, withoutQueryURL.lastIndexOf("/") + 1);
+
+			} else {
+            var WithoutFilename = OriginalURL.substring(0, OriginalURL.lastIndexOf("/") + 1);
 			}
 
-			var WithoutFilename = OriginalURL.substring(0, OriginalURL.lastIndexOf("/") + 1);
 
 //			var GopherPHPurl = gopherurl + url.parse(OriginalURL).query;
 			var GopherPHPurl = WithoutFilename + 'Gopher.php' + querystring;
@@ -472,6 +477,17 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			var NodeProxyRequest = http.request(options, function(ApacheResponse) {
 				//console.log("APACHE HEADER: %j", ApacheResponse.headers);
 
+            //-------- IF Content-Type is not text/html or text/plain then dont try to convert it text with the BufferData boolean flag
+            //console.log(ApacheResponse.headers["content-type"]);
+            var FileContentType = ApacheResponse.headers["content-type"];
+
+            if ( (FileContentType.indexOf("text/")>=0) || (FileContentType.indexOf("application/")>=0)  ) {
+               //---
+            } else {
+               console.log("setting buffer data to false because of content-type: "+ApacheResponse.headers["content-type"]);
+               BufferData= false;
+            }
+
 				ApacheResponse.on('data', function(chunk) {
 					//console.log("on data... url:" + BrowserRequest.url + '\n');
 					ApacheChunk.push(chunk);
@@ -506,8 +522,11 @@ function onRequest(BrowserRequest, BrowserResponse) {
 								if (BrowserRequest.headers["GopherPHPFile"] != undefined) {
 									tempStr = BrowserRequest.headers["GopherPHPFile"];
 								}
+                        var postoinsert = chunkStr.search(new RegExp("\<head.{0,255}\>", "i"))-1;
 
-								chunkStr += "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>";
+                        chunkStr = chunkStr.substr(0, postoinsert) + "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>" + chunkStr.substr(postoinsert);
+
+								//chunkStr = "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>"+chunkStr;
 							}
 						}
 
@@ -535,9 +554,9 @@ function onRequest(BrowserRequest, BrowserResponse) {
 								//we'll for now only parse console.log's with 1 value and 1 tag
 								if (PartsOfConsol[0].length <= 2) {
 									if ((consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'")) {
-										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.index, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",');
+										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.lastIndex, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",');
 									} else {
-										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.track(' + lineNumberByIndex(RegEx5.index, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","' + PartsOfConsol[0][0] + '",');
+										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.track(' + lineNumberByIndex(RegEx5.lastIndex, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","' + PartsOfConsol[0][0] + '",');
 									}
 								}
 							}

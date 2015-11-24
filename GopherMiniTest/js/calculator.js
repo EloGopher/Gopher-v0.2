@@ -14,6 +14,9 @@ $(document).ready( function()
 	console.log("hello");
 	console.log(operators);
 
+	$("#calculator22 span").click( function(e) {
+	});
+
 
 	// Add onclick event to all the keys and perform operations
 	$("#calculator span").click( function(e) {
