@@ -214,21 +214,67 @@ console.log("GOPHER: Server started on port: "+gopherPort+".");
 function onRequest(BrowserRequest, BrowserResponse) {
 
    if (BrowserRequest.url == "/gopherdata.js") {
-      var stmt = "SELECT * FROM logs ORDER BY ID DESC LIMIT 50";
-      var DataArray = [];
-      dbConn.each(stmt, function(err, row) {
-         DataArray.push( row );
-         //console.log(row.FileName);
-      }, function() {
-         var ResponesBody= JSON.stringify(DataArray);
 
-         BrowserResponse.writeHead(200, {
-            'Content-Length': ResponesBody.length,
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': 'X-Requested-With'
+      var body = "";
+		BrowserRequest.on('data', function(data) {
+			body += data;
+
+			// Too much POST data, kill the connection!
+			if (body.length > 1e6) {
+
+				var ResponesBody = 'All Bad';
+				BrowserResponse.writeHead(200, {
+					'Content-Length': ResponesBody.length,
+					'Content-Type': 'text/plain'
+				});
+				BrowserResponse.end(ResponesBody);
+
+				BrowserRequest.connection.destroy();
+			}
+		});
+
+		BrowserRequest.on('end', function() {
+         var post = qs.parse(body);
+//       console.log(post['LastID']);
+         //var stmt = "SELECT * FROM logs ORDER BY ID DESC LIMIT 50";
+
+         if (post['LastID']=="0") {
+            var stmt = "SELECT * FROM (SELECT * FROM logs ORDER BY ID DESC limit 150) ORDER BY ID ASC"
+         } else {
+            var stmt = "SELECT * FROM (SELECT * FROM logs WHERE ID>"+ post['LastID'] +" ORDER BY ID DESC limit 150) ORDER BY ID ASC"
+         }
+
+         var DataArray = [];
+         dbConn.each(stmt, function(err, row) {
+            DataArray.push( {
+               'ID' : (row.ID),
+               'LogTimeStamp' : (row.LogTimeStamp),
+               'LogTime' : row.LogTime,
+               'ProjectID' : (row.ProjectID),
+               'LogCount' : (row.LogCount),
+               'FileName' : encodeURIComponent(row.FileName),
+               'ParentFileName' : encodeURIComponent(row.ParentFileName),
+               'LogType' : (row.LogType),
+               'CodeLine' : (row.CodeLine),
+               'VarName' : encodeURIComponent(row.VarName),
+               'VarType' : (row.VarType),
+               'VarValue' : encodeURIComponent(row.VarValue),
+               'LogMessage' : encodeURIComponent(row.LogMessage),
+               'Tags' : encodeURIComponent(row.Tags),
+               'DataFileName' : (row.DataFileName) });
+
+            //console.log(row.FileName);
+         }, function() {
+            var ResponesBody= JSON.stringify(DataArray);
+
+            BrowserResponse.writeHead(200, {
+               'Content-Length': ResponesBody.length,
+               'Content-Type': 'application/json',
+               'Access-Control-Allow-Origin': '*',
+               'Access-Control-Allow-Headers': 'X-Requested-With'
+            });
+            BrowserResponse.end(ResponesBody);
          });
-         BrowserResponse.end(ResponesBody);
       });
 
    } else
@@ -340,11 +386,12 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		var DataFileName = UniversalScriptTimeStampTemp+'R'+randomInt(1,1000);
 
-		var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags, DataFileName  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
-		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NETWORK', '0', '', '', DataFileName );
-		stmt.finalize();
-
       if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
+
+         var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags, DataFileName  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
+   		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NETWORK', '0', '', '', DataFileName );
+   		stmt.finalize();
+
 		   fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', BrowserRequest.url+"\n\n"+stringifyObject(BrowserRequest.headers));
       }
 
