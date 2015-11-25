@@ -385,6 +385,13 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		var UniversalScriptTimeStampTemp = +now2; // - offset; //save as utc
 
 		var DataFileName = UniversalScriptTimeStampTemp+'R'+randomInt(1,1000);
+      var IsAjax = false;
+
+      if (BrowserRequest.headers["x-requested-with"] == 'XMLHttpRequest') {
+          DataFileName = "AJAX-"+DataFileName;
+          IsAjax = true;
+      } 
+
 
       if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
 
@@ -512,7 +519,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 							(BrowserRequest.url.indexOf('.html') != -1) ||
 							(BrowserRequest.url.indexOf('.php') != -1) ||
 							(BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")) {
-							if (chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1) {
+							if ((chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1) && (!IsAjax)) {
 
 								var tempStr = BrowserRequest.url;
 								var tempStr = tempStr.replace(/'/g, "\'");

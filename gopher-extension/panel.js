@@ -45,11 +45,15 @@ $(document).ready( function(){
 						var LogType = "";
 						if (resultData[index].LogType=="NETWORK") { LogType += "LOAD: "; } else
 						if (resultData[index].LogType=="phperror2") { LogType += "<b>PHP ERROR</b>: ";  date = new Date((resultData[index].LogTime*1000)); } else
-						if (resultData[index].LogType=="phpvar") { LogType += "<i>php var</i>: "; date = new Date((resultData[index].LogTime*1000)); } else
+						if (resultData[index].LogType=="phpvar") { LogType += "<i>php</i>: "; date = new Date((resultData[index].LogTime*1000)); } else
 						if (resultData[index].LogType=="js_er") { LogType += "<b>JS ERROR</b>: "; } else
-						if (resultData[index].LogType=="js_gt") { LogType += "<i>js Log</i>: "; } else
-						if (resultData[index].LogType=="js_vt") { LogType += "<i>js var</i>: "; }
+						if (resultData[index].LogType=="js_gt") { LogType += "<i>js</i>: "; } else
+						if (resultData[index].LogType=="js_vt") { LogType += "<i>js</i>: "; }
 						LogType += "";
+
+						var isAjax = "";
+						var DataFileName = resultData[index].DataFileName+"";
+						if (DataFileName.indexOf("AJAX")!=-1) { isAjax = " <b>AJAX</b> "; }
 
 						LastID = resultData[index].ID;
 
@@ -62,7 +66,7 @@ $(document).ready( function(){
 						htmlrow += " <div style='border-bottom:1px solid #ddd;' class='logrow'>";
 
 						if (resultData[index].LogType=="NETWORK") {
-							htmlrow += "<div style='width:60px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right;'></div><div style='width:600px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; color:blue;'><b>LOAD: <u>" + decodeURIComponent(resultData[index].FileName)  + "</b></u></div>";
+							htmlrow += "<div style='width:60px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right;'></div><div style='width:600px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; color:blue;'><b>LOAD: <u>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</b></u></div>";
 						} else {
 
 							htmlrow += " <div style='width:60px; overflow:hidden; white-space:nowrap; display:inline-block; text-align:right;'>" + LogCount + resultData[index].CodeLine + ":</div>";
@@ -76,7 +80,7 @@ $(document).ready( function(){
 								htmlrow += " <div class='logdiv' style='width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left;'>" + LogType + "<b>"+safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
 							}
 
-							htmlrow += "<div style='float:right' class='fn'>"+ timespan +"<span class='pfn' style='display:none'> parent:" +  decodeURIComponent(resultData[index].ParentFileName) + " ---&gt; </span>" +  decodeURIComponent(resultData[index].FileName) + "</div>";
+							htmlrow += "<div style='float:right' class='fn'>"+ timespan +"<span class='pfn' style='display:none'> parent:" +  decodeURIComponent(resultData[index].ParentFileName) + " ---&gt; </span>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
 						}
 
 						htmlrow += "</div>" ;
