@@ -9,8 +9,6 @@ var url = require("url");
 
 var sqlite3 = require('sqlite3').verbose();
 
-var CSVToArray = require("./CSVToArray.js")
-
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
@@ -32,7 +30,7 @@ function ShowHelpScreen()
 	console.log("");
 	console.log("Gopher Help");
 	console.log("-----------------------");
-	console.log("-gopherurl <http://> : No default, this is the location of Gopher.php in the project folder. Should be a full url.");
+	console.log("-gopherurl <http://> : No default, this is the location of Gopher.php in the project folder. Should be pointing to the url folder where Gopher.php is located.");
 	console.log("-pid <integer> : Default is 101, this is the project ID that will be logged with every event.");
 	console.log("-host <localhost> : No defaut, this has to be specified. This is the server gopher will be pulling through it's proxy. ");
 	console.log("-port <integer> : Default is 80. Port of server which gopher will be pulling.");
@@ -46,7 +44,7 @@ function ShowHelpScreen()
 console.log("-help : This page.");
 	console.log("");
 	console.log("Example run:");
-	console.log("node gopher -flushdb -pid 2000 -host localhost -gopherurl http://localhost/Gopher.php");
+	console.log("node gopher -flushdb -pid 2000 -host localhost -gopherurl http://localhost/");
 	console.log("");
 	console.log("");
 	process.exit(1);
@@ -95,9 +93,9 @@ if (gopherurl!=="") {
 	var post_data = 'op=copyself';
 	var options = {
 			method: 'POST',
-			host: url.parse(gopherurl).host,
+			host: url.parse(gopherurl+'Gopher.php').host,
 			port: 80,
-			path: url.parse(gopherurl).pathname,
+			path: url.parse(gopherurl+'Gopher.php').pathname,
 			headers: {
 	         'Content-Type': 'application/x-www-form-urlencoded',
 	         'Content-Length': Buffer.byteLength(post_data)
@@ -390,7 +388,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
       if (BrowserRequest.headers["x-requested-with"] == 'XMLHttpRequest') {
           DataFileName = "AJAX-"+DataFileName;
           IsAjax = true;
-      } 
+      }
 
 
       if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
@@ -508,11 +506,25 @@ function onRequest(BrowserRequest, BrowserResponse) {
 						//console.log("start change content for: "+BrowserRequest.url);
 						//modify the urls in the page
 						var chunkStr = decoder.write(ApacheBytes);
-						var regx1 = new RegExp(projectHost, 'g');
-						chunkStr = chunkStr.replace(regx1, gopherHost);
+
+                  if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
+      					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response-headers.txt', ApacheResponse.statusCode+"\n"+stringifyObject(ApacheResponse.headers));
+      					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response.txt', chunkStr);
+                  }
+
+                  //update absoulte url paths to the gopher proxy url and port
+                  /*
+
+                  -- this block is buggy as it will replace any variable or string that contains the url as well
+                  -- should be fixed in v1.2
+
+
+                  var regx1 = new RegExp(projectHost, 'g');
+						chunkStr = chunkStr.replace(regx1, gopherHost + ':' + gopherPort);
+
 						var regx2 = new RegExp(projectHost + ':' + projectOnPort, 'g');
 						chunkStr = chunkStr.replace(regx2, gopherHost + ':' + gopherPort);
-
+                  */
 
 						//if url is a real page add gopher helper to the end
 						if ((BrowserRequest.url.indexOf('.htm') != -1) ||
@@ -542,39 +554,108 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 							var index = -1;
 
-							var RegEx5 = RegExp('console\\.log\\((.*)\\)', 'igm');
+							var RegEx5 = RegExp('[\\n\\r\\s]console\\.log', 'igm');
 							var searchRes;
-
 
 							while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
 
-								consolbody = searchRes[1];
-								consolbody = consolbody.trim();
 
-								//console.log("BODY: " + consolbody + " " + RegEx5.lastIndex);
+                        //------- parse begin and end paranthesis and extract the parameters within and not get fooled and tricked by nested quotes and paranthesises that ApacheResponse
+                        //------- not part of the parameter or the console.log( ) start and end paranthesis
+                        //console.log(searchRes.index+" "+RegEx5.lastIndex);
+                        var stillSearching=true;
+                        var LogStart = -1;
+                        var LogEnd = -1;
 
-								var PartsOfConsol = CSVToArray.CSVToArray(consolbody, ',');
+                        currPos = searchRes.index;
+                        while (stillSearching && currPos <= chunkStr.length) {
+                          var currChar = chunkStr.charAt(currPos);
+                          if (currChar=="(") { stillSearching=false; LogStart=currPos; }
+                          currPos++;
+                        }
 
-								//console.log(PartsOfConsol);
-								//console.log("parts:"+PartsOfConsol[0].length);
+                        var stillSearching=true;
+                        var ParanthesisCount = 1;
+                        var QuoteCount = 0;
+                        var DoubleQuoteCount = 0;
+                        var StartString = false;
+                        var StartQuote = "";
+                        var PrevChar = "";
+                        var BracketCount = 0;
+                        var CurlyBracketCount = 0;
 
-								//we'll for now only parse console.log's with 1 value and 1 tag
-								if (PartsOfConsol[0].length <= 2) {
-									if ((consolbody.charAt(0) == "\"") || (consolbody.charAt(0) == "'")) {
-										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.tell(' + lineNumberByIndex(RegEx5.lastIndex, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '",');
-									} else {
-										chunkStr = chunkStr.replace(RegExp('console\\.log\\(', 'i'), 'gopher.track(' + lineNumberByIndex(RegEx5.lastIndex, chunkStr) + ',"' + BrowserRequest.url.replace(/"/g, '\\\\\"') + '","' + PartsOfConsol[0][0] + '",');
-									}
-								}
+                        var LastParametePos = currPos;
+                        var HasMoreThanOneParameter = false;
+
+                        var LogParams = [];
+
+                        while (stillSearching && currPos <= chunkStr.length) {
+                           var currChar = chunkStr.charAt(currPos);
+
+                           if ( ((currChar=="\"") ||  (currChar=="'")) && (!StartString) ) {
+                              StartQuote = currChar;
+                              StartString = true;
+                           } else
+
+                           if ( ((currChar=="\"") || (currChar=="'")) && (StartString) && (PrevChar!="\\") && (currChar==StartQuote) ) {
+                              StartString = false;
+                           }
+
+                           if ( (!StartString) && (ParanthesisCount==1) && (CurlyBracketCount==0) && (BracketCount==0) && (currChar==",") )
+                           {
+                              //console.log("PARAM:"+ chunkStr.substring(LastParametePos , currPos) );
+                              LogParams.push( chunkStr.substring(LastParametePos , currPos) );
+                              LastParametePos = currPos+1;
+                              HasMoreThanOneParameter=true;
+                           }
+
+
+                           if (!StartString) {
+                              if (currChar=="(") {  ParanthesisCount++; }
+                              if (currChar==")") {  ParanthesisCount--; }
+
+                              if (currChar=="[") {  BracketCount++; }
+                              if (currChar=="]") {  BracketCount--; }
+
+                              if (currChar=="{") {  CurlyBracketCount++; }
+                              if (currChar=="}") {  CurlyBracketCount--; }
+                           }
+
+                          if (ParanthesisCount==0) { stillSearching=false; LogEnd = currPos; }
+
+                          currPos++;
+                          PrevChar = currChar;
+                        }
+                        if (HasMoreThanOneParameter) {
+//                           console.log( "PARAM:"+chunkStr.substring(LastParametePos , currPos-1) );
+                           LogParams.push( chunkStr.substring(LastParametePos , currPos-1) );
+                        } else {
+//                           console.log("single parameter");
+//                           console.log( "PARAM:"+chunkStr.substring(LogStart+1 , LogEnd) );
+                           LogParams.push( chunkStr.substring(LogStart+1 , LogEnd) );
+                        }
+                        if ((LogStart>=0) && (LogEnd>LogStart)) {
+                           console.log("Start End: "+LogStart+" "+LogEnd);
+                           console.log( lineNumberByIndex(RegEx5.lastIndex, chunkStr) + " " + chunkStr.substring(LogStart , LogEnd+1) );
+                           console.log( "params:" + LogParams.length );
+
+                           if (LogParams.length<=2)
+                           {
+                              if (LogParams.length==1) { LogParams.push("\"\""); }
+
+                              var GopherInsertString = 'gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + LogParams[0].replace(/"/g, '\\\"') + '",'+ LogParams[0] + ',' + LogParams[1] + '); ';
+
+                              chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
+
+                              RegEx5.lastIndex += GopherInsertString.length;
+                           }
+                        }
 							}
 						}
+
+
 						ApacheBytes = new Buffer(chunkStr, 'utf8');
 					}
-
-               if ((BrowserRequest.url.indexOf('.htm') != -1) || (BrowserRequest.url.indexOf('.html') != -1) || (BrowserRequest.url.indexOf('.php') != -1)) {
-   					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response-headers.txt', ApacheResponse.statusCode+"\n"+stringifyObject(ApacheResponse.headers));
-   					fs.writeFile(__dirname + '/temp/'+DataFileName+'-response.txt', chunkStr);
-               }
 
 					ApacheResponse.headers['content-length'] = ApacheBytes.length;
 					BrowserResponse.writeHead(ApacheResponse.statusCode, ApacheResponse.headers);

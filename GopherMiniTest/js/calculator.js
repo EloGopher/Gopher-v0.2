@@ -1,8 +1,8 @@
 $(document).ready( function()
 {
-	for (var i=0; i<10; i++)
+	for (var i=0; i<3; i++)
 	{
-		console.log("start 11111111111111","start-tag,multitag");
+		console.log("start 111111))11111111","start-tag,multitag");
 	}
 
 	// Get all the keys from document
@@ -11,7 +11,13 @@ $(document).ready( function()
 	var decimalAdded = false;
 	var InputStr = "";
 
-	console.log("hello");
+	var blockA1 = {firstName:'John', lastName:'Doe', age:50, eyeColor:'blue'};
+	var blockB2 = ['hi 2','hello 2'];
+
+	console.log( blockA1["first,)Name"], "MyTag" );
+
+
+	console.log("hel()()(())lo");
 	console.log(operators);
 
 	$("#calculator22 span").click( function(e) {

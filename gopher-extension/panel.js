@@ -24,6 +24,8 @@ $(document).ready( function(){
 	{
 		$("#testframe").html("");
 
+		var LastFileName = "";
+
 		//$("#testframe").html("Loading... ");
 		refreshIntervalId = setInterval(function () {
 			$.ajax({
@@ -60,7 +62,7 @@ $(document).ready( function(){
 						var LogCount = "";
 						if (resultData[index].LogCount>1) { LogCount = " <span style='font-weight:bold; border-radius:10px; padding:3px; background-color:#ccc;'>" + resultData[index].LogCount + "</span> "; }
 
-						var timespan = " <span class='timediv' style='width:60px; overflow:hidden; white-space:nowrap; display:none; text-align:right;'>" +  + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()+"</span>  ";
+						var timespan = " <span class='timediv' style='width:60px; overflow:hidden; white-space:nowrap; display:none; text-align:right;'>" +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()+"</span>  ";
 
 
 						htmlrow += " <div style='border-bottom:1px solid #ddd;' class='logrow'>";
@@ -69,18 +71,39 @@ $(document).ready( function(){
 							htmlrow += "<div style='width:60px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right;'></div><div style='width:600px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; color:blue;'><b>LOAD: <u>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</b></u></div>";
 						} else {
 
+							var CurrentFileName = decodeURIComponent(resultData[index].ParentFileName) + " " + decodeURIComponent(resultData[index].FileName) + isAjax;
+
+							if (CurrentFileName!=LastFileName) {
+								LastFileName = CurrentFileName;
+								htmlrow += "<div style='background-color:#ccc; display:inline-block; '>"+ date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()+ " " +    decodeURIComponent(resultData[index].FileName) + isAjax + " ---&gt; parent " +decodeURIComponent(resultData[index].ParentFileName) + "</div></div>";
+
+								htmlrow += " <div style='border-bottom:1px solid #ddd;' class='logrow'>";
+
+							}
+
 							htmlrow += " <div style='width:60px; overflow:hidden; white-space:nowrap; display:inline-block; text-align:right;'>" + LogCount + resultData[index].CodeLine + ":</div>";
 
 							if (resultData[index].LogType=="phpvar") {
 								htmlrow += " <div class='logdiv' style='width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left;'>" + LogType + "<b>"+decodeURIComponent(resultData[index].VarName) + "</b> = " + decodeURIComponent(resultData[index].VarValue) + "</div>";
+
+								if (resultData[index].Tags!="") {
+									htmlrow += " <div class='tagdiv' style='width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#ccccff; border-radius:3px;'>"  + (decodeURIComponent(resultData[index].Tags)) + "</div>";
+								}
+
 							} else
-							if ( (decodeURIComponent(resultData[index].VarName) == "null") || (decodeURIComponent(resultData[index].VarName) == "LOG") ) {
+							if (resultData[index].LogType=="js_vt") {
+								htmlrow += " <div class='logdiv' style='width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left;'>" + LogType + " " + resultData[index].VarType + " <b>"+safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
+
+								if (resultData[index].Tags!="") {
+									htmlrow += " <div class='tagdiv' style='width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#aaffaa; border-radius:3px;'>"  + (decodeURIComponent(resultData[index].Tags)) + "</div>";
+								}
+
+							} else
+							{
 								htmlrow += " <div class='logdiv' style='width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left;'>" + LogType+safe_tags_replace(decodeURIComponent(resultData[index].LogMessage)) + "</div>";
-							} else {
-								htmlrow += " <div class='logdiv' style='width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left;'>" + LogType + "<b>"+safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
 							}
 
-							htmlrow += "<div style='float:right' class='fn'>"+ timespan +"<span class='pfn' style='display:none'> parent:" +  decodeURIComponent(resultData[index].ParentFileName) + " ---&gt; </span>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
+							htmlrow += "<div style='float:right'>"+ timespan + "</span></div>";
 						}
 
 						htmlrow += "</div>" ;
@@ -103,11 +126,11 @@ $(document).ready( function(){
 
 					$(".logdiv").on({
 					    mouseenter: function () {
-					        $(this).css({"overflow":"auto", "white-space":"normal"});
+					        $(this).css({"overflow":"auto", "background-color":"#eee", "white-space":"normal", "text-overflow": "clip"});
 							  //$(this).parent().find('.timediv').show();
 					    },
 					    mouseleave: function () {
-							 $(this).css({"overflow":"hidden", "white-space":"nowrap"});
+							 $(this).css({"overflow":"hidden", "background-color":"#fff", "white-space":"nowrap", "text-overflow": "ellipsis"});
 							 //	 $(this).parent().find('.timediv').hide();
 					    }
 					});
@@ -149,6 +172,26 @@ $(document).ready( function(){
         }
     }, 100);
 	}
+
+	$("#popup_btn").on('click' , function(){
+		chrome.devtools.inspectedWindow.eval(
+	           "jQuery.fn.jquery",
+	            function(result, isException) {
+	              if (isException)
+	                console.log("the page is not using jQuery");
+	              else
+	                console.log("The page is using jQuery v" + result);
+	            }
+	       );
+		/*
+		chrome.windows.create({
+		                type: 'popup',
+		                focused: true
+		                // incognito, top, left, ...
+		            });
+		*/
+	});
+
 
 	$("#bottom_btn").on('click' , function(){
 		$('html, body').animate( {scrollTop : $(document).height()-$(window).height() },250);

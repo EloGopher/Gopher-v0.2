@@ -366,7 +366,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
       if ( (strpos($newvarname,"'") !== false) || (strpos($newvarname,"\"") !== false) || (strpos($newvarname,".") !== false) || (strpos($newvarname,"$") === false) )
       {
-         $newvarname = "LOG"; //" ".$newvarname;
+         //$newvarname = "LOG"; //" ".$newvarname;
       }
 
        $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));

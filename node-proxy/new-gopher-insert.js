@@ -171,7 +171,7 @@ var gopher = new function() {
 	};
 
 	//------------------------------------------------------------------------------
-	this.track = function(xCodeLine, xFileName, xVarName, xVarValue, xTags) {
+	this.log = function(xCodeLine, xFileName, xVarName, xVarValue, xTags) {
 		if (GopherMsgs.length < GopherLimit) {
 
 			var GMsg = new Object();
