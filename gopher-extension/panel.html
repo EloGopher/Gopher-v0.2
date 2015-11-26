@@ -4,11 +4,119 @@
 	<script src="jquery-1.11.1.min.js"></script>
 	<script src="panel.js"></script>
 </head>
+
+<style>
+.modal {
+
+    /* Overlay page content */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+
+	 display: none;
+}
+
+
+/* Content */
+.modal > div {
+    width: 90%;
+	 height:70%;
+    background: #fff;
+    position: relative;
+    margin: 20px auto;
+
+    /* Prettify */
+    padding: 5px;
+    border-radius: 7px;
+    box-shadow: 0 3px 20px rgba(0,0,0,0.9);
+    background: #fff;
+    background: -moz-linear-gradient(#fff, #ccc);
+    background: -webkit-linear-gradient(#fff, #ccc);
+    background: -o-linear-gradient(#fff, #ccc);
+    background: linear-gradient(#fff, #ccc);
+    text-shadow: 0 1px 0 #fff;
+}
+
+
+/* Modal close link */
+.modal .modalclose {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: transparent;
+	 cursor: pointer;
+}
+
+/* Create close button */
+.modal .modalclose:after {
+    content: 'X';
+    display: block;
+
+    /* Position */
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    width: 1.5em;
+    padding: 1px 1px 1px 2px;
+
+    /* Style */
+    text-decoration: none;
+    text-shadow: none;
+    text-align: center;
+    font-weight: bold;
+    background: #000;
+    color: #fff;
+    border: 3px solid #fff;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    }
+
+    .modal a[href="#close"]:focus:after,
+    .modal a[href="#close"]:hover:after {
+    -webkit-transform: scale(1.1,1.1);
+    -moz-transform: scale(1.1,1.1);
+    transform: scale(1.1,1.1);
+}
+
+.modal .modalclose:focus:after {
+    outline: 1px solid #000;
+}
+
+
+
+
+.logcount { font-weight:bold; border-radius:10px; padding:3px; background-color:#ccc;}
+.timediv { width:60px; overflow:hidden; white-space:nowrap; display:none; text-align:right; }
+.logrow { border-bottom:1px solid #ddd; }
+.networkdiv { width:60px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right; }
+.networksubdiv { width:600px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; color:blue; font-weight: bold; }
+.networksubdiv:hover {  text-decoration: underline; cursor: pointer;}
+
+.filenamechange { background-color:#ccc; display:inline-block; }
+.codeline { width:60px; overflow:hidden; white-space:nowrap; display:inline-block; text-align:right; }
+.logdiv { width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; }
+.phptag { width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#ccccff; border-radius:3px; }
+.jstag { width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#aaffaa; border-radius:3px; }
+
+
+
+</style>
+
 <body>
-	<button id="popup_btn" style="position:fixed; top:10px; right:230px; z-index:10;">popup</button>
 <button id="bottom_btn" style="position:fixed; top:10px; right:130px; z-index:10;">Goto last</button>
 <button id="refresh_btn" style="position:fixed; top:10px; right:10px; z-index:10;">Restart From:</button>
 <div id="testframe">frame3</div>
+
+<aside id="sourceview" class="modal">
+	<div>
+		<div id="sourceres"></div>
+		<span class="modalclose" title="Close">Close</span>
+	</div>
+</aside>
 
 </body>
 </html>
