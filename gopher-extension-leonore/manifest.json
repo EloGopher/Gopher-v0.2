@@ -1,0 +1,37 @@
+{
+	"manifest_version": 2,
+
+	"name": "Gopher Developer Extension",
+	"description": "Adds Gopher support to Chrome Dev consol.",
+	"version": "0.1",
+
+
+	"browser_action": {
+        "default_title": "Gopher Info Box",
+        "default_icon": "groundhog_line_art.png",
+        "default_popup": "popup.html"
+    },
+
+	"icons": { "16": "gopher.png",
+           "48": "gopher.png",
+          "128": "gopher.png" },
+
+	"permissions": [
+		"pageCapture",
+		"tabs",
+		"activeTab",
+		"https://ajax.googleapis.com/",
+		"http://localhost/*",
+		"*://localhost/*",
+		"http://*/*",
+		"http://localhost:1337/*",
+      "https://*/*"
+	],
+
+	"devtools_page": "devtools.html",
+	"options_page": "panel.html",
+	"content_scripts": [{
+		"js": ["jquery-1.11.1.min.js"],
+		"matches": ["http://*/*", "https://*/*"]
+	}]
+}
