@@ -24,6 +24,7 @@ if (isset($_POST["op"]))
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
 
    $GopherIsHere = true;
+   $GopherSendError = 0;
 
    $PhpInlineShowErrors = true;
    $LastSend = microtime(true);
@@ -59,11 +60,13 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
    function sendBufferDataToNode($data,$ForceSend)
    {
-      global $LastSend,$GopherPHPLogs;
+      global $LastSend,$GopherPHPLogs,$GopherSendError;
+
+      if ($GopherSendError>3) { return; } //stop if the call to node failed more than 3 times to save
 
       if (!$ForceSend) { //if forcesend data should be null and not added - search fo sendBufferDataToNode( in file to see examples
 
-         if (count($GopherPHPLogs)>0) {
+         if (count($GopherPHPLogs)>0) { //check is the previous record is identical to current first
             $TempData = $data;
             $TempDataToCheck = $GopherPHPLogs[ count($GopherPHPLogs)-1 ];
 
@@ -110,6 +113,8 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
          if ($response == "All Good") {
             $GopherPHPLogs = [];
+         } else {
+            $GopherSendError++;
          }
       }
    }
@@ -216,6 +221,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    {
        global $PhpParentFileName;
        global $PhpInlineShowErrors;
+       global $GopherSendError;
 
        if (class_exists('ErrorHandler')) {
            $ErrorTypeString = ErrorHandler::ErrorTypeString($ErrorLevel);
@@ -231,6 +237,8 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
           }
       }
 
+      if ($GopherSendError>3) { return; } //exit if too many post error
+
        $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'PHPTS' => microtime(true));
        sendBufferDataToNode($data,false);
 
@@ -242,6 +250,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
        {
            global $PhpParentFileName;
            global $PhpInlineShowErrors;
+           global $GopherSendError;
 
            // Perhaps evaluate the error level and respond accordingly
            //
@@ -258,6 +267,9 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
                   echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:black; background-color:#ccc;'>".$ErrorFile.' '.$ErrorLine.': '.$ReturnValue.'</div>';
               }
            }
+
+           if ($GopherSendError>3) { return; } //exit if too many post error
+
 
            $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'PHPTS' => microtime(true));
            sendBufferDataToNode($data,false);
@@ -335,6 +347,10 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    {
        global $PhpParentFileName;
 
+       global $GopherSendError;
+       if ($GopherSendError>3) { return; } //exit if too many post error
+
+
        $backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
        $src = file($backtr[0]['file']);
@@ -358,16 +374,6 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
        $varnames[] = str_getcsv($varname); // explode(",", $varname);
        $newvarname = $varnames[0][0];
-
-   //  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
-   //    echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:white; font-weight:normal; background-color:#444;'>";
-   //    echo ' Line:'.$backtr[0]['line'].' '.$varname.' = '.json_encode($xValue).' Tags:'.$xTags.' -- File:'.$backtr[0]['file'];
-   //    echo '</div>';
-
-      if ( (strpos($newvarname,"'") !== false) || (strpos($newvarname,"\"") !== false) || (strpos($newvarname,".") !== false) || (strpos($newvarname,"$") === false) )
-      {
-         //$newvarname = "LOG"; //" ".$newvarname;
-      }
 
        $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
        sendBufferDataToNode($data,false);
