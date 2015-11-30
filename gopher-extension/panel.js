@@ -114,7 +114,7 @@ $(document).ready(function() {
 								htmlrow += " <div class='codeline'>" + LogCount + resultData[index].CodeLine + ":</div>";
 
 								if (resultData[index].LogType == "phpvar") {
-									htmlrow += " <div class='logdiv'>" + LogType + "<b>" + decodeURIComponent(resultData[index].VarName) + "</b> = " + decodeURIComponent(resultData[index].VarValue) + "</div>";
+									htmlrow += " <div class='logdiv'>" + LogType + "<b>" + safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
 
 									if (resultData[index].Tags != "") {
 										htmlrow += " <div class='tagdiv phptag'>" + (decodeURIComponent(resultData[index].Tags)) + "</div>";
