@@ -355,7 +355,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
        $src = file($backtr[0]['file']);
        $line = $src[ $backtr[0]['line'] - 1 ];
-       preg_match("#Gopher\((.+)\)#", $line, $match);
+       preg_match("#gopher\((.+)\)#i", $line, $match);
 
        $max = strlen($match[1]);
        $varname = '';
