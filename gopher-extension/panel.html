@@ -95,19 +95,49 @@
 
 
 
+.flash {
+  -moz-animation: flash 3s ease-out;
+  -moz-animation-iteration-count: 1;
+
+  -webkit-animation: flash 3s ease-out;
+  -webkit-animation-iteration-count: 1;
+
+  -ms-animation: flash 3s ease-out;
+  -ms-animation-iteration-count: 1;
+}
+
+@-webkit-keyframes flash {
+    0% { background-color: none; }
+    50% { background-color: #fbf8b2; }
+    100% { background-color: none; }
+}
+
+@-moz-keyframes flash {
+    0% { background-color: none; }
+    50% { background-color: #fbf8b2; }
+    100% { background-color: none; }
+}
+
+@-ms-keyframes flash {
+    0% { background-color: none; }
+    50% { background-color: #fbf8b2; }
+    100% { background-color: none; }
+}
+
 
 .logcount { font-weight:bold; border-radius:10px; padding:3px; background-color:#ccc;}
-.timediv { width:60px; overflow:hidden; white-space:nowrap; display:none; text-align:right; }
+.timediv { width:60px; overflow:hidden; white-space:nowrap; display:none; text-align:right; margin-right: 5px; }
 .logrow { border-bottom:1px solid #ddd; }
 .networkdiv { width:60px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right; }
 .networksubdiv { width:600px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; color:blue; font-weight: bold; }
 .networksubdiv:hover {  text-decoration: underline; cursor: pointer;}
 
-.filenamechange { background-color:#ccc; display:inline-block; }
+.filenamechange { background-color:#ddd; padding:4px; margin-bottom: 4px; border-radius: 5px; }
 .codeline { width:60px; overflow:hidden; white-space:nowrap; display:inline-block; text-align:right; }
 .logdiv { width:900px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; }
 .phptag { width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#ccccff; border-radius:3px; }
 .jstag { width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#aaffaa; border-radius:3px; }
+.fileblock { border:1px solid black; border-radius: 5px; margin-top:3px;  }
 
 
 
