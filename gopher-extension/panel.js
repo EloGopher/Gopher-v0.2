@@ -145,9 +145,36 @@ $(document).ready(function() {
 						});
 
 						$(".networksubdiv").on('click', function () {
-							$("#sourceres").html( $(this).data('datafilename') );
+
+							$("#sourceres").html( 'loading...' );
 							$("#sourceview").show();
+
+							$.ajax({
+								type: 'POST',
+								data: 'DataFile=' + $(this).data('datafilename'),
+								url: "http://localhost:1337/gopherdata.js",
+								crossDomain: true,
+								error: function(xhr, status, error) {
+									$("#testframe").html("LOAD ERROR:" + xhr.responseText + " (" + status + ") -" + error);
+								},
+
+								success: function(resultData) {
+									$("#sourceres").html(
+										'<b>POST HEADERS:</b> '+safe_tags_replace(decodeURIComponent(resultData[0]['header'])) + '<br>' +
+										'<b>POST DATA:</b> '+decodeURIComponent(safe_tags_replace(resultData[0]['post'])) + '<br>' +
+										'<b>RESPONSE HEADERS:</b> '+decodeURIComponent(safe_tags_replace(resultData[0]['responseheaders'])) + '<br>' +
+										'<b>RESPONSE:</b> '+decodeURIComponent(safe_tags_replace(resultData[0]['response']))
+									);
+								}
+							});
+
+
 						});
+
+						$('.modal').on('click', function () {
+							$("#sourceview").hide();
+						});
+
 
 						$('.modalclose').on('click', function () {
 							$("#sourceview").hide();
@@ -180,7 +207,6 @@ $(document).ready(function() {
 								$(this).find('.timediv').hide();
 							}
 						});
-						$("#refresh_btn").html('Restart From: ' + (LastID - 50));
 					}
 
 					//if (NewContent) { $('html, body').scrollTop($(document).height()-$(window).height()); }
@@ -226,7 +252,7 @@ $(document).ready(function() {
 
 	$("#refresh_btn").on('click', function() {
 		clearInterval(refreshIntervalId);
-		LastID = LastID - 50;
+		LastID = 0;
 		StartGopherLog();
 	});
 

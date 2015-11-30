@@ -236,33 +236,41 @@ function onRequest(BrowserRequest, BrowserResponse) {
 //       console.log(post['LastID']);
          //var stmt = "SELECT * FROM logs ORDER BY ID DESC LIMIT 50";
 
-         if (post['LastID']=="0") {
-            var stmt = "SELECT * FROM (SELECT * FROM logs ORDER BY ID DESC limit 150) ORDER BY ID ASC"
-         } else {
-            var stmt = "SELECT * FROM (SELECT * FROM logs WHERE ID>"+ post['LastID'] +" ORDER BY ID DESC limit 150) ORDER BY ID ASC"
-         }
+         if ((typeof post['DataFile'] !== 'undefined') && (post['DataFile'] !== 'undefined') && (post['DataFile'] !== null)){
+            var DataFile = post['DataFile'];
+            //console.log('reading datafile...'+DataFile);
+            try {
+               var header = fs.readFileSync(__dirname + '/temp/'+ DataFile + "-header.txt" ).toString();
+            } catch (e) {
+               var header = "not found.";
+            }
 
-         var DataArray = [];
-         dbConn.each(stmt, function(err, row) {
+            try {
+               var post = fs.readFileSync(__dirname + '/temp/'+ DataFile + "-post.txt" ).toString();
+            } catch (e) {
+               var post = "not found.";
+            }
+
+            try {
+               var responseheaders = fs.readFileSync(__dirname + '/temp/'+ DataFile + "-response-headers.txt" ).toString();
+            } catch (e) {
+               var responseheaders = __dirname + '/temp/'+ DataFile + "-response-headers.txt" + "... not found.";
+            }
+
+            try {
+               var response = fs.readFileSync(__dirname + '/temp/'+ DataFile + "-response.txt" ).toString();
+            } catch (e) {
+               var response = __dirname + '/temp/'+ DataFile + "-response.txt"+"... not found.";
+            }
+
+
+            var DataArray = [];
             DataArray.push( {
-               'ID' : (row.ID),
-               'LogTimeStamp' : (row.LogTimeStamp),
-               'LogTime' : row.LogTime,
-               'ProjectID' : (row.ProjectID),
-               'LogCount' : (row.LogCount),
-               'FileName' : encodeURIComponent(row.FileName),
-               'ParentFileName' : encodeURIComponent(row.ParentFileName),
-               'LogType' : (row.LogType),
-               'CodeLine' : (row.CodeLine),
-               'VarName' : encodeURIComponent(row.VarName),
-               'VarType' : (row.VarType),
-               'VarValue' : encodeURIComponent(row.VarValue),
-               'LogMessage' : encodeURIComponent(row.LogMessage),
-               'Tags' : encodeURIComponent(row.Tags),
-               'DataFileName' : (row.DataFileName) });
-
-            //console.log(row.FileName);
-         }, function() {
+               'header' : encodeURIComponent(header),
+               'post' : encodeURIComponent(post),
+               'responseheaders' : encodeURIComponent(responseheaders),
+               'response' : encodeURIComponent(response)
+            });
             var ResponesBody= JSON.stringify(DataArray);
 
             BrowserResponse.writeHead(200, {
@@ -272,7 +280,50 @@ function onRequest(BrowserRequest, BrowserResponse) {
                'Access-Control-Allow-Headers': 'X-Requested-With'
             });
             BrowserResponse.end(ResponesBody);
-         });
+         } else
+
+         if ( (typeof post['LastID'] !== 'undefined') && (post['LastID'] !== 'undefined') && (post['LastID'] !== null)){
+            //console.log('get last id:   '+post['LastID']);
+            if (post['LastID']=="0") {
+               var stmt = "SELECT * FROM (SELECT * FROM logs ORDER BY ID DESC limit 150) ORDER BY ID ASC"
+            } else {
+               var stmt = "SELECT * FROM (SELECT * FROM logs WHERE ID>"+ post['LastID'] +" ORDER BY ID DESC limit 150) ORDER BY ID ASC"
+            }
+
+            var DataArray = [];
+            dbConn.each(stmt, function(err, row) {
+               DataArray.push( {
+                  'ID' : (row.ID),
+                  'LogTimeStamp' : (row.LogTimeStamp),
+                  'LogTime' : row.LogTime,
+                  'ProjectID' : (row.ProjectID),
+                  'LogCount' : (row.LogCount),
+                  'FileName' : encodeURIComponent(row.FileName),
+                  'ParentFileName' : encodeURIComponent(row.ParentFileName),
+                  'LogType' : (row.LogType),
+                  'CodeLine' : (row.CodeLine),
+                  'VarName' : encodeURIComponent(row.VarName),
+                  'VarType' : (row.VarType),
+                  'VarValue' : encodeURIComponent(row.VarValue),
+                  'LogMessage' : encodeURIComponent(row.LogMessage),
+                  'Tags' : encodeURIComponent(row.Tags),
+                  'DataFileName' : (row.DataFileName) });
+
+               //console.log(row.FileName);
+            }, function() {
+               var ResponesBody= JSON.stringify(DataArray);
+
+               BrowserResponse.writeHead(200, {
+                  'Content-Length': ResponesBody.length,
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'X-Requested-With'
+               });
+               BrowserResponse.end(ResponesBody);
+            });
+         } else {
+            console.log('unknown Gopher data request.');
+         }
       });
 
    } else
@@ -397,7 +448,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
    		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NETWORK', '0', '', '', DataFileName );
    		stmt.finalize();
 
-		   fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', BrowserRequest.url+"\n\n"+stringifyObject(BrowserRequest.headers));
+		   fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', stringifyObject(BrowserRequest.headers));
       }
 
 		//--- force apache server to ignore browsers cache headers

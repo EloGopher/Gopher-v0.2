@@ -23,8 +23,6 @@
 
 /* Content */
 .modal > div {
-    width: 90%;
-	 height:70%;
     background: #fff;
     position: relative;
     margin: 20px auto;
@@ -39,6 +37,14 @@
     background: -o-linear-gradient(#fff, #ccc);
     background: linear-gradient(#fff, #ccc);
     text-shadow: 0 1px 0 #fff;
+	 width: 1000px;
+ 	height:250px;
+}
+
+.sourceres {
+	width: 1000px;
+	height:250px;
+	overflow:auto;
 }
 
 
@@ -107,13 +113,13 @@
 </style>
 
 <body>
-<button id="bottom_btn" style="position:fixed; top:10px; right:130px; z-index:10;">Goto last</button>
-<button id="refresh_btn" style="position:fixed; top:10px; right:10px; z-index:10;">Restart From:</button>
+<button id="bottom_btn" style="position:fixed; top:10px; right:70px; z-index:10;">Goto last</button>
+<button id="refresh_btn" style="position:fixed; top:10px; right:10px; z-index:10;">Last 50</button>
 <div id="testframe">frame3</div>
 
 <aside id="sourceview" class="modal">
 	<div>
-		<div id="sourceres"></div>
+		<div id="sourceres" class="sourceres"></div>
 		<span class="modalclose" title="Close">Close</span>
 	</div>
 </aside>
