@@ -145,7 +145,8 @@ $(document).ready(function() {
 								htmlrow += "</div>";
 								$(FileBlock).append(htmlrow);
 
-							} else {
+							} else
+							if (resultData[index].LogType !== "NETWORK") {
 								htmlrow = " <div class='logrow flash'>";
 
 								var LogCount = "";
@@ -162,7 +163,7 @@ $(document).ready(function() {
 									var VarName = safe_tags_replace(decodeURIComponent(resultData[index].VarName));
 									var VarValue = safe_tags_replace(decodeURIComponent(resultData[index].VarValue));
 									if (VarName.indexOf(VarValue)!==-1) {
-										htmlrow += " <div class='logdiv'><i>" + VarValue + "</i></div>";
+										htmlrow += " <div class='logdiv'><i>" + VarValue +  "</i></div>";
 									} else {
 										htmlrow += " <div class='logdiv'><b>" + VarName + "</b>";
 										if (resultData[index].VarType!="") { htmlrow += " {" + resultData[index].VarType + "}"; }
