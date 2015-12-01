@@ -283,7 +283,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
                      'DataFileName' : (gopherMemorydB[index].DataFileName)
                   });
 
-                  console.log(gopherMemorydB[index].ID+" "+gopherMemorydB[index].LogType+" "+gopherMemorydB[index].LogTime);
+                  //console.log(gopherMemorydB[index].ID+" "+gopherMemorydB[index].LogType+" "+gopherMemorydB[index].LogTime);
                }
             }
 
