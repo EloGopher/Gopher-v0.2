@@ -23,6 +23,22 @@ if (isset($_POST["op"]))
 
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
 
+   if (!function_exists('getallheaders'))
+   {
+       function getallheaders()
+       {
+              $headers = '';
+          foreach ($_SERVER as $name => $value)
+          {
+              if (substr($name, 0, 5) == 'HTTP_')
+              {
+                  $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+              }
+          }
+          return $headers;
+       }
+   }
+
    $GopherIsHere = true;
    $GopherSendError = 0;
 
@@ -239,7 +255,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
       if ($GopherSendError>3) { return; } //exit if too many post error
 
-       $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'PHPTS' => microtime(true));
+       $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
        sendBufferDataToNode($data,false);
 
    }
@@ -271,7 +287,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
            if ($GopherSendError>3) { return; } //exit if too many post error
 
 
-           $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'PHPTS' => microtime(true));
+           $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
            sendBufferDataToNode($data,false);
 
            //print_r($phpgopherstore);
@@ -343,7 +359,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    //------------------------------------------------------
 
 
-   function Gopher($xValue, $xTags = '')
+   function Gopher($xValue)
    {
        global $PhpParentFileName;
 
@@ -375,7 +391,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
        $varnames[] = str_getcsv($varname); // explode(",", $varname);
        $newvarname = $varnames[0][0];
 
-       $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
+       $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
        sendBufferDataToNode($data,false);
    }
 

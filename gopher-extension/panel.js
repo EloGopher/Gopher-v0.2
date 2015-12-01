@@ -116,17 +116,11 @@ $(document).ready(function() {
 								if (resultData[index].LogType == "phpvar") {
 									htmlrow += " <div class='logdiv'>" + LogType + "<b>" + safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
 
-									if (resultData[index].Tags != "") {
-										htmlrow += " <div class='tagdiv phptag'>" + (decodeURIComponent(resultData[index].Tags)) + "</div>";
-									}
 								} else
 
 								if (resultData[index].LogType == "js_vt") {
 									htmlrow += " <div class='logdiv'>" + LogType + " <b>" + safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> {" + resultData[index].VarType + "} = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
 
-									if (resultData[index].Tags != "") {
-										htmlrow += " <div class='tagdiv jstag'>" + (decodeURIComponent(resultData[index].Tags)) + "</div>";
-									}
 								} else {
 									htmlrow += " <div class='logdiv'>" + LogType + safe_tags_replace(decodeURIComponent(resultData[index].LogMessage)) + "</div>";
 								}

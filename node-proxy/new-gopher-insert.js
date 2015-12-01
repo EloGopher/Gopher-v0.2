@@ -138,40 +138,7 @@ var gopher = new function() {
 
 
 	//------------------------------------------------------------------------------
-	this.tell = function(xCodeLine, xFileName, xMessage, xTags) {
-		if (GopherMsgs.length < GopherLimit) {
-			var GMsg = new Object();
-			if (xTags === undefined) {
-				GMsg.TG = "";
-			} else {
-				GMsg.TG = encodeURIComponent(xTags);
-			}
-
-			var DuplicateDontAdd = false;
-			if (GopherMsgs.length>0) {
-				if ( (GopherMsgs[GopherMsgs.length-1].LN==xCodeLine ) &&
-				     (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(xFileName) ) &&
-					  (GopherMsgs[GopherMsgs.length-1].LG==encodeURIComponent(xMessage) ) &&
-					  (GopherMsgs[GopherMsgs.length-1].TG==GMsg.TG ) )
-				{
-					GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
-					DuplicateDontAdd=true;
-				}
-			}
-
-			if (!DuplicateDontAdd) {
-				GMsg.RE = 1;
-				GMsg.TY = 'js_gt';
-				GMsg.LN = xCodeLine;
-				GMsg.FN = encodeURIComponent(xFileName);
-				GMsg.LG = encodeURIComponent(xMessage);
-				GopherMsgs.push(GMsg);
-			}
-		}
-	};
-
-	//------------------------------------------------------------------------------
-	this.log = function(xCodeLine, xFileName, xVarName, xVarValue, xTags) {
+	this.log = function(xCodeLine, xFileName, xVarName, xVarValue) {
 		if (GopherMsgs.length < GopherLimit) {
 
 			var GMsg = new Object();
@@ -195,11 +162,6 @@ var gopher = new function() {
 				GMsg.VT = "plain";
 			}
 			GMsg.VV = encodeURIComponent(GMsg.VV);
-			if (xTags === undefined) {
-				GMsg.TG = "";
-			} else {
-				GMsg.TG = encodeURIComponent(xTags);
-			}
 
 
 			var DuplicateDontAdd = false;
@@ -208,8 +170,7 @@ var gopher = new function() {
 				     (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(xFileName) ) &&
 					  (GopherMsgs[GopherMsgs.length-1].VN==encodeURIComponent(xVarName) ) &&
 					  (GopherMsgs[GopherMsgs.length-1].VV==GMsg.VV ) &&
-					  (GopherMsgs[GopherMsgs.length-1].VT==GMsg.VT ) &&
-					  (GopherMsgs[GopherMsgs.length-1].TG==GMsg.TG ) )
+					  (GopherMsgs[GopherMsgs.length-1].VT==GMsg.VT ) )
 				{
 					GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
 					DuplicateDontAdd=true;
