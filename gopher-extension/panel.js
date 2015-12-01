@@ -19,6 +19,26 @@ $(document).ready(function() {
 		return str.replace(/[&<>]/g, replaceTag);
 	}
 
+	function syntaxHighlight(json) {
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'key';
+            } else {
+                cls = 'string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'boolean';
+        } else if (/null/.test(match)) {
+            cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
+
 	function StartGopherLog() {
 		$("#testframe").html("");
 		var FirstBlock = true;
@@ -27,6 +47,7 @@ $(document).ready(function() {
 		var LastFileName = "";
 
 		var IntervalBusy = false;
+		var FileBlock;
 
 		//$("#testframe").html("Loading... ");
 		refreshIntervalId = setInterval(function() {
@@ -80,30 +101,36 @@ $(document).ready(function() {
 
 							LastID = resultData[index].ID;
 
-							if (resultData[index].LogType == "NETWORK") {
-								htmlrow += "</div>";
-								htmlrow += " <div class='logrow flash'>";
-								htmlrow += "<div class='networkdiv'></div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
-								htmlrow += "</div>";
-							} else {
+							if (isAjax=="") {
 
-								var CurrentFileName = decodeURIComponent(resultData[index].ParentFileName) + " " + decodeURIComponent(resultData[index].FileName) + isAjax;
-
+								var CurrentFileName = decodeURIComponent(resultData[index].ParentFileName) + " " + decodeURIComponent(resultData[index].FileName);
 								if (CurrentFileName != LastFileName) {
 									LastFileName = CurrentFileName;
-									if (!FirstBlock) { htmlrow += "</div>"; }
 
 									FirstBlock = false;
 
-									htmlrow += "<div class='fileblock flash'>";
-									htmlrow += "<div class='filenamechange'>"+ decodeURIComponent(resultData[index].FileName) + isAjax + " ---&gt; parent " + decodeURIComponent(resultData[index].ParentFileName);
+
+									htmlrow = "<div class='fileblock flash'>";
+									htmlrow += "<div class='filenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + isAjax + "</b>  (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
 									htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
 									htmlrow += "</div>";
+									htmlrow += "</div>";
 
-									htmlrow += " <div class='logrow'>";
-								} else {
-									htmlrow += " <div class='logrow'>";
+									FileBlock = $(htmlrow);
+
+									$("#testframe").append(FileBlock);
 								}
+							}
+
+							if (resultData[index].LogType == "NETWORK") {
+								htmlrow = " <div class='logrow'>";
+
+								htmlrow += "<div class='networkdiv'></div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
+								htmlrow += "</div>";
+								$(FileBlock).append(htmlrow);
+
+							} else {
+								htmlrow = " <div class='logrow'>";
 
 								var LogCount = "";
 								if (resultData[index].LogCount > 1) {
@@ -113,28 +140,31 @@ $(document).ready(function() {
 
 								htmlrow += " <div class='codeline'>" + LogCount + resultData[index].CodeLine + ":</div>";
 
-								if (resultData[index].LogType == "phpvar") {
-									htmlrow += " <div class='logdiv'>" + LogType + "<b>" + safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
-
-								} else
-
-								if (resultData[index].LogType == "js_vt") {
-									htmlrow += " <div class='logdiv'>" + LogType + " <b>" + safe_tags_replace(decodeURIComponent(resultData[index].VarName)) + "</b> {" + resultData[index].VarType + "} = " + safe_tags_replace(decodeURIComponent(resultData[index].VarValue)) + "</div>";
-
-								} else {
+								if ((resultData[index].LogType == "js_er") || (resultData[index].LogType == "phperror2")) {
 									htmlrow += " <div class='logdiv'>" + LogType + safe_tags_replace(decodeURIComponent(resultData[index].LogMessage)) + "</div>";
+								} else {
+									var VarName = safe_tags_replace(decodeURIComponent(resultData[index].VarName));
+									var VarValue = safe_tags_replace(decodeURIComponent(resultData[index].VarValue));
+									if (VarName.indexOf(VarValue)!==-1) {
+										htmlrow += " <div class='logdiv'><i>" + VarValue + "</i></div>";
+									} else {
+										htmlrow += " <div class='logdiv'><b>" + VarName + "</b>";
+										if (resultData[index].VarType!="") { htmlrow += " {" + resultData[index].VarType + "}"; }
+
+										if (resultData[index].VarType=="object") { htmlrow += " = " + syntaxHighlight(VarValue) + "</div>"; } else { htmlrow += " = " + VarValue + "</div>"; }
+
+									}
 								}
 
 								htmlrow += "<div style='float:right'>" + timespan + "</div>";
 
 								htmlrow += "</div>";
+								$(FileBlock).append(htmlrow);
 							}
 						});
 
 						if (NewContent) {
 							BlockConter++;
-							$("#testframe").append(htmlrow);
-
 
 							//remove to keep 800 rows only
 							var numRows = $('.logrow').length;
@@ -174,9 +204,9 @@ $(document).ready(function() {
 									success: function(resultData) {
 										$("#sourceres").html(
 											'<b>POST HEADERS:</b> '+safe_tags_replace(decodeURIComponent(resultData[0]['header'])) + '<br>' +
-											'<b>POST DATA:</b> '+decodeURIComponent(safe_tags_replace(resultData[0]['post'])) + '<br>' +
-											'<b>RESPONSE HEADERS:</b> '+decodeURIComponent(safe_tags_replace(resultData[0]['responseheaders'])) + '<br>' +
-											'<b>RESPONSE:</b> '+decodeURIComponent(safe_tags_replace(resultData[0]['response']))
+											'<b>POST DATA:</b> '+safe_tags_replace(decodeURIComponent(resultData[0]['post'])) + '<br>' +
+											'<b>RESPONSE HEADERS:</b> '+safe_tags_replace(decodeURIComponent(resultData[0]['responseheaders'])) + '<br>' +
+											'<b>RESPONSE:</b> '+safe_tags_replace(decodeURIComponent(resultData[0]['response']))
 										);
 									}
 								});

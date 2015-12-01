@@ -34,7 +34,7 @@ function ShowHelpScreen()
 	console.log("-pid <integer> : Default is 101, this is the project ID that will be logged with every event.");
 	console.log("-host <localhost> : No defaut, this has to be specified. This is the server gopher will be pulling through it's proxy. ");
 	console.log("-port <integer> : Default is 80. Port of server which gopher will be pulling.");
-	console.log("-path <string> : Default blank. If the project is in a subfolder this can be added in which case you would be able to run your code without writing the folder in the url.");
+   console.log("-path <string> : Default blank. If Gopher.php is located in some subfolder of host please enter the path here. ");
 	console.log("-gopherhost <http://localhost> : Default localhost. This parameter will be used by the Browser extension. Also all log messages will be sent to the gopher host and port. ");
 	console.log("-gopherport <integer> : Defalth 1337. Port of above parameter.");
 	console.log("-flushdb : Delete all data stored in SQLLite database.");
@@ -44,7 +44,7 @@ function ShowHelpScreen()
 console.log("-help : This page.");
 	console.log("");
 	console.log("Example run:");
-	console.log("node gopher -flushdb -pid 2000 -host localhost");
+	console.log("node gopher -pid 1 -host localhost -path phishproof/");
 	console.log("");
 	console.log("");
 	process.exit(1);
@@ -64,14 +64,11 @@ if(process.argv.indexOf("-host") != -1){ projectHost = process.argv[process.argv
 var projectOnPort = 80;
 if(process.argv.indexOf("-port") != -1){ projectOnPort = process.argv[process.argv.indexOf("-port") + 1]; }
 
-var projectPath = ''; //'/phishproof'
-if(process.argv.indexOf("-path") != -1){ projectPath = process.argv[process.argv.indexOf("-path") + 1]; }
-
 var gopherHost = 'localhost';
-if(process.argv.indexOf("-gopherhost") != -1){ projectPath = process.argv[process.argv.indexOf("-gopherhost") + 1]; }
+if(process.argv.indexOf("-gopherhost") != -1){ gopherHost = process.argv[process.argv.indexOf("-gopherhost") + 1]; }
 
 var gopherPort = 1337;
-if(process.argv.indexOf("-gopherport") != -1){ projectPath = process.argv[process.argv.indexOf("-gopherport") + 1]; }
+if(process.argv.indexOf("-gopherport") != -1){ gopherPort = process.argv[process.argv.indexOf("-gopherport") + 1]; }
 
 var showhelp = "";
 if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
@@ -85,11 +82,14 @@ if(process.argv.indexOf("-stopclearcache") != -1){ stopclearcache="yes"; }
 var redirectphp = "yes";
 if(process.argv.indexOf("-redirectphp") != -1){ redirectphp = process.argv[process.argv.indexOf("-redirectphp") + 1]; }
 
+var gpath = "";
+if(process.argv.indexOf("-path") != -1){ gpath = process.argv[process.argv.indexOf("-path") + 1]; }
+
 if (projectOnPort!="80") {
-   var gopherurl = "http://"+projectHost+":"+projectOnPort+"/"+projectPath;
+   var gopherurl = "http://"+projectHost+":"+projectOnPort+"/"+gpath;
 } else
 {
-   var gopherurl = "http://"+projectHost+"/"+projectPath;
+   var gopherurl = "http://"+projectHost+"/"+gpath;
 }
 
 
@@ -492,7 +492,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 			if (ConsoleLogLvl>0) { console.log("redirecing php to Gopher.php ........" + BrowserRequest.url + " to " + GopherPHPurl); }
 
-			BrowserRequest.headers["GopherPHPFile"] = projectPath + BrowserRequest.url;
+			BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
 			BrowserRequest.url = GopherPHPurl;
 		}
 
@@ -528,7 +528,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		var options = {
 			host: projectHost,
 			port: projectOnPort,
-			path: projectPath + BrowserRequest.url,
+			path: BrowserRequest.url,
 			method: BrowserRequest.method,
 			headers: BrowserRequest.headers
 		};
@@ -604,9 +604,12 @@ function onRequest(BrowserRequest, BrowserResponse) {
 								if (BrowserRequest.headers["GopherPHPFile"] != undefined) {
 									tempStr = BrowserRequest.headers["GopherPHPFile"];
 								}
-                        var postoinsert = chunkStr.search(new RegExp("\<head.{0,255}\>", "i"))-1;
 
-                        chunkStr = chunkStr.substr(0, postoinsert) + "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>" + chunkStr.substr(postoinsert);
+                        //dont insert if content has body but no head
+                        var postoinsert = chunkStr.search(new RegExp("\<head.{0,255}\>", "i"));
+                        if (postoinsert !== -1) {
+                           chunkStr = chunkStr.substr(0, postoinsert) + "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>" + chunkStr.substr(postoinsert);
+                        }
 
 								//chunkStr = "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>"+chunkStr;
 							}
