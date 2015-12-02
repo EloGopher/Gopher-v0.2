@@ -199,7 +199,7 @@ $(document).ready(function() {
 									htmlrow = " <div class='logrow flash'>";
 								}
 
-								htmlrow += "<div class='networkdiv'></div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
+								htmlrow += "<div class='networkdiv'>XHR: </div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + "</div>";
 								htmlrow += "</div>";
 								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
 							} else
