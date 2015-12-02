@@ -2,8 +2,44 @@ var LastID = 0;
 var NearBottom = false;
 var FirstLoad = true;
 var refreshIntervalId;
+var TimeRefreshIntervalId;
 
 $(document).ready(function() {
+
+	var DURATION_IN_SECONDS = {
+	  epochs: ['year', 'month', 'day', 'hour', 'minute', 'second', 'milisecond'],
+	  year:   31536000,
+	  month:  2592000,
+	  day:    86400,
+	  hour:   3600,
+	  minute: 60,
+	  second: 1,
+	  milisecond: 1/1000
+	};
+
+	function getDuration(seconds) {
+	  var epoch, interval;
+
+	  for (var i = 0; i < DURATION_IN_SECONDS.epochs.length; i++) {
+	    epoch = DURATION_IN_SECONDS.epochs[i];
+	    interval = Math.floor(seconds / DURATION_IN_SECONDS[epoch]);
+	    if (interval >= 1) {
+	      return { interval: interval, epoch: epoch };
+		}
+	  }
+	  return { interval: '', epoch: 'just now' };
+
+	};
+
+	function timeSince(date) {
+		//deal with timestamp in seconds from php logs first
+		if (parseInt(date,10).toString().length<=12) { date = parseInt(date*1000);}
+
+		var seconds = Math.floor((new Date() - new Date(date)) / 1000);
+		var duration = getDuration(seconds);
+		var suffix  = (duration.interval > 1 || duration.interval === 0) ? 's' : '';
+		return duration.interval + ' ' + duration.epoch + suffix+' ago';
+	};
 
 	var tagsToReplace = {
 		'&': '&amp;',
@@ -64,6 +100,13 @@ $(document).ready(function() {
 
 
 		//$("#testframe").html("Loading... ");
+
+		TimeRefreshIntervalId = setInterval(function() {
+			$('.timefloat').each( function() {
+				$(this).html( timeSince($(this).data('epochtime')) );
+			});
+		},5000);
+
 		refreshIntervalId = setInterval(function() {
 			if (!IntervalBusy) {
 				IntervalBusy=true;
@@ -85,7 +128,6 @@ $(document).ready(function() {
 
 						$.each(resultData, function(index) {
 							NewContent = true;
-							var date = new Date(resultData[index].LogTime);
 
 							var LogType = "";
 							if (resultData[index].LogType == "phperror2") {
@@ -121,7 +163,7 @@ $(document).ready(function() {
 
 								htmlrow = "<div class='mainfileblock flash' id='main_"+MainFileBlockCounter+"'>";
 								htmlrow += "<div class='mainfilenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
-								htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
+								htmlrow += "<div class='timefloat' data-epochtime='"+resultData[index].LogTime+"'>"+ timeSince( resultData[index].LogTime ) +"</div>";
 								htmlrow += "</div>";
 								htmlrow += "<div class='maincontentarea'></div>";
 								htmlrow += "</div>";
@@ -143,7 +185,7 @@ $(document).ready(function() {
 								if (decodeURIComponent(resultData[index].FileName)!=decodeURIComponent(resultData[index].ParentFileName)) {
 									htmlrow += " (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
 								}
-								htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
+								htmlrow += "<div class='timefloat' data-epochtime='"+resultData[index].LogTime+"'>"+ timeSince( resultData[index].LogTime ) +"</div>";
 								htmlrow += "</div>";
 								htmlrow += "</div>";
 
@@ -165,7 +207,6 @@ $(document).ready(function() {
 								if (resultData[index].LogCount > 1) {
 									LogCount = " <span class='logcount'>" + resultData[index].LogCount + "</span> ";
 								}
-								var timespan = " <span class='timediv'>" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</span>  ";
 
 								htmlrow += " <div class='codeline'>" + LogCount + resultData[index].CodeLine + ":</div>";
 
@@ -185,7 +226,6 @@ $(document).ready(function() {
 									}
 								}
 
-								htmlrow += "<div style='float:right'>" + timespan + "</div>";
 								htmlrow += "</div>";
 								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
 							}
@@ -325,6 +365,7 @@ $(document).ready(function() {
 
 	$("#refresh_btn").on('click', function() {
 		clearInterval(refreshIntervalId);
+		clearInterval(TimeRefreshIntervalId);
 		LastID = 0;
 		StartGopherLog();
 	});
