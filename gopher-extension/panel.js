@@ -38,7 +38,11 @@ $(document).ready(function() {
 		var seconds = Math.floor((new Date() - new Date(date)) / 1000);
 		var duration = getDuration(seconds);
 		var suffix  = (duration.interval > 1 || duration.interval === 0) ? 's' : '';
-		return duration.interval + ' ' + duration.epoch + suffix+' ago';
+		if (duration.interval=='') {
+			return 'just now';
+		} else {
+			return duration.interval + ' ' + duration.epoch + suffix+' ago ';
+		}
 	};
 
 	var tagsToReplace = {
@@ -88,18 +92,9 @@ $(document).ready(function() {
 
 		var MainFileBlock;
 		var MainFileBlockCounter = 0;
-/*
-		htmlrow  = "<div class='mainfileblock flash'>";
-		htmlrow += "<div class='mainfilenamechange'><b>Gopher</b></div>";
-		htmlrow += "<div id='contentarea' class='maincontentarea'></div>";
-		htmlrow += "</div>";
 
-		MainFileBlock = $(htmlrow);
-		$("#testframe").append(MainFileBlock);
-*/
+		var FirstLogLine = true;
 
-
-		//$("#testframe").html("Loading... ");
 
 		TimeRefreshIntervalId = setInterval(function() {
 			$('.timefloat').each( function() {
@@ -157,11 +152,12 @@ $(document).ready(function() {
 
 							LastID = resultData[index].ID;
 
+							//new NETWORK request without AJAX make it a main container
 							if ((isAjax=="") && (resultData[index].LogType == "NETWORK")) {
 								FirstBlock = false;
 								MainFileBlockCounter++;
 
-								htmlrow = "<div class='mainfileblock flash' id='main_"+MainFileBlockCounter+"'>";
+								htmlrow = "<div class='mainfileblock' id='main_"+MainFileBlockCounter+"'>";
 								htmlrow += "<div class='mainfilenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
 								htmlrow += "<div class='timefloat' data-epochtime='"+resultData[index].LogTime+"'>"+ timeSince( resultData[index].LogTime ) +"</div>";
 								htmlrow += "</div>";
@@ -174,13 +170,15 @@ $(document).ready(function() {
 								LastFileName = "";
 							}
 
+							//the filename of a log entry is different than the one before make a new child box
 							var CurrentFileName = decodeURIComponent(resultData[index].FileName);
-
 							if ((CurrentFileName != LastFileName) && (resultData[index].LogType !== "NETWORK") ) {
-								LastFileName = CurrentFileName;
 
+								FirstLogLine = true;
+
+								LastFileName = CurrentFileName;
 								FileBlockCounter++;
-								htmlrow = "<div class='fileblock flash' id='sub_"+ MainFileBlockCounter+"_"+FileBlockCounter +"'>";
+								htmlrow = "<div class='fileblock' id='sub_"+ MainFileBlockCounter+"_"+FileBlockCounter +"'>";
 								htmlrow += "<div class='filenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
 								if (decodeURIComponent(resultData[index].FileName)!=decodeURIComponent(resultData[index].ParentFileName)) {
 									htmlrow += " (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
@@ -194,14 +192,24 @@ $(document).ready(function() {
 							}
 
 							if ((resultData[index].LogType == "NETWORK") && (isAjax!="")) {
-								htmlrow = " <div class='logrow flash'>";
+								if (FirstLogLine) {
+									FirstLogLine = false;
+									htmlrow = " <div class='logrow first flash'>";
+								} else {
+									htmlrow = " <div class='logrow flash'>";
+								}
 
 								htmlrow += "<div class='networkdiv'></div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
 								htmlrow += "</div>";
 								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
 							} else
 							if (resultData[index].LogType !== "NETWORK") {
-								htmlrow = " <div class='logrow flash'>";
+								if (FirstLogLine) {
+									FirstLogLine = false;
+									htmlrow = " <div class='logrow first flash'>";
+								} else {
+									htmlrow = " <div class='logrow flash'>";
+								}
 
 								var LogCount = "";
 								if (resultData[index].LogCount > 1) {
