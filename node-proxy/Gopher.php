@@ -409,7 +409,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
            $GopherIncludeFileOrignal = $value;
            $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
 
-           $PhpParentFileName = $GopherIncludeFileOrignal;
+           $PhpParentFileName = $PhpHelperRoot.$GopherIncludeFileOrignal;
        } else
        if ($name == 'GopherPHPRedirect') {
           $GopherRedirect = "yes";

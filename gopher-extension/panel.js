@@ -48,7 +48,20 @@ $(document).ready(function() {
 
 		var IntervalBusy = false;
 		var FileBlock;
+		var FileBlockCounter = 0;
+
 		var MainFileBlock;
+		var MainFileBlockCounter = 0;
+/*
+		htmlrow  = "<div class='mainfileblock flash'>";
+		htmlrow += "<div class='mainfilenamechange'><b>Gopher</b></div>";
+		htmlrow += "<div id='contentarea' class='maincontentarea'></div>";
+		htmlrow += "</div>";
+
+		MainFileBlock = $(htmlrow);
+		$("#testframe").append(MainFileBlock);
+*/
+
 
 		//$("#testframe").html("Loading... ");
 		refreshIntervalId = setInterval(function() {
@@ -102,40 +115,40 @@ $(document).ready(function() {
 
 							LastID = resultData[index].ID;
 
-							if (isAjax=="") {
+							if ((isAjax=="") && (resultData[index].LogType == "NETWORK")) {
+								FirstBlock = false;
+								MainFileBlockCounter++;
 
-								var CurrentFileName = decodeURIComponent(resultData[index].ParentFileName) + " " + decodeURIComponent(resultData[index].FileName);
-								if (CurrentFileName != LastFileName) {
-									LastFileName = CurrentFileName;
+								htmlrow = "<div class='mainfileblock flash' id='main_"+MainFileBlockCounter+"'>";
+								htmlrow += "<div class='mainfilenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
+								htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
+								htmlrow += "</div>";
+								htmlrow += "<div class='maincontentarea'></div>";
+								htmlrow += "</div>";
 
-									FirstBlock = false;
+								MainFileBlock = $(htmlrow);
+								$("#testframe").append(MainFileBlock);
+								FileBlockCounter = 0;
+								LastFileName = "";
+							}
 
-									if (resultData[index].LogType == "NETWORK") {
-										htmlrow = "<div class='mainfileblock flash'>";
-										htmlrow += "<div class='mainfilenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
-										htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
-										htmlrow += "</div>";
-										htmlrow += "<div id='contentarea' class='maincontentarea'></div>";
-										htmlrow += "</div>";
+							var CurrentFileName = decodeURIComponent(resultData[index].FileName);
 
-										MainFileBlock = $(htmlrow);
-										$("#testframe").append(MainFileBlock);
+							if ((CurrentFileName != LastFileName) && (resultData[index].LogType !== "NETWORK") ) {
+								LastFileName = CurrentFileName;
 
-
-									} else {
-										htmlrow = "<div class='fileblock flash'>";
-										htmlrow += "<div class='filenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>  (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
-										htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
-										htmlrow += "</div>";
-										htmlrow += "</div>";
-
-										FileBlock = $(htmlrow);
-										$(MainFileBlock).find("#contentarea").append(FileBlock);
-
-									}
-
-
+								FileBlockCounter++;
+								htmlrow = "<div class='fileblock flash' id='sub_"+ MainFileBlockCounter+"_"+FileBlockCounter +"'>";
+								htmlrow += "<div class='filenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
+								if (decodeURIComponent(resultData[index].FileName)!=decodeURIComponent(resultData[index].ParentFileName)) {
+									htmlrow += " (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
 								}
+								htmlrow += "<div style='float:right'>"+date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "</div>";
+								htmlrow += "</div>";
+								htmlrow += "</div>";
+
+								FileBlock = $(htmlrow);
+								$(MainFileBlock).find(".maincontentarea").append(FileBlock);
 							}
 
 							if ((resultData[index].LogType == "NETWORK") && (isAjax!="")) {
@@ -143,8 +156,7 @@ $(document).ready(function() {
 
 								htmlrow += "<div class='networkdiv'></div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
 								htmlrow += "</div>";
-								$(FileBlock).append(htmlrow);
-
+								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
 							} else
 							if (resultData[index].LogType !== "NETWORK") {
 								htmlrow = " <div class='logrow flash'>";
@@ -174,9 +186,8 @@ $(document).ready(function() {
 								}
 
 								htmlrow += "<div style='float:right'>" + timespan + "</div>";
-
 								htmlrow += "</div>";
-								$(FileBlock).append(htmlrow);
+								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
 							}
 						});
 
