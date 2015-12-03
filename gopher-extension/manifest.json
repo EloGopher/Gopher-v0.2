@@ -20,18 +20,15 @@
 		"pageCapture",
 		"tabs",
 		"activeTab",
-		"https://ajax.googleapis.com/",
-		"http://localhost/*",
-		"*://localhost/*",
-		"http://*/*",
-		"http://localhost:1337/*",
-      "https://*/*"
+		"<all_urls>",
+		"https://ajax.googleapis.com/"
 	],
 
 	"devtools_page": "devtools.html",
 	"options_page": "panel.html",
 	"content_scripts": [{
 		"js": ["jquery-1.11.1.min.js"],
-		"matches": ["http://*/*", "https://*/*"]
+		"matches": ["<all_urls>"]
 	}]
+
 }
