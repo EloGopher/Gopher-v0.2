@@ -4,7 +4,11 @@ var FirstLoad = true;
 var refreshIntervalId;
 var TimeRefreshIntervalId;
 
+var LogWidth = 0;
+
 $(document).ready(function() {
+
+	LogWidth = $('#testframe').width();
 
 	var DURATION_IN_SECONDS = {
 	  epochs: ['year', 'month', 'day', 'hour', 'minute', 'second', 'milisecond'],
@@ -92,6 +96,8 @@ $(document).ready(function() {
 
 		var MainFileBlock;
 		var MainFileBlockCounter = 0;
+
+		var RowCounter = 0;
 
 		var FirstLogLine = true;
 
@@ -192,11 +198,12 @@ $(document).ready(function() {
 							}
 
 							if ((resultData[index].LogType == "NETWORK") && (isAjax!="")) {
+								RowCounter++;
 								if (FirstLogLine) {
 									FirstLogLine = false;
-									htmlrow = " <div class='logrow first flash'>";
+									htmlrow = " <div id='logrow_"+RowCounter+"' class='logrow first flash'>";
 								} else {
-									htmlrow = " <div class='logrow flash'>";
+									htmlrow = " <div id='logrow_"+RowCounter+"' class='logrow flash'>";
 								}
 
 								htmlrow += "<div class='networkdiv'>XHR: </div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + "</div>";
@@ -204,11 +211,13 @@ $(document).ready(function() {
 								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
 							} else
 							if (resultData[index].LogType !== "NETWORK") {
+								RowCounter++;
+
 								if (FirstLogLine) {
 									FirstLogLine = false;
-									htmlrow = " <div class='logrow first flash'>";
+									htmlrow = " <div id='logrow_"+RowCounter+"' class='logrow first flash'>";
 								} else {
-									htmlrow = " <div class='logrow flash'>";
+									htmlrow = " <div id='logrow_"+RowCounter+"' class='logrow flash'>";
 								}
 
 								var LogCount = "";
@@ -218,50 +227,54 @@ $(document).ready(function() {
 
 								htmlrow += " <div class='codeline'>" + LogCount + resultData[index].CodeLine + ":</div>";
 
+								htmlrow += " <div id='logdiv_"+RowCounter+"' class='logdiv' style='width:"+ (LogWidth-100) +"px'>";
+
 								if ((resultData[index].LogType == "js_er") || (resultData[index].LogType == "phperror2")) {
-									htmlrow += " <div class='logdiv'>" + LogType + safe_tags_replace(decodeURIComponent(resultData[index].LogMessage)) + "</div>";
+									htmlrow += LogType + safe_tags_replace(decodeURIComponent(resultData[index].LogMessage));
 								} else {
 									var VarName = safe_tags_replace(decodeURIComponent(resultData[index].VarName));
 									var VarValue = safe_tags_replace(decodeURIComponent(resultData[index].VarValue));
 									if (VarName.indexOf(VarValue)!==-1) {
-										htmlrow += " <div class='logdiv'><i>" + VarValue +  "</i></div>";
+										htmlrow += " <i>" + VarValue +  "</i>";
 									} else {
-										htmlrow += " <div class='logdiv'><b>" + VarName + "</b>";
+										htmlrow += " <b>" + VarName + "</b>";
 										if (resultData[index].VarType!="") { htmlrow += " {" + resultData[index].VarType + "}"; }
 
-										if (resultData[index].VarType=="object") { htmlrow += " = " + syntaxHighlight(VarValue) + "</div>"; } else { htmlrow += " = " + VarValue + "</div>"; }
-
+										if (resultData[index].VarType=="object") { htmlrow += " = " + syntaxHighlight(VarValue) + "</div>"; } else { htmlrow += " = " + VarValue; }
 									}
 								}
+								htmlrow += "</div>";
+
 
 								htmlrow += "</div>";
-								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
+								if (FileBlockCounter == 0) {
+									$(MainFileBlock).find(".maincontentarea").append(htmlrow);
+								} else {
+									$(FileBlock).append(htmlrow);
+								}
 							}
 						});
 
 						if (NewContent) {
 							BlockConter++;
 
-							//remove to keep 800 rows only
+							//remove blocks to keep 800 rows only
 							var numRows = $('.logrow').length;
-							if (numRows > 800) {
-								$('#testframe').find('.logrow:lt(' + (numRows - 800) + ')').remove();
+							var numBlocks = $('.mainfileblock').length;
+
+							if ((numRows > 800) && (numBlocks>1)) {
+								$('#testframe').find('.mainfileblock').first().remove();
 							}
 
-							$(".fn").on({
-								mouseenter: function() {
-									$(this).find('.pfn').show();
-									$(this).parent().find('.logdiv').css({
-										"width": "300px"
-									});
-								},
-								mouseleave: function() {
-									$(this).find('.pfn').hide();
-									$(this).parent().find('.logdiv').css({
-										"width": "900px"
-									});
+							$('.logdiv').each( function() {
+
+								if (this.offsetHeight < this.scrollHeight ||
+								    this.offsetWidth < this.scrollWidth) {
+									$(this).addClass("expandthis");
 								}
+
 							});
+
 
 							$(".networksubdiv").on('click', function () {
 
@@ -297,34 +310,6 @@ $(document).ready(function() {
 
 							$('.modalclose').on('click', function () {
 								$("#sourceview").hide();
-							});
-
-							$(".logdiv").on({
-								mouseenter: function() {
-									$(this).css({
-										"overflow": "auto",
-										"background-color": "#eee",
-										"white-space": "normal",
-										"text-overflow": "clip"
-									});
-								},
-								mouseleave: function() {
-									$(this).css({
-										"overflow": "hidden",
-										"background-color": "#fff",
-										"white-space": "nowrap",
-										"text-overflow": "ellipsis"
-									});
-								}
-							});
-
-							$(".logrow").on({
-								mouseenter: function() {
-									$(this).find('.timediv').show(); //css({'display': 'inline-block'});
-								},
-								mouseleave: function() {
-									$(this).find('.timediv').hide();
-								}
 							});
 						}
 
@@ -384,6 +369,17 @@ $(document).ready(function() {
 		} else {
 			NearBottom = false;
 		}
+	});
+
+	function resize_calculate() {
+		LogWidth = $('#testframe').width();
+		$(".logdiv").css({'width' : (LogWidth-100)+"px" });
+	};
+
+	var resizeTimer;
+	$(window).resize(function() {
+	    clearTimeout(resizeTimer);
+	    resizeTimer = setTimeout(resize_calculate, 50);
 	});
 
 	StartGopherLog();
