@@ -82,7 +82,6 @@ $(document).ready(function() {
 						var NewContent = false;
 						var htmlrow = "";
 
-
 						$.each(resultData, function(index) {
 							NewContent = true;
 							var date = new Date(resultData[index].LogTime);
@@ -152,13 +151,13 @@ $(document).ready(function() {
 							}
 
 							if ((resultData[index].LogType == "NETWORK") && (isAjax!="")) {
+								console.log(index+','+resultData.length);
 								htmlrow = " <div class='logrow flash'>";
 
 								htmlrow += "<div class='networkdiv'></div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + isAjax + "</div>";
 								htmlrow += "</div>";
 								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
-							} else
-							if (resultData[index].LogType !== "NETWORK") {
+							}else if (resultData[index].LogType !== "NETWORK") {
 								htmlrow = " <div class='logrow flash'>";
 
 								var LogCount = "";
@@ -177,7 +176,11 @@ $(document).ready(function() {
 									if (VarName.indexOf(VarValue)!==-1) {
 										htmlrow += " <div class='logdiv'><i>" + VarValue +  "</i></div>";
 									} else {
-										htmlrow += " <div class='logdiv'><b>" + VarName + "</b>";
+										if(resultData[index].VarType=="object"){
+											htmlrow += " <div class='logdiv'><b><span class='object-name' data-dialogtrigger='view object'>" + VarName + "</span></b>"
+										}else{
+											htmlrow += " <div class='logdiv'><b>" + VarName + "</b>";
+										}
 										if (resultData[index].VarType!="") { htmlrow += " {" + resultData[index].VarType + "}"; }
 
 										if (resultData[index].VarType=="object") { htmlrow += " = " + syntaxHighlight(VarValue) + "</div>"; } else { htmlrow += " = " + VarValue + "</div>"; }
