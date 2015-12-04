@@ -198,44 +198,48 @@ var php_requestLoop = setInterval(function(){
              var strLines = chunk.toString().split("\n");
 
              for (var i in strLines) {
-                console.log(strLines[i]);
-               var dataobj = JSON.parse(strLines[i]);
-/*
-               if (dataobj["TY"] == "phpvar") {
-                  dBInsertID++;
-                  var NewLog = {
-                     'ID' : dBInsertID,
-                     'LogTimeStamp' : UniversalScriptTimeStamp,
-                     'LogTime' : dataobj["PHPTS"],
-                     'ProjectID' : ProjectID,
-                     'LogCount' : dataobj["RE"],
-                     'FileName' : dataobj["FN"],
-                     'ParentFileName' : dataobj["PFN"],
-                     'LogType' : dataobj["TY"],
-                     'CodeLine' : dataobj["LN"],
-                     'VarName' : dataobj["VN"],
-                     'VarType' : '',
-                     'VarValue' : dataobj["VV"]
-                  }
-                  gopherMemorydB.push( NewLog );
-					} else
+               // console.log(i+" "+strLines[i]);
+               try {
+                  var dataobj = JSON.parse(strLines[i]);
 
-					if ((dataobj[i]["TY"] == "phperror1") || (dataobj[i]["TY"] == "phperror2")) {
-                  dBInsertID++;
-                  var NewLog = {
-                     'ID' : dBInsertID,
-                     'LogTimeStamp' : UniversalScriptTimeStamp,
-                     'LogTime' : dataobj["PHPTS"],
-                     'ProjectID' : ProjectID,
-                     'LogCount' : dataobj["RE"],
-                     'FileName' : dataobj["FN"],
-                     'ParentFileName' : dataobj["PFN"],
-                     'LogType' : dataobj["TY"],
-                     'CodeLine' : dataobj["LN"],
-                     'LogMessage' : dataobj["LG"]
-                  }
-                  gopherMemorydB.push( NewLog );
-					}*/
+                  if (dataobj["TY"] == "phpvar") {
+                     dBInsertID++;
+                     var NewLog = {
+                        'ID' : dBInsertID,
+                        'LogTimeStamp' : UniversalScriptTimeStamp,
+                        'LogTime' : dataobj["PHPTS"],
+                        'ProjectID' : ProjectID,
+                        'LogCount' : dataobj["RE"],
+                        'FileName' : dataobj["FN"],
+                        'ParentFileName' : dataobj["PFN"],
+                        'LogType' : dataobj["TY"],
+                        'CodeLine' : dataobj["LN"],
+                        'VarName' : dataobj["VN"],
+                        'VarType' : '',
+                        'VarValue' : dataobj["VV"]
+                     }
+                     gopherMemorydB.push( NewLog );
+   					} else
+
+   					if ((dataobj["TY"] == "phperror1") || (dataobj["TY"] == "phperror2")) {
+                     dBInsertID++;
+                     var NewLog = {
+                        'ID' : dBInsertID,
+                        'LogTimeStamp' : UniversalScriptTimeStamp,
+                        'LogTime' : dataobj["PHPTS"],
+                        'ProjectID' : ProjectID,
+                        'LogCount' : dataobj["RE"],
+                        'FileName' : dataobj["FN"],
+                        'ParentFileName' : dataobj["PFN"],
+                        'LogType' : dataobj["TY"],
+                        'CodeLine' : dataobj["LN"],
+                        'LogMessage' : dataobj["LG"]
+                     }
+                     gopherMemorydB.push( NewLog );
+   					}
+               } catch (e) {
+                  //
+               }
 
              }
           }
