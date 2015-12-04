@@ -388,7 +388,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
       });
    } else
 
-	if ((BrowserRequest.url == "/gopherSave.js") || (BrowserRequest.url == "/gopherPHPsave.js")) {
+	if (BrowserRequest.url == "/gopherSave.js")  { //respond to request made by gopher javascript helper inserted into HTML files
 		var body = "";
 		BrowserRequest.on('data', function(data) {
 			body += data;
@@ -408,52 +408,6 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		});
 
 		BrowserRequest.on('end', function() {
-			//console.log( decodeURIComponent(body) );
-			if (BrowserRequest.url == "/gopherPHPsave.js") {
-
-				var dataobj = JSON.parse(body);
-				for (var i = 0; i < dataobj.length; i++) {
-					//console.log(dataobj[i]);
-
-					if (dataobj[i]["TY"] == "phpvar") {
-                  dBInsertID++;
-                  var NewLog = {
-                     'ID' : dBInsertID,
-                     'LogTimeStamp' : UniversalScriptTimeStamp,
-                     'LogTime' : dataobj[i]["PHPTS"],
-                     'ProjectID' : ProjectID,
-                     'LogCount' : dataobj[i]["RE"],
-                     'FileName' : dataobj[i]["FN"],
-                     'ParentFileName' : dataobj[i]["PFN"],
-                     'LogType' : dataobj[i]["TY"],
-                     'CodeLine' : dataobj[i]["LN"],
-                     'VarName' : dataobj[i]["VN"],
-                     'VarType' : '',
-                     'VarValue' : dataobj[i]["VV"]
-                  }
-                  gopherMemorydB.push( NewLog );
-					} else
-
-					if ((dataobj[i]["TY"] == "phperror1") || (dataobj[i]["TY"] == "phperror2")) {
-                  dBInsertID++;
-                  var NewLog = {
-                     'ID' : dBInsertID,
-                     'LogTimeStamp' : UniversalScriptTimeStamp,
-                     'LogTime' : dataobj[i]["PHPTS"],
-                     'ProjectID' : ProjectID,
-                     'LogCount' : dataobj[i]["RE"],
-                     'FileName' : dataobj[i]["FN"],
-                     'ParentFileName' : dataobj[i]["PFN"],
-                     'LogType' : dataobj[i]["TY"],
-                     'CodeLine' : dataobj[i]["LN"],
-                     'LogMessage' : dataobj[i]["LG"]
-                  }
-                  gopherMemorydB.push( NewLog );
-					}
-				}
-
-			} else
-
 			if (BrowserRequest.url == "/gopherSave.js") {
 				var post = qs.parse(body);
 				var ParentFileName = post["ParentFileName"];
