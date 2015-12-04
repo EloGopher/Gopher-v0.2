@@ -163,7 +163,7 @@ $(document).ready(function() {
 								MainFileBlockCounter++;
 
 								htmlrow = "<div class='mainfileblock' id='main_"+MainFileBlockCounter+"'>";
-								htmlrow += "<div class='mainfilenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
+								htmlrow += "<div class='mainfilenamechange' data-datafilename='" + resultData[index].DataFileName + "'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
 								htmlrow += "<div class='timefloat' data-epochtime='"+resultData[index].LogTime+"'>"+ timeSince( resultData[index].LogTime ) +"</div>";
 								htmlrow += "</div>";
 								htmlrow += "<div class='maincontentarea'></div>";
@@ -276,7 +276,7 @@ $(document).ready(function() {
 							});
 
 
-							$(".networksubdiv").on('click', function () {
+							$(".networksubdiv, .mainfilenamechange").on('click', function () {
 
 								$("#sourceres").html( 'loading...' );
 								$("#sourceview").show();
