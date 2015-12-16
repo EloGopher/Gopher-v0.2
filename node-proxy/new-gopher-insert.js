@@ -47,18 +47,19 @@ var gopher = new function() {
 		//console.log(theObj.constructor);
 		jsonstr += '{';
 		if (theObj.constructor == Array || theObj.constructor == Object) {
+			var FirstItem = true;
 			for (var p in theObj) {
-				safeint++;
-				if (safeint > maxdata) {
-					break;
-				}
+				safeint++; if (safeint > maxdata) { break; }
 
 				try {
+					if (!FirstItem) { jsonstr +=  ", "; }
+					FirstItem = false;
+
 					if (theObj[p].constructor == Array || theObj[p].constructor == Object) {
-						jsonstr += p + ": ";
+						jsonstr += "\""+p + "\": ";
 						jsonstr += print_r(theObj[p], safeint, maxdata);
 					} else {
-						jsonstr += p + ": '" + theObj[p] + "', ";
+						jsonstr += "\""+p + "\": \"" + theObj[p] + "\"";
 					}
 				} catch (err) {}
 			}
@@ -136,7 +137,7 @@ var gopher = new function() {
 				GMsg.VT = "array";
 			} else
 			if (isFunction(xVarValue)) {
-				GMsg.VV = "";
+				GMsg.VV = print_r(xVarValue); //"";
 				GMsg.VT = "function";
 			} else
 			if (typeof(xVarValue) === "object") {

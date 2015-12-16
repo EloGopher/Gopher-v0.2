@@ -21,10 +21,22 @@ $(document).ready( function() {
 	var blockA = {firstName:'John', lastName:'Doe', age:50, eyeColor:'blue'};
 	var blockB = ['hi 2','hello 2'];
 
-	console.log($("#calculator"));
+   var obj = {
+       name: "Simon",
+       age: "20",
+       clothing: {
+           style: "simple",
+           isDouche: false,
+           nested:{ nest:"yes" }
+       }
+   }
+
+
+	console.log($("#calculator").html());
 
 	console.log(blockA);
 	console.log(blockB);
+   console.log(obj);
 
 /*
 	var j=0;

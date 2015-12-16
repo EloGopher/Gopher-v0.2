@@ -233,7 +233,7 @@ $(document).ready(function() {
 								} else {
 									var VarName = safe_tags_replace(decodeURIComponent(resultData[index].VarName));
 									var VarValue = safe_tags_replace(decodeURIComponent(resultData[index].VarValue));
-									if (VarName.indexOf(VarValue)!==-1) {
+									if ((VarName.indexOf(VarValue)!==-1) && (VarValue!="")) {
 										htmlrow += " <i>" + VarValue +  "</i>";
 									} else {
 										htmlrow += " <b>" + VarName + "</b>";
