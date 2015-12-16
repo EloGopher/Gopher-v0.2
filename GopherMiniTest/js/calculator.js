@@ -1,5 +1,6 @@
 $(document).ready( function()
 {
+
 	for (var i=0; i<3; i++)
 	{
 		console.log("start 111111))11111111","start-tag,multitag");
@@ -119,4 +120,6 @@ $(document).ready( function()
 		// prevent page jumps
 		e.preventDefault();
 	});
+
+
 });

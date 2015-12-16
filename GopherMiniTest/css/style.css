@@ -13,7 +13,7 @@ body {
          table.fixed td:nth-of-type(4) {width:200px;}/*Setting the width of column 3.*/
          table.fixed td:nth-of-type(6) {width:200px;}/*Setting the width of column 3.*/
          table.fixed td:nth-of-type(7) {width:200px;}/*Setting the width of column 3.*/
-		 
+
 table { border: none; border-collapse: collapse; }
 table td { border-left: 1px solid #000; padding:2px;}
 table td:first-child { border-left: none; }
@@ -25,9 +25,9 @@ table td:first-child { border-left: none; }
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-	
+
 	/* Better text styling */
-	font: bold 14px Arial, sans-serif;
+	font: 14px Arial, sans-serif;
 }
 
 /* A nice BG gradient */
@@ -41,10 +41,10 @@ html {
 #calculator {
 	width: 325px;
 	height: auto;
-	
+
 	margin: 10px 20px;
 	padding: 20px 20px 9px;
-	
+
 	background: linear-gradient(#9dd2ea, #8bceec);
 	border-radius: 3px;
 	box-shadow: 0px 4px #009de4, 0px 10px 15px rgba(0, 0, 0, 0.2);
@@ -59,15 +59,15 @@ html {
 .top .screen {
 	height: 40px;
 	width: 212px;
-	
+
 	float: right;
-	
+
 	padding: 0 10px;
-	
+
 	background: rgba(0, 0, 0, 0.2);
 	border-radius: 3px;
 	box-shadow: inset 0px 4px rgba(0, 0, 0, 0.2);
-	
+
 	/* Typography */
 	font-size: 17px;
 	line-height: 40px;
@@ -85,25 +85,25 @@ html {
 	float: left;
 	position: relative;
 	top: 0;
-	
+
 	cursor: pointer;
-	
+
 	width: 66px;
 	height: 36px;
-	
+
 	background: white;
 	border-radius: 3px;
 	box-shadow: 0px 4px rgba(0, 0, 0, 0.2);
-	
+
 	margin: 0 7px 11px 0;
-	
+
 	color: #888;
 	line-height: 36px;
 	text-align: center;
-	
+
 	/* prevent selection of text inside keys */
 	user-select: none;
-	
+
 	/* Smoothing out hover and active states using css3 transitions */
 	transition: all 0.2s ease;
 }
