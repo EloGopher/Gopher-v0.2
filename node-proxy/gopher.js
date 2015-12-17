@@ -2,6 +2,7 @@
 //http://stackoverflow.com/questions/24448998/is-it-possible-to-get-variables-with-get-defined-vars-but-for-the-actual-runni
 
 var http = require('http');
+var http_php_requests = require('http');
 var fs = require('fs');
 var path = require("path");
 var qs = require('querystring');
@@ -106,7 +107,7 @@ if (gopherurl!=="") {
 	      }
 		};
 
-	var post_req = http.request(options, function(r) {
+	var post_req = http_php_requests.request(options, function(r) {
 		r.on('data', function (chunk) {
           console.log('GOPHER: PHP Response = ' + chunk);
       });
@@ -173,6 +174,90 @@ fs.readFile('new-gopher-insert.js', 'utf8', function(err, data) {
 
 http.createServer(onRequest).listen(gopherPort);
 console.log("GOPHER: Server started on port: "+gopherPort+".");
+
+//------request data from php evey second
+var php_requestLoop = setInterval(function(){
+   var php_post_data = 'op=getlogs';
+	var php_options = {
+			method: 'POST',
+			host: url.parse(gopherurl+'Gopher.php').host,
+			port: 80,
+			path: url.parse(gopherurl+'Gopher.php').pathname,
+			headers: {
+	         'Content-Type': 'application/x-www-form-urlencoded',
+	         'Content-Length': Buffer.byteLength(php_post_data)
+	      }
+		};
+
+	var php_post_req = http_php_requests.request(php_options, function(r) {
+		r.on('data', function (chunk) {
+          //console.log('GOPHER PHP REQUEST:' + chunk);
+          if (chunk=="nothing new") {
+
+          } else {
+             var strLines = chunk.toString().split("\n");
+
+             for (var i in strLines) {
+               // console.log(i+" "+strLines[i]);
+               try {
+                  var dataobj = JSON.parse(strLines[i]);
+
+                  if (dataobj["TY"] == "phpvar") {
+                     dBInsertID++;
+                     var NewLog = {
+                        'ID' : dBInsertID,
+                        'LogTimeStamp' : UniversalScriptTimeStamp,
+                        'LogTime' : dataobj["PHPTS"],
+                        'ProjectID' : ProjectID,
+                        'LogCount' : dataobj["RE"],
+                        'FileName' : dataobj["FN"],
+                        'ParentFileName' : dataobj["PFN"],
+                        'LogType' : dataobj["TY"],
+                        'CodeLine' : dataobj["LN"],
+                        'VarName' : dataobj["VN"],
+                        'VarType' : '',
+                        'VarValue' : dataobj["VV"]
+                     }
+                     gopherMemorydB.push( NewLog );
+   					} else
+
+   					if ((dataobj["TY"] == "phperror1") || (dataobj["TY"] == "phperror2")) {
+                     dBInsertID++;
+                     var NewLog = {
+                        'ID' : dBInsertID,
+                        'LogTimeStamp' : UniversalScriptTimeStamp,
+                        'LogTime' : dataobj["PHPTS"],
+                        'ProjectID' : ProjectID,
+                        'LogCount' : dataobj["RE"],
+                        'FileName' : dataobj["FN"],
+                        'ParentFileName' : dataobj["PFN"],
+                        'LogType' : dataobj["TY"],
+                        'CodeLine' : dataobj["LN"],
+                        'LogMessage' : dataobj["LG"]
+                     }
+                     gopherMemorydB.push( NewLog );
+   					}
+               } catch (e) {
+                  //
+               }
+
+             }
+          }
+      });
+
+		if (r.statusCode != 200) {
+			console.log("GOPHER: can't locate Gopher.php at "+gopherurl);
+         console.log('');
+         console.log('please check gopher help by running "node gopher -help"');
+      	process.exit(1);
+		} else {
+			//console.log("GOPHER PHP REQUEST DONE");
+		}
+	});
+
+	php_post_req.write(php_post_data);
+	php_post_req.end();
+}, 1000);
 
 
 function onRequest(BrowserRequest, BrowserResponse) {
@@ -303,7 +388,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
       });
    } else
 
-	if ((BrowserRequest.url == "/gopherSave.js") || (BrowserRequest.url == "/gopherPHPsave.js")) {
+	if (BrowserRequest.url == "/gopherSave.js")  { //respond to request made by gopher javascript helper inserted into HTML files
 		var body = "";
 		BrowserRequest.on('data', function(data) {
 			body += data;
@@ -323,52 +408,6 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		});
 
 		BrowserRequest.on('end', function() {
-			//console.log( decodeURIComponent(body) );
-			if (BrowserRequest.url == "/gopherPHPsave.js") {
-
-				var dataobj = JSON.parse(body);
-				for (var i = 0; i < dataobj.length; i++) {
-					//console.log(dataobj[i]);
-
-					if (dataobj[i]["TY"] == "phpvar") {
-                  dBInsertID++;
-                  var NewLog = {
-                     'ID' : dBInsertID,
-                     'LogTimeStamp' : UniversalScriptTimeStamp,
-                     'LogTime' : dataobj[i]["PHPTS"],
-                     'ProjectID' : ProjectID,
-                     'LogCount' : dataobj[i]["RE"],
-                     'FileName' : dataobj[i]["FN"],
-                     'ParentFileName' : dataobj[i]["PFN"],
-                     'LogType' : dataobj[i]["TY"],
-                     'CodeLine' : dataobj[i]["LN"],
-                     'VarName' : dataobj[i]["VN"],
-                     'VarType' : '',
-                     'VarValue' : dataobj[i]["VV"]
-                  }
-                  gopherMemorydB.push( NewLog );
-					} else
-
-					if ((dataobj[i]["TY"] == "phperror1") || (dataobj[i]["TY"] == "phperror2")) {
-                  dBInsertID++;
-                  var NewLog = {
-                     'ID' : dBInsertID,
-                     'LogTimeStamp' : UniversalScriptTimeStamp,
-                     'LogTime' : dataobj[i]["PHPTS"],
-                     'ProjectID' : ProjectID,
-                     'LogCount' : dataobj[i]["RE"],
-                     'FileName' : dataobj[i]["FN"],
-                     'ParentFileName' : dataobj[i]["PFN"],
-                     'LogType' : dataobj[i]["TY"],
-                     'CodeLine' : dataobj[i]["LN"],
-                     'LogMessage' : dataobj[i]["LG"]
-                  }
-                  gopherMemorydB.push( NewLog );
-					}
-				}
-
-			} else
-
 			if (BrowserRequest.url == "/gopherSave.js") {
 				var post = qs.parse(body);
 				var ParentFileName = post["ParentFileName"];

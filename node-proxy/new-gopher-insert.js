@@ -12,13 +12,12 @@ window.onerror = function(message, url, lineNumber) {
 	try {
 
 		var DuplicateDontAdd = false;
-		if (GopherMsgs.length>0) {
-			if ( (GopherMsgs[GopherMsgs.length-1].LN==lineNumber ) &&
-				  (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(url) ) &&
-				  (GopherMsgs[GopherMsgs.length-1].LG==encodeURIComponent(message) ) )
-			{
-				GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
-				DuplicateDontAdd=true;
+		if (GopherMsgs.length > 0) {
+			if ((GopherMsgs[GopherMsgs.length - 1].LN == lineNumber) &&
+				(GopherMsgs[GopherMsgs.length - 1].FN == encodeURIComponent(url)) &&
+				(GopherMsgs[GopherMsgs.length - 1].LG == encodeURIComponent(message))) {
+				GopherMsgs[GopherMsgs.length - 1].RE = parseInt(GopherMsgs[GopherMsgs.length - 1].RE, 10) + 1;
+				DuplicateDontAdd = true;
 			}
 		}
 
@@ -43,45 +42,35 @@ window.onerror = function(message, url, lineNumber) {
 var gopher = new function() {
 	var MaxMessageLoop = 250;
 
-	JSON.stringifyOnce = function(obj, replacer, indent) {
-		var printedObjects = [];
-		var printedObjectKeys = [];
+	function print_r(theObj, safeint, maxdata) {
+		var jsonstr = "";
+		//console.log(theObj.constructor);
+		jsonstr += '{';
+		if (theObj.constructor == Array || theObj.constructor == Object) {
+			var FirstItem = true;
+			for (var p in theObj) {
+				safeint++; if (safeint > maxdata) { break; }
 
-		function printOnceReplacer(key, value) {
-			if (printedObjects.length > 100) { // browsers will not print more than 20K, I don't see the point to allow 2K.. algorithm will not be fast anyway if we have too many objects
-				return 'object too long';
+				try {
+					if (!FirstItem) { jsonstr +=  ", "; }
+					FirstItem = false;
+
+					if (theObj[p].constructor == Array || theObj[p].constructor == Object) {
+						jsonstr += "\""+p + "\": ";
+						jsonstr += print_r(theObj[p], safeint, maxdata);
+					} else {
+						jsonstr += "\""+p + "\": \"" + theObj[p] + "\"";
+					}
+				} catch (err) {}
 			}
-			var printedObjIndex = false;
-			printedObjects.forEach(function(obj, index) {
-				if (obj === value) {
-					printedObjIndex = index;
-				}
-			});
-
-			if (key == '') { //root element
-				printedObjects.push(obj);
-				printedObjectKeys.push("root");
-				return value;
-			} else if (printedObjIndex + "" != "false" && typeof(value) == "object") {
-				if (printedObjectKeys[printedObjIndex] == "root") {
-					return "(pointer to root)";
-				} else {
-					return "(see " + ((!!value && !!value.constructor) ? value.constructor.name.toLowerCase() : typeof(value)) + " with key " + printedObjectKeys[printedObjIndex] + ")";
-				}
-			} else {
-
-				var qualifiedKey = key || "(empty key)";
-				printedObjects.push(value);
-				printedObjectKeys.push(qualifiedKey);
-				if (replacer) {
-					return replacer(key, value);
-				} else {
-					return value;
-				}
-			}
+		} else {
+			jsonstr += "result: 'not Object or Array'"
 		}
-		return JSON.stringify(obj, printOnceReplacer, indent);
-	};
+		jsonstr += '}';
+
+		return jsonstr;
+	}
+
 
 	function isFunction(functionToCheck) {
 		var getType = {};
@@ -104,9 +93,6 @@ var gopher = new function() {
 	this.sendlog = function() {
 		if ((GopherMsgs.length !== 0) && (MaxMessageLoop > 1)) {
 			MaxMessageLoop--;
-			//console.log(GopherMsgs.length);
-			//var strdata = JSON.stringify(GopherMsgs);
-			//console.log("SEND LOG MESSAGES:"+strdata);
 
 			var CurrentDataLength = GopherMsgs.length;
 			var xhr = new XMLHttpRequest();
@@ -150,13 +136,13 @@ var gopher = new function() {
 				GMsg.VV = xVarValue.toString();
 				GMsg.VT = "array";
 			} else
-			if (typeof(xVarValue) === "object") {
-				GMsg.VV = JSON.stringifyOnce(xVarValue);
-				GMsg.VT = "object";
-			} else
 			if (isFunction(xVarValue)) {
-				GMsg.VV = "";
+				GMsg.VV = print_r(xVarValue); //"";
 				GMsg.VT = "function";
+			} else
+			if (typeof(xVarValue) === "object") {
+				GMsg.VV = print_r(xVarValue);
+				GMsg.VT = "object";
 			} else {
 				GMsg.VV = xVarValue;
 				GMsg.VT = "plain";
@@ -165,15 +151,14 @@ var gopher = new function() {
 
 
 			var DuplicateDontAdd = false;
-			if (GopherMsgs.length>0) {
-				if ( (GopherMsgs[GopherMsgs.length-1].LN==xCodeLine ) &&
-				     (GopherMsgs[GopherMsgs.length-1].FN==encodeURIComponent(xFileName) ) &&
-					  (GopherMsgs[GopherMsgs.length-1].VN==encodeURIComponent(xVarName) ) &&
-					  (GopherMsgs[GopherMsgs.length-1].VV==GMsg.VV ) &&
-					  (GopherMsgs[GopherMsgs.length-1].VT==GMsg.VT ) )
-				{
-					GopherMsgs[GopherMsgs.length-1].RE = parseInt(GopherMsgs[GopherMsgs.length-1].RE,10) + 1;
-					DuplicateDontAdd=true;
+			if (GopherMsgs.length > 0) {
+				if ((GopherMsgs[GopherMsgs.length - 1].LN == xCodeLine) &&
+					(GopherMsgs[GopherMsgs.length - 1].FN == encodeURIComponent(xFileName)) &&
+					(GopherMsgs[GopherMsgs.length - 1].VN == encodeURIComponent(xVarName)) &&
+					(GopherMsgs[GopherMsgs.length - 1].VV == GMsg.VV) &&
+					(GopherMsgs[GopherMsgs.length - 1].VT == GMsg.VT)) {
+					GopherMsgs[GopherMsgs.length - 1].RE = parseInt(GopherMsgs[GopherMsgs.length - 1].RE, 10) + 1;
+					DuplicateDontAdd = true;
 				}
 			}
 

@@ -13,22 +13,52 @@ if (isset($_POST["op"]))
 
          if (count($phpfiles) > 0 )
          {
-            echo "copying Gopher.php to ... ". $directory . "\n";
+            echo "GOPHER: copying Gopher.php to ... ". $directory . "\n";
             copy(__FILE__,$directory.'/Gopher.php');
          }
+      }
+      die(1);
+   } else
+   if ($_POST["op"]=="getlogs") {
+
+      if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/gopher.log")) {
+
+         $file_handle = fopen($_SERVER['DOCUMENT_ROOT'] . "/gopher.log", "r");
+         while (!feof($file_handle)) {
+            $line = fgets($file_handle);
+            echo $line;
+         }
+         fclose($file_handle);
+         unlink($_SERVER['DOCUMENT_ROOT'] . "/gopher.log");
+      } else {
+         echo "nothing new";
       }
       die(1);
    }
 }
 
+
+
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
 
+   if (!function_exists('getallheaders'))
+   {
+       function getallheaders()
+       {
+              $headers = '';
+          foreach ($_SERVER as $name => $value)
+          {
+              if (substr($name, 0, 5) == 'HTTP_')
+              {
+                  $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+              }
+          }
+          return $headers;
+       }
+   }
+
    $GopherIsHere = true;
-
    $PhpInlineShowErrors = true;
-   $LastSend = microtime(true);
-
-   $GopherPHPLogs = [];
 
    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://';
    $port = $_SERVER['SERVER_PORT'];
@@ -57,43 +87,16 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
        return implode('&', $params);
    }
 
-   function sendBufferDataToNode($data,$ForceSend)
+   function savaDataToFile($data)
    {
-      global $LastSend,$GopherPHPLogs;
-
-      if (!$ForceSend) {
-         $GopherPHPLogs[] = $data;
+      if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/gopher.log")) {
+        $fh = fopen($_SERVER['DOCUMENT_ROOT'] . "/gopher.log", 'a');
+        fwrite($fh, json_encode($data) ."\n");
+      } else {
+        $fh = fopen($_SERVER['DOCUMENT_ROOT'] . "/gopher.log", 'w');
+        fwrite($fh, json_encode($data)."\n");
       }
-      //print_r($GopherPHPLogs);
-
-      $ThisSend = microtime(true);
-
-      if ( (($ThisSend-$LastSend) > 3) || ($ForceSend) || (count($GopherPHPLogs)>50) )
-      {
-         $LastSend = $ThisSend;
-         $data_string = json_encode($GopherPHPLogs);
-
-         $url = 'http://localhost:1337/gopherPHPsave.js';
-
-         $ch = curl_init( $url );
-
-      //   echo $data_string;
-
-      //   curl_setopt( $ch, CURLOPT_POST, 1);
-      //   curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-      //   curl_setopt( $ch, CURLOPT_HEADER, 0);
-
-         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-         curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json','Content-Length: ' . strlen($data_string)) );
-
-         $response = curl_exec( $ch );
-
-         if ($response == "All Good") {
-            $GopherPHPLogs = [];
-         }
-      }
+      fclose($fh);
    }
 
 
@@ -178,16 +181,13 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
       // Unset Error Type and Message implies a proper shutdown.
       if (!isset($Error['type']) && !isset($Error['message'])) {
-         sendBufferDataToNode(null,true);
          exit();
       } elseif (isset($GLOBALS['ErrorCallback'])) {
         // Pass fatal errors up to the standard error callback.
         $GLOBALS['ErrorCallback']($Error['type'], 'Fatal Error: '.$Error['message'], $Error['file'], $Error['line']);
-        sendBufferDataToNode(null,true);
         return;
       } else {
         PrintError($Error['type'], 'Fatal Error: '.$Error['message'], $Error['file'], $Error['line']);
-        sendBufferDataToNode(null,true);
         return;
       }
    }
@@ -213,8 +213,8 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
           }
       }
 
-       $data = array('TY' => 'phperror1', 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG' => '', 'PHPTS' => microtime(true));
-       sendBufferDataToNode($data,false);
+       $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
+       savaDataToFile($data);
 
    }
 
@@ -241,8 +241,8 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
               }
            }
 
-           $data = array('TY' => 'phperror2', 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'TG'=>'', 'PHPTS' => microtime(true));
-           sendBufferDataToNode($data,false);
+           $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
+           savaDataToFile($data);
 
            //print_r($phpgopherstore);
          //print_r($data);
@@ -313,7 +313,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    //------------------------------------------------------
 
 
-   function Gopher($xValue, $xTags = '')
+   function Gopher($xValue)
    {
        global $PhpParentFileName;
 
@@ -321,7 +321,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 
        $src = file($backtr[0]['file']);
        $line = $src[ $backtr[0]['line'] - 1 ];
-       preg_match("#Gopher\((.+)\)#", $line, $match);
+       preg_match("#gopher\((.+)\)#i", $line, $match);
 
        $max = strlen($match[1]);
        $varname = '';
@@ -341,18 +341,8 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
        $varnames[] = str_getcsv($varname); // explode(",", $varname);
        $newvarname = $varnames[0][0];
 
-   //  var_dump($backtr); //DEBUG_BACKTRACE_IGNORE_ARGS
-   //    echo "<div style='border:1px dotted black; padding:5px; margin:5px; color:white; font-weight:normal; background-color:#444;'>";
-   //    echo ' Line:'.$backtr[0]['line'].' '.$varname.' = '.json_encode($xValue).' Tags:'.$xTags.' -- File:'.$backtr[0]['file'];
-   //    echo '</div>';
-
-      if ( (strpos($newvarname,"'") !== false) || (strpos($newvarname,"\"") !== false) || (strpos($newvarname,".") !== false) || (strpos($newvarname,"$") === false) )
-      {
-         $newvarname = "LOG"; //" ".$newvarname;
-      }
-
-       $data = array('TY' => 'phpvar', 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'TG' => $xTags, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
-       sendBufferDataToNode($data,false);
+       $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
+       savaDataToFile($data);
    }
 
 
@@ -369,7 +359,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
            $GopherIncludeFileOrignal = $value;
            $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
 
-           $PhpParentFileName = $GopherIncludeFileOrignal;
+           $PhpParentFileName = $PhpHelperRoot.$GopherIncludeFileOrignal;
        } else
        if ($name == 'GopherPHPRedirect') {
           $GopherRedirect = "yes";
