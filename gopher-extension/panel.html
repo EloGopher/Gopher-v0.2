@@ -7,6 +7,12 @@
 </head>
 
 <style>
+
+body {
+	font-family: Menlo, monospace;
+	font-size: 11px;
+}
+
 .modal {
 
     /* Overlay page content */
@@ -106,16 +112,17 @@
     100% { background-color: none; }
 }
 
+.leftmargin { width:35px; overflow:hidden; display:inline-block; text-align:right;}
 .logcount { font-weight:bold; border-radius:10px; padding:3px; background-color:#ccc;}
 .timediv { width:60px; overflow:hidden; white-space:nowrap; display:none; text-align:right; margin-right: 5px; }
-.logrow { border-top:1px solid #ddd; }
+.logrow { border-top:1px solid #eee; }
 .logrow.first { border-top:none; }
 
-.networkdiv { width:45px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right; }
+.networkdiv { width:35px; overflow:hidden; white-space:nowrap; display:inline-block;  text-align:right; }
 .networksubdiv { width:600px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; color:blue; font-weight: bold; }
 .networksubdiv:hover {  text-decoration: underline; cursor: pointer;}
 
-.codeline { width:45px; overflow:hidden;  display:inline-block; text-align:right;}
+.codeline {     white-space: nowrap; width:300px; overflow:hidden;  display:inline-block; text-align:right; float: right; margin-right: 10px;}
 .logdiv { text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; }
 .phptag { width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#ccccff; border-top-left-radius: 2px; border-top-right-radius: 2px; }
 .jstag { width:100px; text-overflow: ellipsis; overflow:hidden; white-space:nowrap; display:inline-block; text-align:left; background-color:#aaffaa; border-top-left-radius: 2px; border-top-right-radius: 2px; }
@@ -123,8 +130,8 @@
 .fileblock {  border-top-left-radius: 2px; border-top-right-radius: 2px; margin-top:3px; margin-bottom: 6px; }
 .filenamechange { background-color:#eee; padding:4px; margin-bottom: 4px; border-top-left-radius: 2px; border-top-right-radius: 2px; }
 
-.mainfileblock { border:1px solid #333; border-top-left-radius: 2px; border-top-right-radius: 2px; margin-top:50px; }
-.mainfilenamechange { background-color:#ccc; padding:4px; margin-bottom: 4px; border-top-left-radius: 2px; border-top-right-radius: 2px; color:blue;}
+.mainfileblock { border:1px solid #eee; border-top-left-radius: 2px; border-top-right-radius: 2px; margin-top:20px; }
+.mainfilenamechange { background-color:#eee; padding:4px; margin-bottom: 4px; border-top-left-radius: 2px; border-top-right-radius: 2px; color:blue;}
 .mainfilenamechange:hover {  text-decoration: underline; cursor: pointer;}
 
 maincontentarea { padding: 1px 0px 5px 10px; }

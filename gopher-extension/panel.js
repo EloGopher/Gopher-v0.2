@@ -88,8 +88,6 @@ $(document).ready(function() {
 		var FirstBlock = true;
 		var BlockConter  = 0;
 
-		var LastFileName = "";
-
 		var IntervalBusy = false;
 		var FileBlock;
 		var FileBlockCounter = 0;
@@ -171,29 +169,8 @@ $(document).ready(function() {
 
 								MainFileBlock = $(htmlrow);
 								$("#testframe").append(MainFileBlock);
-								FileBlockCounter = 0;
-								LastFileName = "";
-							}
-
-							//the filename of a log entry is different than the one before make a new child box
-							var CurrentFileName = decodeURIComponent(resultData[index].FileName);
-							if ((CurrentFileName != LastFileName) && (resultData[index].LogType !== "NETWORK") ) {
 
 								FirstLogLine = true;
-
-								LastFileName = CurrentFileName;
-								FileBlockCounter++;
-								htmlrow = "<div class='fileblock' id='sub_"+ MainFileBlockCounter+"_"+FileBlockCounter +"'>";
-								htmlrow += "<div class='filenamechange'><b>"+ decodeURIComponent(resultData[index].FileName) + "</b>";
-								if (decodeURIComponent(resultData[index].FileName)!=decodeURIComponent(resultData[index].ParentFileName)) {
-									htmlrow += " (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
-								}
-								htmlrow += "<div class='timefloat' data-epochtime='"+resultData[index].LogTime+"'>"+ timeSince( resultData[index].LogTime ) +"</div>";
-								htmlrow += "</div>";
-								htmlrow += "</div>";
-
-								FileBlock = $(htmlrow);
-								$(MainFileBlock).find(".maincontentarea").append(FileBlock);
 							}
 
 							if ((resultData[index].LogType == "NETWORK") && (isAjax!="")) {
@@ -205,9 +182,9 @@ $(document).ready(function() {
 									htmlrow = " <div id='logrow_"+RowCounter+"' class='logrow flash'>";
 								}
 
-								htmlrow += "<div class='networkdiv'>XHR: </div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + "</div>";
+								htmlrow += "<div class='networkdiv'>&nbsp;</div><div class='networksubdiv' data-datafilename='" + resultData[index].DataFileName + "'>" + decodeURIComponent(resultData[index].FileName) + "</div>";
 								htmlrow += "</div>";
-								if (FileBlockCounter == 0) { $(MainFileBlock).find(".maincontentarea").append(htmlrow); } else { $(FileBlock).append(htmlrow); }
+								$(MainFileBlock).find(".maincontentarea").append(htmlrow);
 							} else
 							if (resultData[index].LogType !== "NETWORK") {
 								RowCounter++;
@@ -220,38 +197,52 @@ $(document).ready(function() {
 								}
 
 								var LogCount = "";
+								htmlrow += "<div class='leftmargin'>";
 								if (resultData[index].LogCount > 1) {
-									LogCount = " <span class='logcount'>" + resultData[index].LogCount + "</span> ";
+									htmlrow += " <span class='logcount'>" + resultData[index].LogCount + "</span> ";
+								} else {
+									htmlrow += "&nbsp;";
 								}
+								htmlrow += "</div>";
 
-								htmlrow += " <div class='codeline'>" + LogCount + resultData[index].CodeLine + ":</div>";
 
-								htmlrow += " <div id='logdiv_"+RowCounter+"' class='logdiv' style='width:"+ (LogWidth-100) +"px'>";
+								htmlrow += "<div id='logdiv_"+RowCounter+"' class='logdiv' style='width:"+ (LogWidth-100) +"px'>";
 
 								if ((resultData[index].LogType == "js_er") || (resultData[index].LogType == "phperror2")) {
 									htmlrow += LogType + safe_tags_replace(decodeURIComponent(resultData[index].LogMessage));
 								} else {
 									var VarName = safe_tags_replace(decodeURIComponent(resultData[index].VarName));
 									var VarValue = safe_tags_replace(decodeURIComponent(resultData[index].VarValue));
-									if ((VarName.indexOf(VarValue)!==-1) && (VarValue!="")) {
-										htmlrow += " <i>" + VarValue +  "</i>";
+									if (( (VarName.indexOf(VarValue)!==-1) || (VarValue.indexOf(VarName)!==-1)) && (VarValue!="")) {
+										htmlrow += " <span style='font-style: italic; color:green'>" + VarValue + "</span>";
 									} else {
-										htmlrow += " <b>" + VarName + "</b>";
+										htmlrow += " <span style='font-style: italic; color:#999'>" + VarName + "</span>";
 
 										if (resultData[index].VarType!="") { htmlrow += " {" + resultData[index].VarType + "}"; }
 
-										if (resultData[index].VarType=="object") { htmlrow += " = " + syntaxHighlight(VarValue) + "</div>"; } else { htmlrow += " = " + VarValue; }
+										if (resultData[index].VarType=="object") { htmlrow += " = " + syntaxHighlight(VarValue) + ""; } else { htmlrow += " = " + VarValue; }
 									}
 								}
 								htmlrow += "</div>";
+								htmlrow += " <div class='codeline'>";
+								var lognfilename = decodeURIComponent(resultData[index].FileName);
+								var shortfilename = lognfilename.replace(/^.*[\\\/]/, '')
+
+								htmlrow += "<span title='"+lognfilename+ "";
+								/*
+								if (decodeURIComponent(resultData[index].FileName)!=decodeURIComponent(resultData[index].ParentFileName)) {
+									htmlrow += " (" + decodeURIComponent(resultData[index].ParentFileName) + ")";
+								}
+								*/
+								htmlrow += "'>"+ shortfilename + "</span>";
+								htmlrow += ":" +resultData[index].CodeLine + "</div>";
+
+
 
 
 								htmlrow += "</div>";
-								if (FileBlockCounter == 0) {
-									$(MainFileBlock).find(".maincontentarea").append(htmlrow);
-								} else {
-									$(FileBlock).append(htmlrow);
-								}
+								$(MainFileBlock).find(".maincontentarea").append(htmlrow);
+								resize_calculate();
 							}
 						});
 
@@ -373,7 +364,7 @@ $(document).ready(function() {
 
 	function resize_calculate() {
 		LogWidth = $('#testframe').width();
-		$(".logdiv").css({'width' : (LogWidth-100)+"px" });
+		$(".logdiv").css({'width' : (LogWidth-400)+"px" });
 	};
 
 	var resizeTimer;
