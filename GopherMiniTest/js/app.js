@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	console.log("document start");
+	/*gopher:'start'*/
 
 	var postData = {
 		task: 'getCampaignImages'
@@ -10,8 +10,7 @@ $(document).ready( function() {
 		dataType: "JSON",
 		data: postData,
 		success: function(data) {
-			console.log("ajax response javascript");
-			console.log(data);
+			/*gopher:data*/
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 		},
@@ -31,23 +30,7 @@ $(document).ready( function() {
        }
    }
 
-
-	console.log($("#calculator").html());
-
-	console.log(blockA);
-	console.log(blockB);
-   console.log(obj);
-
-/*
-	var j=0;
-	var k=100;
-	for (var i=0; i<100; i++) {
-		j=j+i;
-		console.log(i,"loop");
-		console.log(j,"sum");
-		console.log("this is k:"+k,"mix");
-	}
-*/
-//	console.log(NotExists);
-
+	/*gopher:obj*/
+	/*gopher:blockA*/
+	/*gopher:blockB*/
 });

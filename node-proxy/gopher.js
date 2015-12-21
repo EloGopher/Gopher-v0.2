@@ -695,7 +695,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 							var index = -1;
 
-							var RegEx5 = RegExp('[\\n\\r\\s]console\\.log', 'igm');
+							var RegEx5 = RegExp('[\\n\\r\\s]\/\*gopher:', 'igm');
 							var searchRes;
 
 							while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
@@ -733,7 +733,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
                         while (stillSearching && currPos <= chunkStr.length) {
                            var currChar = chunkStr.charAt(currPos);
 
-                           if ( ((currChar=="\"") ||  (currChar=="'")) && (!StartString) ) {
+                           if ( (currChar==":") && (!StartString) ) {
                               StartQuote = currChar;
                               StartString = true;
                            } else
