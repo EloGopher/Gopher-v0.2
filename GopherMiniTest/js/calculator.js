@@ -1,3 +1,4 @@
+/*gopher:'begin'*/
 $(document).ready( function()
 {
 

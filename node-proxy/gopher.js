@@ -122,7 +122,7 @@ function fromDir(startPath,filter){
     };
 };
 
-
+/*
 if (projectfoler!="") {
    console.log("GOPHER: Copying gopher.php to all project folders.")
    fromDir(projectfoler,'.php');
@@ -161,6 +161,7 @@ if (gopherurl!=="") {
 	post_req.write(post_data);
 	post_req.end();
 }
+*/
 
 if ( (projectHost=="") || (showhelp!="") || (gopherurl=="")) {ShowHelpScreen();}
 
@@ -212,6 +213,7 @@ http.createServer(onRequest).listen(gopherPort);
 console.log("GOPHER: Server started on port: "+gopherPort+".");
 
 //------request data from php evey second
+/*
 var php_requestLoop = setInterval(function(){
    var php_post_data = 'op=getlogs';
 	var php_options = {
@@ -294,7 +296,7 @@ var php_requestLoop = setInterval(function(){
 	php_post_req.write(php_post_data);
 	php_post_req.end();
 }, 1000);
-
+*/
 
 function onRequest(BrowserRequest, BrowserResponse) {
 
@@ -568,7 +570,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 			if (ConsoleLogLvl>0) { console.log("redirecing php to Gopher.php ........" + BrowserRequest.url + " to " + GopherPHPurl); }
 
 			BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
-			BrowserRequest.url = GopherPHPurl;
+//			BrowserRequest.url = GopherPHPurl;
 		}
 
 		var BufferData = false;
@@ -695,100 +697,18 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 							var index = -1;
 
-							var RegEx5 = RegExp('[\\n\\r\\s]\/\*gopher:', 'igm');
+							var RegEx5 = RegExp('\\/\\*gopher:(.*)\\*\\/', 'igm');
 							var searchRes;
 
 							while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
+//                        console.log(searchRes.index);
+//                        console.log(searchRes[1]);
 
+                        var GopherInsertString = 'gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[1].replace(/"/g, '\\\"') + '",'+ searchRes[1] + '); ';
 
-                        //------- parse begin and end paranthesis and extract the parameters within and not get fooled and tricked by nested quotes and paranthesises that ApacheResponse
-                        //------- not part of the parameter or the console.log( ) start and end paranthesis
-                        //console.log(searchRes.index+" "+RegEx5.lastIndex);
-                        var stillSearching=true;
-                        var LogStart = -1;
-                        var LogEnd = -1;
+                        chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
 
-                        currPos = searchRes.index;
-                        while (stillSearching && currPos <= chunkStr.length) {
-                          var currChar = chunkStr.charAt(currPos);
-                          if (currChar=="(") { stillSearching=false; LogStart=currPos; }
-                          currPos++;
-                        }
-
-                        var stillSearching=true;
-                        var ParanthesisCount = 1;
-                        var QuoteCount = 0;
-                        var DoubleQuoteCount = 0;
-                        var StartString = false;
-                        var StartQuote = "";
-                        var PrevChar = "";
-                        var BracketCount = 0;
-                        var CurlyBracketCount = 0;
-
-                        var LastParametePos = currPos;
-                        var HasMoreThanOneParameter = false;
-
-                        var LogParams = [];
-
-                        while (stillSearching && currPos <= chunkStr.length) {
-                           var currChar = chunkStr.charAt(currPos);
-
-                           if ( (currChar==":") && (!StartString) ) {
-                              StartQuote = currChar;
-                              StartString = true;
-                           } else
-
-                           if ( ((currChar=="\"") || (currChar=="'")) && (StartString) && (PrevChar!="\\") && (currChar==StartQuote) ) {
-                              StartString = false;
-                           }
-
-                           if ( (!StartString) && (ParanthesisCount==1) && (CurlyBracketCount==0) && (BracketCount==0) && (currChar==",") )
-                           {
-                              //console.log("PARAM:"+ chunkStr.substring(LastParametePos , currPos) );
-                              LogParams.push( chunkStr.substring(LastParametePos , currPos) );
-                              LastParametePos = currPos+1;
-                              HasMoreThanOneParameter=true;
-                           }
-
-
-                           if (!StartString) {
-                              if (currChar=="(") {  ParanthesisCount++; }
-                              if (currChar==")") {  ParanthesisCount--; }
-
-                              if (currChar=="[") {  BracketCount++; }
-                              if (currChar=="]") {  BracketCount--; }
-
-                              if (currChar=="{") {  CurlyBracketCount++; }
-                              if (currChar=="}") {  CurlyBracketCount--; }
-                           }
-
-                          if (ParanthesisCount==0) { stillSearching=false; LogEnd = currPos; }
-
-                          currPos++;
-                          PrevChar = currChar;
-                        }
-                        if (HasMoreThanOneParameter) {
-//                           console.log( "PARAM:"+chunkStr.substring(LastParametePos , currPos-1) );
-                           LogParams.push( chunkStr.substring(LastParametePos , currPos-1) );
-                        } else {
-//                           console.log("single parameter");
-//                           console.log( "PARAM:"+chunkStr.substring(LogStart+1 , LogEnd) );
-                           LogParams.push( chunkStr.substring(LogStart+1 , LogEnd) );
-                        }
-                        if ((LogStart>=0) && (LogEnd>LogStart)) {
-//                           console.log("Start End: "+LogStart+" "+LogEnd);
-//                           console.log( lineNumberByIndex(RegEx5.lastIndex, chunkStr) + " " + chunkStr.substring(LogStart , LogEnd+1) );
-//                           console.log( "params:" + LogParams.length );
-
-                           if (LogParams.length==1)
-                           {
-                              var GopherInsertString = 'gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + LogParams[0].replace(/"/g, '\\\"') + '",'+ LogParams[0] + '); ';
-
-                              chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
-
-                              RegEx5.lastIndex += GopherInsertString.length;
-                           }
-                        }
+                        RegEx5.lastIndex += GopherInsertString.length;
 							}
 						}
 
