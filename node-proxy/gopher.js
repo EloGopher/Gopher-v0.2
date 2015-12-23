@@ -34,18 +34,14 @@ function ShowHelpScreen()
 	console.log("-----------------------");
 	console.log("-pid <int> : Default is 101, this is the project ID that will be logged with every event.");
 	console.log("-host : This is the server gopher will be pulling. ");
-	console.log("-port <int> : Default is 80. Port of server which gopher will be pulling.");
-   console.log("-path <string> : If Gopher.php is located in some subfolder of host please enter the path here. ");
-	console.log("-gopherhost <http://localhost> : This parameter will be used by the Browser extension.");
-	console.log("-gopherport <int> : Default 1337. Port of gopherhost.");
-   console.log("-stopclearcache : If this is not specified all network activity saved to the temp folder will be deleted.");
-	console.log("-redirectphp <yes/no> : Defalut yes. To trap and log all php runtime errors, all php files requested has to go through Gopher.php on the server. If you don't want the Gopher proxy to request php files through Gopher.php then you should set this to \"no\".");
-   console.log("-log <integer>: gopher log to console level ");
+	console.log("-gopher <http://localhost> : This parameter will be used by the Browser extension.");
    console.log("-project <physical path> : Location of source on drive.");
+   console.log("-stopclearcache : If this is not specified all network activity saved to the temp folder will be deleted.");
+   console.log("-log <integer>: gopher log to console level ");
 console.log("-help : This page.");
 	console.log("");
 	console.log("Example run:");
-	console.log("node gopher -pid 1 -host localhost -path phishproof/ -project c:/www/myproject");
+	console.log("node gopher -pid 1 -host localhost -project c:/www/myproject");
 	console.log("");
 	console.log("");
 	process.exit(1);
@@ -62,14 +58,12 @@ if(process.argv.indexOf("-pid") != -1){ ProjectID = process.argv[process.argv.in
 var projectHost = ''; // 'localhost' 'testv2.phishproof.com';
 if(process.argv.indexOf("-host") != -1){ projectHost = process.argv[process.argv.indexOf("-host") + 1]; }
 
-var projectOnPort = 80;
-if(process.argv.indexOf("-port") != -1){ projectOnPort = process.argv[process.argv.indexOf("-port") + 1]; }
+var projectOnPort = 80; //check if projectHost has :80 etc. then remove it from projectHost and update this var with it
 
 var gopherHost = 'localhost';
-if(process.argv.indexOf("-gopherhost") != -1){ gopherHost = process.argv[process.argv.indexOf("-gopherhost") + 1]; }
+if(process.argv.indexOf("-gopher") != -1){ gopherHost = process.argv[process.argv.indexOf("-gopher") + 1]; }
 
-var gopherPort = 1337;
-if(process.argv.indexOf("-gopherport") != -1){ gopherPort = process.argv[process.argv.indexOf("-gopherport") + 1]; }
+var gopherPort = 1337;  //check if gopherHost has :80 etc. then remove it from gopherHost and update this var with it
 
 var showhelp = "";
 if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
@@ -77,17 +71,11 @@ if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
 var stopclearcache = "";
 if(process.argv.indexOf("-stopclearcache") != -1){ stopclearcache="yes"; }
 
-var redirectphp = "yes";
-if(process.argv.indexOf("-redirectphp") != -1){ redirectphp = process.argv[process.argv.indexOf("-redirectphp") + 1]; }
-
-var gpath = "";
-if(process.argv.indexOf("-path") != -1){ gpath = process.argv[process.argv.indexOf("-path") + 1]; }
-
 if (projectOnPort!="80") {
-   var gopherurl = "http://"+projectHost+":"+projectOnPort+"/"+gpath;
+   var gopherurl = "http://"+projectHost+":"+projectOnPort+"/";
 } else
 {
-   var gopherurl = "http://"+projectHost+"/"+gpath;
+   var gopherurl = "http://"+projectHost+"/";
 }
 
 var projectfoler = "";
@@ -122,13 +110,20 @@ function fromDir(startPath,filter){
     };
 };
 
-/*
+
 if (projectfoler!="") {
-   console.log("GOPHER: Copying gopher.php to all project folders.")
-   fromDir(projectfoler,'.php');
-//   console.log(PathsArray);
+   console.log("GOPHER: Copying gopher.php to project folder.")
+   fs.writeFileSync(projectfoler+'/Gopher.php', fs.readFileSync(__dirname+'/Gopher.php'));
+   //fromDir(projectfoler,'.php');
 }
 
+
+if (!fs.existsSync(projectfoler+'/Gopher.php')) {
+   console.log("GOPHER: can't locate Gopher.php at "+projectfoler+"/Gopher.php");
+   console.log('');
+   console.log('please check gopher help by running "node gopher -help"');
+   process.exit(1);
+}
 
 if (gopherurl!=="") {
 	var post_data = 'op=hello';
@@ -161,7 +156,7 @@ if (gopherurl!=="") {
 	post_req.write(post_data);
 	post_req.end();
 }
-*/
+
 
 if ( (projectHost=="") || (showhelp!="") || (gopherurl=="")) {ShowHelpScreen();}
 
@@ -213,7 +208,7 @@ http.createServer(onRequest).listen(gopherPort);
 console.log("GOPHER: Server started on port: "+gopherPort+".");
 
 //------request data from php evey second
-/*
+
 var php_requestLoop = setInterval(function(){
    var php_post_data = 'op=getlogs';
 	var php_options = {
@@ -296,7 +291,7 @@ var php_requestLoop = setInterval(function(){
 	php_post_req.write(php_post_data);
 	php_post_req.end();
 }, 1000);
-*/
+
 
 function onRequest(BrowserRequest, BrowserResponse) {
 
@@ -322,9 +317,6 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 		BrowserRequest.on('end', function() {
          var post = qs.parse(body);
-//       console.log(post['LastID']);
-         //var stmt = "SELECT * FROM logs ORDER BY ID DESC LIMIT 50";
-
          if ((typeof post['DataFile'] !== 'undefined') && (post['DataFile'] !== 'undefined') && (post['DataFile'] !== null)){
             var DataFile = post['DataFile'];
             //console.log('reading datafile...'+DataFile);
@@ -531,12 +523,6 @@ function onRequest(BrowserRequest, BrowserResponse) {
             'DataFileName' : DataFileName
          }
          gopherMemorydB.push( NewLog );
-         /*
-
-         var stmt = dbConn.prepare("INSERT INTO logs (LogTimeStamp, LogTime, ProjectID, FileName, ParentFileName, LogType, CodeLine, LogMessage, Tags, DataFileName  ) VALUES(?,?,?,?,?,?,?,?,?,?)");
-   		stmt.run(UniversalScriptTimeStamp, UniversalScriptTimeStampTemp, ProjectID, decodeURIComponent(BrowserRequest.url), '', 'NETWORK', '0', '', '', DataFileName );
-   		stmt.finalize();
-         */
 		   fs.writeFile(__dirname + '/temp/'+DataFileName+'-header.txt', stringifyObject(BrowserRequest.headers));
       }
 
@@ -548,9 +534,11 @@ function onRequest(BrowserRequest, BrowserResponse) {
 		BrowserRequest.headers['cache-control'] = 'no-cache';
 
 		//--- redirect php requests to go through Gopher.php as icludes so script errors can be tracked
-		if ( (BrowserRequest.url.indexOf('.php') != -1) && (redirectphp=="yes") ) {
+		if (BrowserRequest.url.indexOf('.php') != -1)  {
 			var querystring = '';
 			var OriginalURL = BrowserRequest.url;
+         var WithoutFilename = '';
+         var withoutQueryURL = '';
 
 			if (OriginalURL.indexOf('?') > 0) {
 				querystring = OriginalURL.substring(OriginalURL.indexOf('?'));
@@ -559,18 +547,54 @@ function onRequest(BrowserRequest, BrowserResponse) {
             var WithoutFilename = withoutQueryURL.substring(0, withoutQueryURL.lastIndexOf("/") + 1);
 
 			} else {
+            withoutQueryURL = OriginalURL;
             var WithoutFilename = OriginalURL.substring(0, OriginalURL.lastIndexOf("/") + 1);
 			}
 
 
-//			var GopherPHPurl = gopherurl + url.parse(OriginalURL).query;
-			var GopherPHPurl = WithoutFilename + 'Gopher.php' + querystring;
+//			var GopherPHPurl = WithoutFilename + 'Gopher.php' + querystring;
+
+         if (fs.existsSync(projectfoler+withoutQueryURL)) {
+            console.log('found file at '+projectfoler+withoutQueryURL+' ('+WithoutFilename+')');
+
+            var TempNewFileName = withoutQueryURL;
+            TempNewFileName = TempNewFileName.split('/');
+            TempNewFileName = TempNewFileName[TempNewFileName.length-1];
 
 
-			if (ConsoleLogLvl>0) { console.log("redirecing php to Gopher.php ........" + BrowserRequest.url + " to " + GopherPHPurl); }
+            console.log('cloning and updating file to... '+projectfoler+WithoutFilename+'gopher-'+TempNewFileName);
+            var temppaths=WithoutFilename.split("/");
+            var upfolder = "";
+            if (temppaths.length>2) {
+               for (var i=0; i<temppaths.length-2; i++) { upfolder += "../"; }
+            }
+            var PhpSource = fs.readFileSync(projectfoler+withoutQueryURL);
 
-			BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
-//			BrowserRequest.url = GopherPHPurl;
+            var index = -1;
+            var RegEx5 = RegExp('\\/\\*gopher:(.*)\\*\\/', 'igm');
+            var searchRes;
+
+            while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
+//                        console.log(searchRes.index);
+//                        console.log(searchRes[1]);
+
+               var GopherInsertString = 'gopher('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[1].replace(/"/g, '\\\"') + '",'+ searchRes[1] + '); ';
+
+               chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
+
+               RegEx5.lastIndex += GopherInsertString.length;
+            }
+
+
+            fs.writeFileSync(projectfoler+WithoutFilename+'gopher-'+TempNewFileName,'<?php include_once "'+upfolder+'Gopher.php"; ?>'+ PhpSource);
+            var GopherPHPurl = WithoutFilename+'gopher-'+TempNewFileName + querystring;
+            console.log(GopherPHPurl);
+
+            BrowserRequest.headers["GopherPHPFile"] = BrowserRequest.url;
+   			BrowserRequest.url = GopherPHPurl;
+         } else {
+            console.log('can\'t find file at '+projectfoler+withoutQueryURL+'. will not try to parse gopher tags (if any).');
+         }
 		}
 
 		var BufferData = false;

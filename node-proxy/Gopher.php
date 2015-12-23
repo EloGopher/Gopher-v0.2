@@ -376,7 +376,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
 */
 
       header('GopherMirrorRequest: '.$GopherIncludeFile);
-      require_once $PhpHelperRoot.$GopherIncludeFile;
+//      require_once $PhpHelperRoot.$GopherIncludeFile;
    }
 
 }

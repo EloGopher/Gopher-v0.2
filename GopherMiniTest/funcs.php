@@ -1,12 +1,11 @@
 <?php
-require_once('Gopher.php');
 for ($i=0; $i<10; $i++)
 {
-	Gopher("Test Call 2");
+	/*gopher:"Test Call 2"*/
 }
 
-Gopher("Test Call 2");
-Gopher("PHP Funcs Start");
+/*gopher:"Test Call 2"*/
+/*gopher:"PHP Funcs Start"*/
 
 function TestCall2()
 {
@@ -14,12 +13,10 @@ function TestCall2()
 
 	for ($i=0; $i<10; $i++)
 	{
-		Gopher($localvar,"PHP Tag");
+		/*gopher:$localvar*/
 	}
 
-
-
-	Gopher("Test Call 2");
+	/*gopher:"Test Call 2"*/
 }
 
 ?>

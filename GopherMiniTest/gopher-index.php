@@ -1,4 +1,4 @@
-<?php
+<?php include_once "../../Gopher.php"; ?><?php
 require 'funcs.php';
 
 strpos();
