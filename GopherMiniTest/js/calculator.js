@@ -4,7 +4,7 @@ $(document).ready( function()
 
 	for (var i=0; i<3; i++)
 	{
-		/*gopher:i*/
+		/*gopher(David,12-23-2015 21:15):i*/
 	}
 
 	// Get all the keys from document

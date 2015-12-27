@@ -24,10 +24,11 @@
 		"https://ajax.googleapis.com/"
 	],
 
-	"devtools_page": "devtools.html",
+//	"devtools_page": "devtools.html",
 	"options_page": "panel.html",
+
 	"content_scripts": [{
-		"js": ["jquery-1.11.1.min.js"],
+		"js": ["jquery-1.11.1.min.js","gopher-console.js"],
 		"matches": ["<all_urls>"]
 	}]
 

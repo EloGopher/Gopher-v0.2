@@ -11,6 +11,8 @@ var url = require("url");
 var dBInsertID = 0;
 var gopherMemorydB = [];
 
+var TempFilesArray = [];
+
 var StringDecoder = require('string_decoder').StringDecoder;
 var decoder = new StringDecoder('utf8');
 
@@ -195,7 +197,17 @@ function lineNumber(needle, haystack) {
 
 
 
-
+function fileExists(filePath)
+{
+    try
+    {
+        return fs.statSync(filePath).isFile();
+    }
+    catch (err)
+    {
+        return false;
+    }
+}
 
 fs.readFile('new-gopher-insert.js', 'utf8', function(err, data) {
 	if (err) {
@@ -210,86 +222,70 @@ console.log("GOPHER: Server started on port: "+gopherPort+".");
 //------request data from php evey second
 
 var php_requestLoop = setInterval(function(){
-   var php_post_data = 'op=getlogs';
-	var php_options = {
-			method: 'POST',
-			host: url.parse(gopherurl+'Gopher.php').host,
-			port: 80,
-			path: url.parse(gopherurl+'Gopher.php').pathname,
-			headers: {
-	         'Content-Type': 'application/x-www-form-urlencoded',
-	         'Content-Length': Buffer.byteLength(php_post_data)
-	      }
-		};
+   var currenttimestamp = new Date().getTime();
 
-	var php_post_req = http_php_requests.request(php_options, function(r) {
-		r.on('data', function (chunk) {
-          //console.log('GOPHER PHP REQUEST:' + chunk);
-          if (chunk=="nothing new") {
+   if (TempFilesArray.length>0) {
+      var ArrayLength=TempFilesArray.length-1;
 
-          } else {
-             var strLines = chunk.toString().split("\n");
+      for (var i=ArrayLength; i>=0; i--) {
+         if ( (currenttimestamp-TempFilesArray[i].createtime) > 5000) {
+            if (fileExists(TempFilesArray[i].filename)) { fs.unlinkSync(TempFilesArray[i].filename); }
+            TempFilesArray.splice(i, 1);
+         }
+      }
+   }
 
-             for (var i in strLines) {
-               // console.log(i+" "+strLines[i]);
-               try {
-                  var dataobj = JSON.parse(strLines[i]);
+   if (fileExists(projectfoler+"/gopher.log"))
+   {
+      var PHPLogs = fs.readFileSync(projectfoler+"/gopher.log");
+      fs.unlinkSync(projectfoler+"/gopher.log");
+      var strLines = PHPLogs.toString().split("\n");
 
-                  if (dataobj["TY"] == "phpvar") {
-                     dBInsertID++;
-                     var NewLog = {
-                        'ID' : dBInsertID,
-                        'LogTimeStamp' : UniversalScriptTimeStamp,
-                        'LogTime' : dataobj["PHPTS"],
-                        'ProjectID' : ProjectID,
-                        'LogCount' : dataobj["RE"],
-                        'FileName' : dataobj["FN"],
-                        'ParentFileName' : dataobj["PFN"],
-                        'LogType' : dataobj["TY"],
-                        'CodeLine' : dataobj["LN"],
-                        'VarName' : dataobj["VN"],
-                        'VarType' : '',
-                        'VarValue' : dataobj["VV"]
-                     }
-                     gopherMemorydB.push( NewLog );
-   					} else
+       for (var i in strLines) {
+         // console.log(i+" "+strLines[i]);
+         try {
+            var dataobj = JSON.parse(strLines[i]);
 
-   					if ((dataobj["TY"] == "phperror1") || (dataobj["TY"] == "phperror2")) {
-                     dBInsertID++;
-                     var NewLog = {
-                        'ID' : dBInsertID,
-                        'LogTimeStamp' : UniversalScriptTimeStamp,
-                        'LogTime' : dataobj["PHPTS"],
-                        'ProjectID' : ProjectID,
-                        'LogCount' : dataobj["RE"],
-                        'FileName' : dataobj["FN"],
-                        'ParentFileName' : dataobj["PFN"],
-                        'LogType' : dataobj["TY"],
-                        'CodeLine' : dataobj["LN"],
-                        'LogMessage' : dataobj["LG"]
-                     }
-                     gopherMemorydB.push( NewLog );
-   					}
-               } catch (e) {
-                  //
+            if (dataobj["TY"] == "phpvar") {
+               dBInsertID++;
+               var NewLog = {
+                  'ID' : dBInsertID,
+                  'LogTimeStamp' : UniversalScriptTimeStamp,
+                  'LogTime' : dataobj["PHPTS"],
+                  'ProjectID' : ProjectID,
+                  'LogCount' : dataobj["RE"],
+                  'FileName' : dataobj["FN"],
+                  'ParentFileName' : dataobj["PFN"],
+                  'LogType' : dataobj["TY"],
+                  'CodeLine' : dataobj["LN"],
+                  'VarName' : dataobj["VN"],
+                  'VarType' : '',
+                  'VarValue' : dataobj["VV"]
                }
+               gopherMemorydB.push( NewLog );
+   			} else
 
-             }
-          }
-      });
-
-		if (r.statusCode != 200) {
-			console.log("GOPHER: can't locate Gopher.php at "+gopherurl);
-         console.log('');
-         console.log('please check gopher help by running "node gopher -help"');
-      	process.exit(1);
-		} else {
-			//console.log("GOPHER PHP REQUEST DONE");
-		}
-	});
-
-	php_post_req.write(php_post_data);
-	php_post_req.end();
+   			if ((dataobj["TY"] == "phperror1") || (dataobj["TY"] == "phperror2")) {
+               dBInsertID++;
+               var NewLog = {
+                  'ID' : dBInsertID,
+                  'LogTimeStamp' : UniversalScriptTimeStamp,
+                  'LogTime' : dataobj["PHPTS"],
+                  'ProjectID' : ProjectID,
+                  'LogCount' : dataobj["RE"],
+                  'FileName' : dataobj["FN"],
+                  'ParentFileName' : dataobj["PFN"],
+                  'LogType' : dataobj["TY"],
+                  'CodeLine' : dataobj["LN"],
+                  'LogMessage' : dataobj["LG"]
+               }
+               gopherMemorydB.push( NewLog );
+   			}
+         } catch (e) {
+            //
+         }
+      }
+   }
 }, 1000);
 
 
@@ -568,23 +564,24 @@ function onRequest(BrowserRequest, BrowserResponse) {
             if (temppaths.length>2) {
                for (var i=0; i<temppaths.length-2; i++) { upfolder += "../"; }
             }
-            var PhpSource = fs.readFileSync(projectfoler+withoutQueryURL);
+            var PhpSource = fs.readFileSync(projectfoler+withoutQueryURL,"utf-8");
 
             var index = -1;
             var RegEx5 = RegExp('\\/\\*gopher:(.*)\\*\\/', 'igm');
             var searchRes;
 
-            while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
-//                        console.log(searchRes.index);
-//                        console.log(searchRes[1]);
+            while ((searchRes = RegEx5.exec(PhpSource)) !== null) {
+//             console.log(searchRes.index); console.log(searchRes[1]);
 
-               var GopherInsertString = 'gopher('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[1].replace(/"/g, '\\\"') + '",'+ searchRes[1] + '); ';
+               var GopherInsertString = 'gopher('+ lineNumberByIndex(RegEx5.lastIndex, PhpSource) +', \'' + BrowserRequest.url.replace(/'"/g, '\\\'') + '\',\'' + searchRes[1].replace(/'/g, '\\\'') + '\','+ searchRes[1] + '); ';
 
-               chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
+               PhpSource = PhpSource.substring(0, searchRes.index) +GopherInsertString+PhpSource.substring(searchRes.index, PhpSource.length);
 
                RegEx5.lastIndex += GopherInsertString.length;
             }
 
+            //add temp file to array so it can be deleted later
+            TempFilesArray.push({filename:projectfoler+WithoutFilename+'gopher-'+TempNewFileName,createtime:new Date().getTime()});
 
             fs.writeFileSync(projectfoler+WithoutFilename+'gopher-'+TempNewFileName,'<?php include_once "'+upfolder+'Gopher.php"; ?>'+ PhpSource);
             var GopherPHPurl = WithoutFilename+'gopher-'+TempNewFileName + querystring;
@@ -711,10 +708,8 @@ function onRequest(BrowserRequest, BrowserResponse) {
                         if (postoinsert !== -1) {
                            chunkStr = chunkStr.substr(0, postoinsert) + "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>" + chunkStr.substr(postoinsert);
                         }
-
-								//chunkStr = "<script>" + "var ParentFileName='" + tempStr + "';\n" + HelperString + "</script>"+chunkStr;
 							}
-						}
+						} else
 
 						if (BrowserRequest.url.indexOf('.js') != -1) {
 							var i = 0;
@@ -728,7 +723,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 //                        console.log(searchRes.index);
 //                        console.log(searchRes[1]);
 
-                        var GopherInsertString = 'gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[1].replace(/"/g, '\\\"') + '",'+ searchRes[1] + '); ';
+                        var GopherInsertString = 'console.log('+searchRes[1]+'); gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[1].replace(/"/g, '\\\"') + '",'+ searchRes[1] + '); ';
 
                         chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
 

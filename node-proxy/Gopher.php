@@ -5,44 +5,12 @@ if (isset($_POST["op"]))
 
       echo "Hi, I'm here. \n";
       die(1);
-   } else
-   if ($_POST["op"]=="getlogs") {
-
-      if (file_exists($_SERVER['DOCUMENT_ROOT'] . "/gopher.log")) {
-
-         $file_handle = fopen($_SERVER['DOCUMENT_ROOT'] . "/gopher.log", "r");
-         while (!feof($file_handle)) {
-            $line = fgets($file_handle);
-            echo $line;
-         }
-         fclose($file_handle);
-         unlink($_SERVER['DOCUMENT_ROOT'] . "/gopher.log");
-      } else {
-         echo "nothing new";
-      }
-      die(1);
    }
 }
 
 
 
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
-
-   if (!function_exists('getallheaders'))
-   {
-       function getallheaders()
-       {
-              $headers = '';
-          foreach ($_SERVER as $name => $value)
-          {
-              if (substr($name, 0, 5) == 'HTTP_')
-              {
-                  $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-              }
-          }
-          return $headers;
-       }
-   }
 
    $GopherIsHere = true;
    $PhpInlineShowErrors = true;
@@ -200,7 +168,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
           }
       }
 
-       $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
+       $data = array('TY' => 'phperror1', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => str_replace("gopher-","",$ErrorFile), 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
        savaDataToFile($data);
 
    }
@@ -228,7 +196,7 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
               }
            }
 
-           $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => $ErrorFile, 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
+           $data = array('TY' => 'phperror2', 'RE' => 1, 'PFN' => $PhpParentFileName, 'LG' => $ReturnValue, 'FN' => str_replace("gopher-","",$ErrorFile), 'LN' => $ErrorLine, 'PHPTS' => microtime(true));
            savaDataToFile($data);
 
            //print_r($phpgopherstore);
@@ -300,84 +268,11 @@ if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twi
    //------------------------------------------------------
 
 
-   function Gopher($xValue)
+   function Gopher($GLineNumber,$GFileName, $xValueName, $xValue)
    {
        global $PhpParentFileName;
-
-       $backtr = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-
-       $src = file($backtr[0]['file']);
-       $line = $src[ $backtr[0]['line'] - 1 ];
-       preg_match("#gopher\((.+)\)#i", $line, $match);
-
-       $max = strlen($match[1]);
-       $varname = '';
-       $c = 0;
-       for ($i = 0; $i < $max; ++$i) {
-           if ($match[1]{$i} == '(') {
-               $c++;
-           } elseif ($match[1]{$i} == ')') {
-               $c--;
-           }
-           if ($c < 0) {
-               break;
-           }
-           $varname .=  $match[1]{$i};
-       }
-
-       $varnames[] = str_getcsv($varname); // explode(",", $varname);
-       $newvarname = $varnames[0][0];
-
-       $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $newvarname, 'FN' => $backtr[0]['file'], 'LN' => $backtr[0]['line'], 'PHPTS' => microtime(true));
+       $data = array('TY' => 'phpvar', 'RE' => 1, 'PFN' => $PhpParentFileName, 'VV' => json_encode($xValue), 'VN' => $xValueName, 'FN' => str_replace("gopher-","",$GFileName), 'LN' => $GLineNumber, 'PHPTS' => microtime(true));
        savaDataToFile($data);
    }
-
-
-
-
-
-   //----------- Make Gopher.php call the php file if it exists in the header request.
-   //----------- Later gopher should offer two different runtimes one where it includes the request in gopherMini.php and other way is direct run.
-
-   $GopherIncludeFile = '';
-   $GopherRedirect = 'z';
-   foreach (getallheaders() as $name => $value) {
-       if ($name == 'GopherPHPFile') {
-           $GopherIncludeFileOrignal = $value;
-           $GopherIncludeFile = reset((explode('?', $value))); //remove querystring
-
-           $PhpParentFileName = $PhpHelperRoot.$GopherIncludeFileOrignal;
-       } else
-       if ($name == 'GopherPHPRedirect') {
-          $GopherRedirect = "yes";
-       }
-   }
-
-   if ($GopherIncludeFile !== '') {
-/*
-      if ($GopherRedirect !== '')
-      {
-         echo $GopherIncludeFileOrignal."<br>";
-         echo "a:".getcwd() ."<br>";
-         echo "-->  ".$PhpHelperRoot." -- ".$GopherIncludeFile."<br>";
-         echo "b:".dirname($PhpHelperRoot.$GopherIncludeFile)."<br>";
-      }
-
-
-      if ( getcwd() != dirname($PhpHelperRoot.$GopherIncludeFile) )
-      {
-         copy(getcwd()."/Gopher.php",dirname($PhpHelperRoot.$GopherIncludeFile)."/Gopher.php");
-
-         header('GopherPHPFile: '.$GopherIncludeFileOrignal);
-         header('GopherPHPRedirect: '.$GopherIncludeFileOrignal);
-         header("Location: ".dirname($GopherIncludeFileOrignal)."/Gopher.php" );
-         die();
-      }
-*/
-
-      header('GopherMirrorRequest: '.$GopherIncludeFile);
-//      require_once $PhpHelperRoot.$GopherIncludeFile;
-   }
-
 }
 ?>

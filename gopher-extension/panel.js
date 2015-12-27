@@ -101,6 +101,8 @@ $(document).ready(function() {
 
 
 		TimeRefreshIntervalId = setInterval(function() {
+			chrome.extension.getBackgroundPage().console.log('foo');
+
 			$('.timefloat').each( function() {
 				$(this).html( timeSince($(this).data('epochtime')) );
 			});
