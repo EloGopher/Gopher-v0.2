@@ -29,7 +29,9 @@ refreshIntervalId = setInterval(function() {
 			crossDomain: true,
 			error: function(xhr, status, error) {
 				IntervalBusy=false;
-				$("#testframe").html("LOAD ERROR:" + xhr.responseText + " (" + status + ") -" + error);
+				console.log("!");
+				clearInterval(refreshIntervalId);
+//				$("#testframe").html("LOAD ERROR:" + xhr.responseText + " (" + status + ") -" + error);
 			},
 
 			success: function(resultData) {
