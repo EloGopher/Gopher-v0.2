@@ -28,17 +28,29 @@ function randomInt (low, high) {
     return Math.floor(Math.random() * (high - low) + low);
 }
 
+function getPort(url) {
+    url = url.match(/^(([a-z]+:)?(\/\/)?[^\/]+).*$/)[1] || url;
+    var parts = url.split(':'),
+        port = parseInt(parts[parts.length - 1], 10);
+    if(parts[0] === 'http' && (isNaN(port) || parts.length < 3)) {
+        return 80;
+    }
+    if(parts[0] === 'https' && (isNaN(port) || parts.length < 3)) {
+        return 443;
+    }
+    if(parts.length === 1 || isNaN(port)) return 80;
+    return port;
+}
+
 function ShowHelpScreen()
 {
 	console.log("");
 	console.log("");
 	console.log("Gopher Help");
 	console.log("-----------------------");
-	console.log("-pid <int> : Default is 101, this is the project ID that will be logged with every event.");
-	console.log("-host : This is the server gopher will be pulling. ");
-	console.log("-gopher <http://localhost> : This parameter will be used by the Browser extension.");
+	console.log("-pid <int> : Default is 101, project ID that will be logged.");
+	console.log("-host : This is the server gopher will be pulling from. ");
    console.log("-project <physical path> : Location of source on drive.");
-   console.log("-stopclearcache : If this is not specified all network activity saved to the temp folder will be deleted.");
    console.log("-log <integer>: gopher log to console level ");
 console.log("-help : This page.");
 	console.log("");
@@ -58,65 +70,50 @@ var ProjectID = 101;
 if(process.argv.indexOf("-pid") != -1){ ProjectID = process.argv[process.argv.indexOf("-pid") + 1]; }
 
 var projectHost = ''; // 'localhost' 'testv2.phishproof.com';
-if(process.argv.indexOf("-host") != -1){ projectHost = process.argv[process.argv.indexOf("-host") + 1]; }
+var projectHTTP = 'http://';
+var projectOnPort = 80;
 
-var projectOnPort = 80; //check if projectHost has :80 etc. then remove it from projectHost and update this var with it
+if(process.argv.indexOf("-host") != -1) {
+   projectHost = process.argv[process.argv.indexOf("-host") + 1];
 
-var gopherHost = 'localhost';
-if(process.argv.indexOf("-gopher") != -1){ gopherHost = process.argv[process.argv.indexOf("-gopher") + 1]; }
+   if (projectHost.toLowerCase().indexOf('http://') != -1) {
+      projectHTTP = 'http://';
+   } else
+   if (projectHost.toLowerCase().indexOf('https://') != -1) {
+      projectHTTP = 'https://';
+   }
+
+   projectHost = projectHost.replace(/http:\/\//ig, '');
+   projectHost = projectHost.replace(/https:\/\//ig, '');
+
+   projectOnPort = getPort(projectHost);
+
+   projectHost = projectHost.replace(':'+projectOnPort,'');
+}
+
 
 var gopherPort = 1337;  //check if gopherHost has :80 etc. then remove it from gopherHost and update this var with it
 
 var showhelp = "";
 if(process.argv.indexOf("-help") != -1){ showhelp="yes"; }
 
-var stopclearcache = "";
-if(process.argv.indexOf("-stopclearcache") != -1){ stopclearcache="yes"; }
 
 if (projectOnPort!="80") {
-   var gopherurl = "http://"+projectHost+":"+projectOnPort+"/";
+   var gopherurl = projectHTTP+projectHost+":"+projectOnPort+"/";
 } else
 {
-   var gopherurl = "http://"+projectHost+"/";
+   var gopherurl = projectHTTP+projectHost+"/";
 }
 
 var projectfoler = "";
 if(process.argv.indexOf("-project") != -1){ projectfoler = process.argv[process.argv.indexOf("-project") + 1]; }
 
-var PathsArray = [];
-
-function fromDir(startPath,filter){
-
-    //console.log('Starting from dir '+startPath+'/');
-
-    if (!fs.existsSync(startPath)){
-        console.log("no dir ",startPath);
-        return;
-    }
-
-    var files=fs.readdirSync(startPath);
-    for(var i=0;i<files.length;i++){
-        var filename=path.join(startPath,files[i]);
-        var stat = fs.lstatSync(filename);
-        if (stat.isDirectory()){
-            fromDir(filename,filter); //recurse
-        }
-        else if (path.extname(filename)==filter) {
-         if (PathsArray.indexOf(startPath)==-1) {
-            PathsArray.push(startPath);
-            fs.writeFileSync(startPath+'/Gopher.php', fs.readFileSync(__dirname+'/Gopher.php'));
-         }
-
-//         console.log('-- found: ',filename);
-        };
-    };
-};
+if ( (projectHost=="") || (showhelp!="")  || (gopherurl=="") || (projectfoler=="")) {ShowHelpScreen();}
 
 
 if (projectfoler!="") {
    console.log("GOPHER: Copying gopher.php to project folder.")
    fs.writeFileSync(projectfoler+'/Gopher.php', fs.readFileSync(__dirname+'/Gopher.php'));
-   //fromDir(projectfoler,'.php');
 }
 
 
@@ -155,21 +152,24 @@ if (gopherurl!=="") {
 		}
 	});
 
+   post_req.on('error', function (chunk) {
+      console.log("GOPHER: can't locate Gopher.php at "+gopherurl+"Gopher.php");
+      console.log('');
+      console.log('please check gopher help by running "node gopher -help"');
+      process.exit(1);
+   });
+
 	post_req.write(post_data);
 	post_req.end();
 }
 
 
-if ( (projectHost=="") || (showhelp!="") || (gopherurl=="")) {ShowHelpScreen();}
-
-if (stopclearcache=="") {
-   console.log("GOPHER: Deleting Network Cache Files.");
-   fs.readdirSync(__dirname + '/temp/').forEach(function(fileName) {
-           if (path.extname(fileName) === ".txt") {
-               fs.unlinkSync(__dirname + '/temp/'+fileName);
-           }
-       });
-}
+console.log("GOPHER: Deleting Network Cache Files.");
+fs.readdirSync(__dirname + '/temp/').forEach(function(fileName) {
+        if (path.extname(fileName) === ".txt") {
+            fs.unlinkSync(__dirname + '/temp/'+fileName);
+        }
+    });
 
 
 
@@ -229,7 +229,10 @@ var php_requestLoop = setInterval(function(){
 
       for (var i=ArrayLength; i>=0; i--) {
          if ( (currenttimestamp-TempFilesArray[i].createtime) > 5000) {
-            if (fileExists(TempFilesArray[i].filename)) { fs.unlinkSync(TempFilesArray[i].filename); }
+            if (fileExists(TempFilesArray[i].filename)) {
+               console.log('unlink: '+TempFilesArray[i].filename);
+               fs.unlinkSync(TempFilesArray[i].filename);
+            }
             TempFilesArray.splice(i, 1);
          }
       }
@@ -238,6 +241,7 @@ var php_requestLoop = setInterval(function(){
    if (fileExists(projectfoler+"/gopher.log"))
    {
       var PHPLogs = fs.readFileSync(projectfoler+"/gopher.log");
+      console.log('unlink: '+projectfoler+"/gopher.log");
       fs.unlinkSync(projectfoler+"/gopher.log");
       var strLines = PHPLogs.toString().split("\n");
 
