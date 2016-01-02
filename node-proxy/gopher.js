@@ -567,13 +567,13 @@ function onRequest(BrowserRequest, BrowserResponse) {
             var PhpSource = fs.readFileSync(projectfoler+withoutQueryURL,"utf-8");
 
             var index = -1;
-            var RegEx5 = RegExp('\\/\\*gopher:(.*)\\*\\/', 'igm');
+            var RegEx5 = RegExp('\\/\\*gopher(.*):(.*)\\*\\/', 'igm');
             var searchRes;
 
             while ((searchRes = RegEx5.exec(PhpSource)) !== null) {
 //             console.log(searchRes.index); console.log(searchRes[1]);
 
-               var GopherInsertString = 'gopher('+ lineNumberByIndex(RegEx5.lastIndex, PhpSource) +', \'' + BrowserRequest.url.replace(/'"/g, '\\\'') + '\',\'' + searchRes[1].replace(/'/g, '\\\'') + '\','+ searchRes[1] + '); ';
+               var GopherInsertString = 'gopher('+ lineNumberByIndex(RegEx5.lastIndex, PhpSource) +', \'' + BrowserRequest.url.replace(/'"/g, '\\\'') + '\',\'' + searchRes[2].replace(/'/g, '\\\'') + '\','+ searchRes[2] + '); ';
 
                PhpSource = PhpSource.substring(0, searchRes.index) +GopherInsertString+PhpSource.substring(searchRes.index, PhpSource.length);
 
@@ -716,14 +716,14 @@ function onRequest(BrowserRequest, BrowserResponse) {
 
 							var index = -1;
 
-							var RegEx5 = RegExp('\\/\\*gopher:(.*)\\*\\/', 'igm');
+							var RegEx5 = RegExp('\\/\\*gopher(.*):(.*)\\*\\/', 'igm');
 							var searchRes;
 
 							while ((searchRes = RegEx5.exec(chunkStr)) !== null) {
 //                        console.log(searchRes.index);
 //                        console.log(searchRes[1]);
 
-                        var GopherInsertString = 'console.log('+searchRes[1]+'); gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[1].replace(/"/g, '\\\"') + '",'+ searchRes[1] + '); ';
+                        var GopherInsertString = 'console.log('+searchRes[2]+'); gopher.log('+ lineNumberByIndex(RegEx5.lastIndex, chunkStr) +', "' + BrowserRequest.url.replace(/"/g, '\\\"') + '","' + searchRes[2].replace(/"/g, '\\\"') + '",'+ searchRes[2] + '); ';
 
                         chunkStr = chunkStr.substring(0, searchRes.index) +GopherInsertString+chunkStr.substring(searchRes.index, chunkStr.length);
 

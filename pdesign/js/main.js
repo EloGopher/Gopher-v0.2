@@ -1,8 +1,12 @@
+'use strict';
+
 var HTMLeditor;
 var JSeditor;
 var CSSeditor;
 var iframe;
 var iframedoc;
+var requestTimer;
+var xhr;
 
 //------------------------------------------------------------------------------------------------------------------
 function loadCssFile(pathToFile) {
@@ -28,10 +32,35 @@ function injectHTML(html_string) {
 
 //------------------------------------------------------------------------------------------------------------------
 function updateiframe() {
+
 	var js = JSeditor.getValue();
 	var css = CSSeditor.getValue();
-	var text = HTMLeditor.getValue();
-	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + css + '</style><script>$(document).ready(function () {' + js + '});</script></head><body>' + text + '</body></html>');
+	var html = HTMLeditor.getValue();
+	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + css + '</style><script>$(document).ready(function () {' + js + '});</script></head><body>' + html + '</body></html>');
+
+	if (requestTimer) window.clearTimeout(requestTimer);  //see if there is a timeout that is active, if there is remove it.
+	if (xhr) xhr.abort();  //kill active Ajax request
+	requestTimer = setTimeout(function(){
+		var PostValues = {
+			"code": code,
+			"js": js,
+			"css": css,
+			"html": html
+		};
+
+		xhr = $.ajax({
+			type: 'POST',
+			url: "index.php",
+			data: PostValues,
+			dataType: "json",
+			success: function(resultData) {
+
+			},
+			error: function(xhr, status, error) {
+				console.log("Network connection error. Please check with your network administrator. Error:" + status);
+			}
+		});
+	}, 500);  //delay before making the call
 }
 
 //------------------------------------------------------------------------------------------------------------------
