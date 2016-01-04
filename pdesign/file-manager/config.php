@@ -3,10 +3,10 @@
 session_start();
 
 /** Full path to the folder that images will be used as library and upload. Include trailing slash */
-define('FOLDER_PATH', '//users/Ekim/phpworkspace/Gopher-v0.2/pdesign/pimages/');
+define('FOLDER_PATH', '//users/Ekim/phpworkspace/Gopher-v0.2/pdesign/pimages/'.$_SESSION["code"].'/');
 
 /** Full URL to the folder that images will be used as library and upload. Include trailing slash and protocol (i.e. http://) */
-define('FOLDER_URL', '/Gopher-v0.2/pdesign/pimages/');
+define('FOLDER_URL', '/Gopher-v0.2/pdesign/pimages/'.$_SESSION["code"].'/');
 
 /** The extensions for to use in validation */
 define('ALLOWED_IMG_EXTENSIONS', 'gif,jpg,jpeg,png,json');

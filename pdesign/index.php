@@ -10,7 +10,6 @@
 		<link rel="stylesheet" href="codemirror-5.10/lib/codemirror.css">
 		<link rel="stylesheet" href="codemirror-5.10/addon/hint/show-hint.css">
 
-      <script><?php echo 'var code="'. $code .'"'; ?></script>
 		<script src="codemirror-5.10/lib/codemirror.js"></script>
 
 		<script type="text/javascript" src="codemirror-5.10/addon/hint/show-hint.js"></script>
@@ -53,9 +52,14 @@
 
 	<body>
 
-      <div style="height:5%; background:#fafafa; font-size:18px; text-align:center;">
-         Parametric Design
-         <button class="btn btn-default file-manager-linked" type="button" data-input-id="image-2" >Click to select Image</button>
+      <div style="height:5%; background:#fafafa; font-size:18px; padding-left:10px;">
+			<div style=" padding-top:10px; display:inline-block;">
+         	Elo Parametric Design
+			</div>
+			<div style="float:right; margin-right:20px; padding-top:6px;">
+	         <button class="btn btn-default file-manager-linked" type="button" data-input-id="" >Image Library</button>
+				<button class="btn btn-default" type="button" id="NewProject" >New Project</button>
+			</div>
       </div>
       <div style="height:95%;">
 			<div class="split split-horizontal" id="TopRow">

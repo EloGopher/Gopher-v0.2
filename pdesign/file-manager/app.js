@@ -1,7 +1,10 @@
 $(document).ready(function(){
-	
+	if ($("#preview").attr('src')=="") {
+		$("#preview").hide();
+	}
+
 	var originalWidth, originalHeight, loaded = false;
-	
+
 	function MySerach(needle, haystack){
 		var results = new Array();
 		var counter = 0;
@@ -16,12 +19,12 @@ $(document).ready(function(){
 		}
 		return results;
 	}
-	
+
 	function getFileExtension(filename) {
 		var re = /(?:\.([^.]+))?$/;
 		return re.exec(filename)[1];
 	}
-	
+
 	function getArray(object){
 		var array = [];
 		for(var key in object){
@@ -62,18 +65,18 @@ $(document).ready(function(){
             }
         }, 'json');
     }
-	
+
 	var search_haystack = new Array();
-	
+
 	$("#search").focus(function () {
 		$("#lib-back").attr('disabled','disabled');
 		$("#newfolder_name").attr('disabled','disabled');
 		$("#newfolder_btn").attr('disabled','disabled');
-		
+
 		$("#refresh").attr("rel", "searching");
-		
+
 		empty_append('#lib-title', trans_searching + '... <a href="" id="clear-search">' + trans_clear + '</a>');
-		
+
 		$.post('search.php',{}, function(returned){
 			search_haystack = getArray(returned);
 		}, 'json');
@@ -122,6 +125,8 @@ $(document).ready(function(){
     	});
 
 	$("#preview").bind("load", function () {
+		if ($("#preview").attr('src')!=="") { $("#preview").show(); }
+
 		if(newImage){
 			if ($("#preview").get(0).naturalWidth) {
 				$("#width").val($("#preview").get(0).naturalWidth);
@@ -162,6 +167,8 @@ $(document).ready(function(){
 		$("#height").val();
 		$("#source").val($(this).attr("rel"));
         	$("#preview").attr("src", $(this).attr("rel") + '?dummy=' + new Date().getTime());
+			if ($("#preview").attr('src')!=="") { $("#preview").show(); }
+
         	$('#myTab a[href="#tab1"]').tab('show');
         	parent.document.getElementById("image-manager-src").value= $(this).attr("rel");
         	$.post("update_recent.php" + "?dummy=" + new Date().getTime(), { src: $(this).attr("rel") } );
@@ -173,6 +180,8 @@ $(document).ready(function(){
 		$(".image-fields").hide();
 
 		$("#preview").attr("src", $(this).data("icon"));
+		if ($("#preview").attr('src')!=="") { $("#preview").show(); }
+		
 		$("#width").val();
 		$("#height").val();
 		$("#source_pdf").val($(this).attr("rel"));
@@ -439,36 +448,36 @@ $(document).ready(function(){
         load_from_lib($(this).data("path"), "", $(this).data("page"));
 		return false;
 	});
-	
+
 	$(document).on('click', 'button#lib-back', function () {
 		if($(this).is(":disabled")){
 			return false;
 		}
-		
+
 		if($(this).attr("rel") == lib_folder_path){
 			$(this).attr('disabled','disabled');
 		}
-		
+
 		$("#refresh").attr("rel", $(this).attr("rel"));
 
         load_from_lib($(this).attr("rel"));
-		
+
 		var str =  $(this).attr("rel");
 		var stringArray = str.split("/");
-		
+
 		stringArray.pop();
-		
+
 		var current_folder = stringArray.pop();
-		
+
 		if((current_folder + "/") == lib_folder_path){
 			current_folder = "Home";
 			$(this).attr("rel", lib_folder_path);
 		}else{
 			$(this).attr("rel", stringArray.join("/") + "/");
 		}
-		
+
 		empty_append('#lib-title', current_folder);
-		
+
 		return false;
 	});
 });

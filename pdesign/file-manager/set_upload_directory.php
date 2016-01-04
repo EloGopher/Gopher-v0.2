@@ -22,8 +22,6 @@ if(!startsWith($current_folder, LIBRARY_FOLDER_PATH)){
 	exit();
 }
 
-$_SESSION["tinymce_upload_directory"] = $current_folder;
-
 header("Content-type: text/plain;");
 echo json_encode($output);
 exit();

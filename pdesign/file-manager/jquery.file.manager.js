@@ -28,7 +28,6 @@ $(document).ready(function(){
 
     $(document).on('click', '.file-manager-linked', function () {
         element = $(this).data('input-id');
-        /*gopher:element*/
 
         $('#image-manager-frame').empty().append(GetTheHtml(element));
 
@@ -36,8 +35,26 @@ $(document).ready(function(){
     });
 
     $(document).on('click', '#image-manager-insert', function () {
-        element.val($('#image-manager-src').val());
+//      alert( $('#image-manager-src').val() );
+//        element.val($('#image-manager-src').val());
         $('#myModal').trigger('reveal:close');
+        if (LastEditor=="HTMLeditor") {
+           HTMLeditor.focus();
+           HTMLeditor.replaceSelection( '<IMG SRC="' +$('#image-manager-src').val() +'">' , 'around');
+           updateiframe();
+        }
+        if (LastEditor=="JSeditor") {
+           JSeditor.focus();
+           JSeditor.replaceSelection( $('#image-manager-src').val(), 'around');
+           updateiframe();
+        }
+        if (LastEditor=="CSSeditor") {
+           CSSeditor.focus();
+           CSSeditor.replaceSelection( $('#image-manager-src').val(), 'around');
+           updateiframe();
+        }
+
+
     });
 
     $(document).on('click', '#image-manager-cancel', function () {
@@ -47,7 +64,7 @@ $(document).ready(function(){
     function GetTheHtml(existing_files){
         var html = '';
         html += '<input type="hidden" name="image-manager-src" id="image-manager-src" value="' + existing_files + '"/>';
-        html += '<iframe src="' + url_to_file_manager + 'image.php'+ '?' + new Date().getTime() + '&src=' + encodeURI(existing_files) + '" frameborder="0" width="885" height="400"></iframe>';
+        html += '<iframe src="' + url_to_file_manager + 'image.php'+ '?r=' + new Date().getTime() + '&src=' + encodeURI(existing_files) + '" frameborder="0" width="885" height="400"></iframe>';
 
         return html;
     }

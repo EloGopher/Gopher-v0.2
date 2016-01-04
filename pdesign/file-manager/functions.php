@@ -83,12 +83,8 @@ define('LIBRARY_FOLDER_URL', FOLDER_URL . (strlen($user) > 0 ? $user . "/" : "")
 CreateUserFolder(LIBRARY_FOLDER_PATH);
 
 function Dirtree($path, $name = "Upload to: Home", $prefix = "") {
-	if(isset($_SESSION["tinymce_upload_directory"]) AND $_SESSION["tinymce_upload_directory"] == $path){
-		$list = '<option value="'.$path.'" selected="selected">'.$prefix.''.$name.'</option>';
-	}else{
-		$list = '<option value="'.$path.'">'.$prefix.''.$name.'</option>';
-	}
-	
+	$list = '<option value="'.$path.'">'.$prefix.''.$name.'</option>';
+
 	$dircont = scandir($path);
 	if(count($dircont) > 0){
 		foreach($dircont as $file){
@@ -123,10 +119,10 @@ function lc_delete($targ) {
 function hide_thumbnail($file){
 	if(THUMBNAIL_HIDE == false){
 		return true;
-	}	
-		
+	}
+
 	$str = THUMBNAIL_POSTFIX . "." . GetExtension($file);
-	
+
 	$pos = strrpos($file, $str);
 	if ($pos === false) {
 	   return true;
@@ -176,7 +172,7 @@ function PathToUrl($path){
 	}else{
 		$url = str_replace(LIBRARY_FOLDER_PATH,"",$path);
 		//array_shift($url);// Remove root of lib
-		
+
 		if($url != ""){
 			return LIBRARY_FOLDER_URL . $url;
 		}else{
@@ -215,7 +211,7 @@ if (!function_exists('generateRandomNumber')) {
 	}
 
 }
-	
+
 function GetExtension($filename){
 	$x = explode('.', $filename);
 	return end($x);
@@ -241,7 +237,7 @@ function set_filename($path, $filename){
 		return $filename;
 	}
 	$new_filename = str_replace('.'.$file_ext, '', $filename);
-	for ($i = 1; $i < 300; $i++){			
+	for ($i = 1; $i < 300; $i++){
 		if ( ! file_exists($path.$new_filename.'_'.$i.'.'.$file_ext)){
 			$new_filename .= '_'.$i.'.'.$file_ext;
 			break;
@@ -251,7 +247,7 @@ function set_filename($path, $filename){
 }
 
 function clean_file_name($filename){
-	$invalid = array("<!--","-->","'","<",">",'"','&','$','=',';','?','/',"%20","%22","%3c","%253c","%3e","%0e","%28","%29","%2528","%26","%24","%3f","%3b", "%3d");		
+	$invalid = array("<!--","-->","'","<",">",'"','&','$','=',';','?','/',"%20","%22","%3c","%253c","%3e","%0e","%28","%29","%2528","%26","%24","%3f","%3b", "%3d");
 	$filename = str_replace($invalid, '', $filename);
 	$filename = preg_replace("/\s+/", "_", $filename);
 	return stripslashes($filename);
@@ -265,19 +261,15 @@ function DoUpload($field = 'userfile'){
 	$output = array();
 	$output["success"] = true;
 	$output["is_pdf"] = 0;
-	
-	if(isset($_SESSION["tinymce_upload_directory"]) AND $_SESSION["tinymce_upload_directory"] != ""){
-		$current_folder = $_SESSION["tinymce_upload_directory"];
-	}else{
-		$current_folder = LIBRARY_FOLDER_PATH;
-	}
-	
+
+   $current_folder = LIBRARY_FOLDER_PATH;
+
 	if(!CanAcessUploadForm()){
 		$output["reason"] = lang('no_permission_to_upload');
 		$output["success"] = false;
 		return $output;
 	}
-	
+
 	if(!isset($_FILES[$field])){
 		$output["reason"] = lang('file_not_selected');
 		$output["success"] = false;
@@ -316,20 +308,20 @@ function DoUpload($field = 'userfile'){
 
         return $output;
     }
-	
+
 	if(!ValidFileExtension($_FILES[$field]['name'])){
 		$output["reason"] = lang('invalid_extension');
 		$output["success"] = false;
 		return $output;
 	}
-	
+
 	if(RENAME_UPLOADED_FILES == true){
-		$file_name = random_file_name($_FILES[$field]['name']);	
+		$file_name = random_file_name($_FILES[$field]['name']);
 		$file_name = set_filename($current_folder, $file_name);
 	}else{
 		$file_name = set_filename($current_folder, $_FILES[$field]['name']);
 	}
-	
+
 
 	if(!@copy($_FILES[$field]['tmp_name'], $current_folder.$file_name)){
 		if(!@move_uploaded_file($_FILES[$field]['tmp_name'], $current_folder.$file_name)){
@@ -338,7 +330,7 @@ function DoUpload($field = 'userfile'){
 			return $output;
 		}
 	}
-	
+
 	if(!isset($_SESSION['SimpleImageManager'])){
 		$_SESSION['SimpleImageManager'] = array();
 	}
@@ -346,53 +338,53 @@ function DoUpload($field = 'userfile'){
 
 	$output["file"] = PathToUrl($current_folder).$file_name;
     $output["file_encrypt"] = encrypt($output["file"], ENCRYPTION_KEY);
-	
+
 	if(is_image_extenstion(GetExtension($file_name))){
 		Resizing($current_folder, $file_name);
 	}else{
 		$output["is_pdf"] = 1;
         $output["icon"] = get_file_icon_path(GetExtension($file_name));
 	}
-	
+
 	return $output;
 }
 
 function Resizing($path, $filename){
-	$size = getimagesize($path.$filename);	
-		
+	$size = getimagesize($path.$filename);
+
 	if(RESIZE_ON_UPLOAD == true){
 		$image_lib = new Image_lib();
-		
+
 		$config = array();
 		$config['source_image'] = $path.$filename;
 		$config['create_thumb'] = FALSE;
 		$config['maintain_ratio'] = TRUE;
-		
+
 		if(intval(RESIZE_WIDTH) > 0){
 			$config['width'] = intval(RESIZE_WIDTH);
 		}elseif(intval(RESIZE_HEIGHT) > 0){
 			//$config['width'] = floor($size[0] * (intval(RESIZE_HEIGHT) / $size[1]));
 		}
-		
+
 		if(intval(RESIZE_HEIGHT) > 0){
 			$config['height'] = intval(RESIZE_HEIGHT);
 		}elseif(intval(RESIZE_WIDTH) > 0){
 			//$config['height'] = floor($size[1] * (intval(RESIZE_WIDTH) / $size[0]));
 		}
-		
-		$image_lib->initialize($config); 
+
+		$image_lib->initialize($config);
 		$image_lib->resize();
 	}
-	
+
 	Thumbnail($path, $filename);
 }
 
 function Thumbnail($path, $filename){
-	$size = getimagesize($path.$filename);	
-		
+	$size = getimagesize($path.$filename);
+
 	if(THUMBNAIL_ON_UPLOAD == true){
 		$image_lib = new Image_lib();
-		
+
 		$config = array();
 		$config['source_image'] = $path.$filename;
 		$config['create_thumb'] = TRUE;
@@ -400,15 +392,15 @@ function Thumbnail($path, $filename){
 		$config['height'] = THUMBNAIL_HEIGHT;
 		$config['width'] = THUMBNAIL_WIDTH;
 		$config['thumb_marker'] = THUMBNAIL_POSTFIX;
-		
-		$image_lib->initialize($config); 
+
+		$image_lib->initialize($config);
 		$image_lib->resize();
 	}
 }
 
 
 function is_url_exist($url){
-	$ch = curl_init($url);    
+	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_NOBODY, true);
 	curl_exec($ch);
 	$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -428,9 +420,9 @@ function TrimText($input, $length) {
         return $input;
     }
     $trimmed_text = substr($input, 0, $length);
-  
+
     $trimmed_text .= ' &hellip;';
-  
+
     return $trimmed_text;
 }
 
@@ -453,51 +445,51 @@ function formatSizeUnits($bytes){
 }
 
 function Paginate($url, $page, $total_pages, $adjacents = 3) {
-	
+
 	$prevlabel = "&larr;";
 	$nextlabel = "&rarr;";
-	
+
 	$out = '<ul class="pagination">';
-	
+
 	// previous
 	if($page == 1){
 		$out.= '<li class="disabled"><a href="#">&larr;</a></li>';
 	}else {
 		$out.= '<li><a class="page-link" data-path="'.urlencode($url).'" data-page="'.($page-1).'" href="">&larr;</a></li>';
 	}
-	
+
 	// first
 	if($page > ($adjacents + 1)) {
 		$out.= '<li><a class="page-link" data-path="'.urlencode($url).'" data-page="1" href="">1</a></li>';
 	}
-	
+
 	// interval
 	if($page > ($adjacents + 2)) {
 		$out.= '<li class="disabled"><a href="#">...</a></li>';
 	}
-	
+
 	// pages
 	$pmin = ($page > $adjacents) ? ($page - $adjacents) : 1;
 	$pmax = ($page < ($total_pages - $adjacents)) ? ($page + $adjacents) : $total_pages;
 	for($i=$pmin; $i<=$pmax; $i++) {
 		if($i==$page) {
 			$out.= '<li class="disabled"><a href="#">' . $i . '</a></li>';
-			
+
 		}else{
 			$out.= '<li><a class="page-link" data-path="'.urlencode($url).'" data-page="'.$i.'" href="">' . $i . '</a></li>';
 		}
 	}
-	
+
 	// interval
 	if($page<($total_pages-$adjacents-1)) {
 		$out.= '<li class="disabled"><a href="#">...</a></li>';
 	}
-	
+
 	// last
 	if($page<($total_pages-$adjacents)) {
 		$out.= '<li><a class="page-link" data-path="'.urlencode($url).'" data-page="'.$total_pages.'" href="">' . $total_pages . '</a></li>';
 	}
-	
+
 	// next
 	if($page<$total_pages) {
 		$out.= '<li><a class="page-link" data-path="'.urlencode($url).'" data-page="'.($page+1).'" href="">&rarr;</a></li>';
@@ -505,9 +497,8 @@ function Paginate($url, $page, $total_pages, $adjacents = 3) {
 	else {
 		$out.= '<li class="disabled"><a href="#">&rarr;</a></li>';
 	}
-	
+
 	$out.= '</ul>';
-	
+
 	return $out;
 }
-

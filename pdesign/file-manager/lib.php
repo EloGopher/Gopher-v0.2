@@ -6,12 +6,12 @@ require_once('functions.php');
 if(isset($_POST["toggle"]) AND $_POST["toggle"] != ""){
 	if(isset($_SESSION['tinymce_toggle_view'])){
 		if($_SESSION['tinymce_toggle_view'] == 'grid'){
-			$_SESSION['tinymce_toggle_view'] = 'list';	
+			$_SESSION['tinymce_toggle_view'] = 'list';
 		}else{
-			$_SESSION['tinymce_toggle_view'] = 'grid';	
+			$_SESSION['tinymce_toggle_view'] = 'grid';
 		}
 	}else{
-		$_SESSION['tinymce_toggle_view'] = 'list';	
+		$_SESSION['tinymce_toggle_view'] = 'list';
 	}
 }
 

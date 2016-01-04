@@ -7,6 +7,7 @@ var iframe;
 var iframedoc;
 var requestTimer;
 var xhr;
+var LastEditor;
 
 //------------------------------------------------------------------------------------------------------------------
 function loadCssFile(pathToFile) {
@@ -42,7 +43,7 @@ function updateiframe() {
 	if (xhr) xhr.abort();  //kill active Ajax request
 	requestTimer = setTimeout(function(){
 		var PostValues = {
-			"code": code,
+			"op": "update",
 			"js": js,
 			"css": css,
 			"html": html
@@ -50,7 +51,7 @@ function updateiframe() {
 
 		xhr = $.ajax({
 			type: 'POST',
-			url: "index.php",
+			url: "op.php",
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
@@ -115,6 +116,10 @@ $(document).ready(function() {
 	  cursor: 'row-resize'
 	})
 
+	$("#NewProject").on('click',function() {
+		window.location.href = 'index.php';
+	});
+
 	$("#htmleditor_div_hint").show();
 	$("#csseditor_div_hint").show();
 	$("#jseditor_div_hint").show();
@@ -146,16 +151,22 @@ $(document).ready(function() {
 			bothTags: true
 		}
 	});
+
 	HTMLeditor.setSize("100%", "100%");
+
 	HTMLeditor.on('focus', function() {
 		$("#htmleditor_div_hint").fadeOut(250);
+		LastEditor = "HTMLeditor";
 	});
+
 	HTMLeditor.on('blur', function() {
 		$("#htmleditor_div_hint").fadeIn(250);
 	});
+
 	HTMLeditor.on('keyup', function() {
 		updateiframe();
 	});
+
 
 	JSeditor = CodeMirror.fromTextArea(document.getElementById("JSCode"), {
 		lineNumbers: true,
@@ -175,16 +186,22 @@ $(document).ready(function() {
 			bothTags: true
 		}
 	});
+
 	JSeditor.setSize("100%", "100%");
+
 	JSeditor.on('focus', function() {
 		$("#jseditor_div_hint").fadeOut(250);
+		LastEditor = "JSeditor";
 	});
+
 	JSeditor.on('blur', function() {
 		$("#jseditor_div_hint").fadeIn(250);
 	});
+
 	JSeditor.on('keyup', function() {
 		updateiframe();
 	});
+
 
 	CSSeditor = CodeMirror.fromTextArea(document.getElementById("CSSCode"), {
 		lineNumbers: true,
@@ -203,16 +220,24 @@ $(document).ready(function() {
 			bothTags: true
 		}
 	});
+
 	CSSeditor.setSize("100%", "100%");
+
 	CSSeditor.on('focus', function() {
 		$("#csseditor_div_hint").fadeOut(250);
+		LastEditor = "CSSeditor";
+
 	});
+
 	CSSeditor.on('blur', function() {
 		$("#csseditor_div_hint").fadeIn(250);
 	});
+
 	CSSeditor.on('keyup', function() {
 		updateiframe();
 	});
 
 	updateiframe();
+	HTMLeditor.focus();
+	
 });

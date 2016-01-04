@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 /*gopher:'php begin 2'*/
 define('pdesign_username', 'pdesign');
 define('pdesign_password', 'A123456b');
@@ -38,6 +40,8 @@ function GenerateNewPage()
          $newQ = 'INSERT INTO projects (code,version) VALUES ("'. mysqli_real_escape_string($dbconn,$code) .'",1)';
          $dbconn->query($newQ);
          if ($dbconn->insert_id > 0) {
+            mkdir(dirname(__FILE__).'/pimages/'.$code);
+            $_SESSION["code"] = $code;
             $FoundUnique = true;
          }
       }
@@ -49,42 +53,41 @@ $html = "";
 $css = "";
 $js = "";
 
-$code = $_GET["id"];
-
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 //update editor content
-if (($_POST["code"]!="") && (($_POST["html"]!="") || ($_POST["js"]!="") || ($_POST["css"]!="")) ) {
+if ($_POST["op"]=="update") {
+   if (($_POST["html"]!="") || ($_POST["js"]!="") || ($_POST["css"]!="")) {
 
-   $code = $_POST["code"];
+      $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$_SESSION["code"]) .'" ORDER BY version DESC LIMIT 1';
 
-   $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" ORDER BY version DESC LIMIT 1';
-   $resultQ = $dbconn->query($checkQ);
+      $resultQ = $dbconn->query($checkQ);
 
-   if (mysqli_num_rows($resultQ)==1) {
+      if (mysqli_num_rows($resultQ)==1) {
 
-      $rowQ = $resultQ->fetch_assoc();
-      $version = $rowQ["version"];
+         $rowQ = $resultQ->fetch_assoc();
+         $version = $rowQ["version"];
 
-      $newQ = 'INSERT INTO projects (code,version,html,css,js) VALUES ("'. mysqli_real_escape_string($dbconn,$code) .'",'. ($version+1) .',"'. mysqli_real_escape_string($dbconn,$_POST["html"]) .'","'. mysqli_real_escape_string($dbconn,$_POST["css"]) .'","'. mysqli_real_escape_string($dbconn,$_POST["js"]) .'")';
+         $newQ = 'INSERT INTO projects (code,version,html,css,js) VALUES ("'. mysqli_real_escape_string($dbconn,$_SESSION["code"]) .'",'. ($version+1) .',"'. mysqli_real_escape_string($dbconn,$_POST["html"]) .'","'. mysqli_real_escape_string($dbconn,$_POST["css"]) .'","'. mysqli_real_escape_string($dbconn,$_POST["js"]) .'")';
 
-      //' SET html="'.mysqli_real_escape_string($dbconn,$_POST["html"]).'" WHERE code="'. mysqli_real_escape_string($dbconn,$_POST["code"]) .'"';
-      $dbconn->query($newQ);
-      if ($dbconn->insert_id > 0) {
-         $saved = true;
-         $returnDelResult[] = array('success' => (bool) true, 'insertID' => (int) $dbconn->insert_id);
-         echo json_encode($returnRecipients);
-      } else {
-         $returnDelResult[] = array('success' => (bool) false);
-         echo json_encode($returnRecipients);
+         //' SET html="'.mysqli_real_escape_string($dbconn,$_POST["html"]).'" WHERE code="'. mysqli_real_escape_string($dbconn,$_POST["code"]) .'"';
+         $dbconn->query($newQ);
+         if ($dbconn->insert_id > 0) {
+            $saved = true;
+            $returnDelResult[] = array('success' => (bool) true, 'insertID' => (int) $dbconn->insert_id);
+            echo json_encode($returnDelResult);
+         } else {
+            $returnDelResult[] = array('success' => (bool) false);
+            echo json_encode($returnDelResult);
+         }
       }
+   } else {
+      $returnDelResult[] = array('success' => (bool) true, 'Message' => 'nothing to update');
+      echo json_encode($returnDelResult);
    }
    die();
-} else
-if ($_POST["code"]!="")  {
-   $returnDelResult[] = array('success' => (bool) true, 'insertID' => '0', 'message' => 'nothing to update');
-   echo json_encode($returnRecipients);
-   die();
 }
+
+$code = $_GET["id"];
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 //first visit redirect to code page
@@ -104,13 +107,13 @@ if ($code=="") {
       die();
    }
 
+   $_SESSION["code"] = $code;
+
    $rowQ = $resultQ->fetch_assoc();
 
    $html = $rowQ["html"];
    $css = $rowQ["css"];
    $js = $rowQ["js"];
 }
-
-
 
 ?>
