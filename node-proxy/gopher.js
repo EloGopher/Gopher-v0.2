@@ -570,6 +570,12 @@ function onRequest(BrowserRequest, BrowserResponse) {
             }
             var PhpSource = fs.readFileSync(projectfoler+withoutQueryURL,"utf-8");
 
+            if (PhpSource.indexOf('<!--gopherscript-->')!=-1) {
+               console.log('add gopher javascript helper');
+               PhpSource = PhpSource.replace('<!--gopherscript-->','<!--gopherscript-->'+"<script>" + "var ParentFileName='" + BrowserRequest.url.replace(/'"/g, '\\\'') + "';\n" + HelperString + "</script>");
+            }
+
+
             var index = -1;
             var RegEx5 = RegExp('\\/\\*gopher(.*):(.*)\\*\\/', 'igm');
             var searchRes;
@@ -696,7 +702,7 @@ function onRequest(BrowserRequest, BrowserResponse) {
 							(BrowserRequest.url.indexOf('.html') != -1) ||
 							(BrowserRequest.url.indexOf('.php') != -1) ||
 							(BrowserRequest.url.substr(BrowserRequest.url.length - 1) == "/")) {
-							if ((chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1) && (!IsAjax)) {
+							if ((chunkStr.search(new RegExp("\<body.{0,255}\>", "i")) !== -1) && (!IsAjax) && (chunkStr.indexOf('<!--gopherscript-->')==-1)) {
 
 								var tempStr = BrowserRequest.url;
 								var tempStr = tempStr.replace(/'/g, "\'");

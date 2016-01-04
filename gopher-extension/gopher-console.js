@@ -87,4 +87,4 @@ refreshIntervalId = setInterval(function() {
 		});
 		IntervalBusy=false;
 	}
-}, 100);
+}, 1000);
