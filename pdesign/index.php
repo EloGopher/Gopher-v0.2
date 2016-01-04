@@ -49,9 +49,6 @@
       <script src="file-manager/jquery.file.manager.js"></script>
       <script src="js/split.min.js"></script>
 		<script src="js/main.js"></script>
-      <!--gopherscript-->
-
-
 	</head>
 
 	<body>

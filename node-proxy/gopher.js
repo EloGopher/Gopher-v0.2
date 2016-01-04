@@ -1,6 +1,43 @@
 //intereting concept getdefinedvar()
 //http://stackoverflow.com/questions/24448998/is-it-possible-to-get-variables-with-get-defined-vars-but-for-the-actual-runni
 
+/*
+
+APACHE MAC MAMP create VirtualHost for gopher
+
+listen 8081
+
+<VirtualHost *:8081>
+ServerName localhost:8081
+DocumentRoot "/Users/ekim/gopherspace"
+
+<Directory "/Users/ekim/gopherspace">
+
+    Options All
+    Options Indexes FollowSymLinks MultiViews
+
+
+    #
+    # AllowOverride controls what directives may be placed in .htaccess files.
+    # It can be "All", "None", or any combination of the keywords:
+    #   Options FileInfo AuthConfig Limit
+    #
+    AllowOverride All
+
+    #
+    # Controls who can get stuff from this server.
+    #
+    Order allow,deny
+    Allow from all
+	Header set Access-Control-Allow-Origin "*"
+	Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept"
+
+</Directory>
+
+# Other directives here
+</VirtualHost>
+*/
+
 var http = require('http');
 var http_php_requests = require('http');
 var fs = require('fs');
