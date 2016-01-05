@@ -37,11 +37,42 @@ function updateiframe() {
 	var js = JSeditor.getValue();
 	var css = CSSeditor.getValue();
 	var html = HTMLeditor.getValue();
-	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + css + '</style><script>$(document).ready(function () {' + js + '});</script></head><body>' + html + '</body></html>');
 
-	if (requestTimer) window.clearTimeout(requestTimer);  //see if there is a timeout that is active, if there is remove it.
-	if (xhr) xhr.abort();  //kill active Ajax request
-	requestTimer = setTimeout(function(){
+	var re = /\#number-(.*)-([^\s]+)/g;
+	var m;
+
+	var newcss = css;
+
+	var paramArray = [];
+
+	while ((m = re.exec(newcss)) !== null) {
+	    if (m.index === re.lastIndex) {
+	        re.lastIndex++;
+	    }
+		 //console.log(m);
+
+		 paramArray.push({ "type":"css", "varname":m[1],"defaultvalue":m[2] });
+
+		 newcss = newcss.substr(0, m.index) + newcss.substr(m.index + m[0].length);
+		 var SemiCol = "";
+		 if (m[0].substr([0].length-1)==";") { SemiCol=";"; }
+		 newcss = newcss.substr(0, m.index) + m[2] + SemiCol + newcss.substr(m.index);
+
+	    // View your result using the m-variable.
+	    // eg m[0] etc.
+	}
+	$("#ParametersList").html('');
+
+	for (var i = 0, l = paramArray.length; i < l; i++) {
+		$("#ParametersList").append("<div>"+paramArray[i].varname.replace("_"," ")+" = "+paramArray[i].defaultvalue+"</div>");
+	}
+
+
+	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + js + '});</script></head><body>' + html + '</body></html>');
+
+	if (requestTimer) window.clearTimeout(requestTimer); //see if there is a timeout that is active, if there is remove it.
+	if (xhr) xhr.abort(); //kill active Ajax request
+	requestTimer = setTimeout(function() {
 		var PostValues = {
 			"op": "update",
 			"js": js,
@@ -61,7 +92,7 @@ function updateiframe() {
 				console.log("Network connection error. Please check with your network administrator. Error:" + status);
 			}
 		});
-	}, 500);  //delay before making the call
+	}, 500); //delay before making the call
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -97,28 +128,68 @@ function completeIfInTag(cm) {
 //------------------------------------------------------------------------------------------------------------------
 $(document).ready(function() {
 
+	var rtime;
+	var timeout = false;
+	var delta = 200;
+	$(window).resize(function() {
+		rtime = new Date();
+		if (timeout === false) {
+			timeout = true;
+			setTimeout(resizeend, delta);
+		}
+	});
+
+	function resizeend() {
+		if (new Date() - rtime < delta) {
+			setTimeout(resizeend, delta);
+		} else {
+			timeout = false;
+			$("#editorsdiv").css({
+				height: ($(window).height() - 52) + 'px'
+			});
+		}
+	}
+
+	$("#editorsdiv").css({
+		height: ($(window).height() - 52) + 'px'
+	});
+
 	Split(['#TopRow', '#BottomRow'], {
-	  gutterSize: 4,
-	  cursor: 'col-resize'
+		gutterSize: 4,
+		cursor: 'col-resize'
 	})
 
 	Split(['#HTMLPanel', '#JSPanel'], {
-	  direction: 'vertical',
-	  sizes: [50, 50],
-	  gutterSize: 4,
-	  cursor: 'row-resize'
+		direction: 'vertical',
+		sizes: [50, 50],
+		gutterSize: 4,
+		cursor: 'row-resize'
 	})
 
 	Split(['#CSSPanel', '#PreviewPanel'], {
-	  direction: 'vertical',
-	  sizes: [50,50],
-	  gutterSize: 4,
-	  cursor: 'row-resize'
+		direction: 'vertical',
+		sizes: [50, 50],
+		gutterSize: 4,
+		cursor: 'row-resize'
 	})
 
-	$("#NewProject").on('click',function() {
+	$("#NewProject").on('click', function() {
 		window.location.href = 'index.php';
 	});
+
+
+	$("#ParametersModal").draggable({
+	    handle: ".modal-header"
+	});
+
+	$("#ParametersButton").on('click', function() {
+		$("#ParametersModal").modal({show:true});
+	});
+
+	$('#ParametersModal').on('shown.bs.modal', function (e) {
+		$('.modal-backdrop.in').css({'opacity':'0'});
+	});
+
 
 	$("#htmleditor_div_hint").show();
 	$("#csseditor_div_hint").show();
@@ -239,5 +310,5 @@ $(document).ready(function() {
 
 	updateiframe();
 	HTMLeditor.focus();
-	
+
 });

@@ -12,7 +12,7 @@ var image_manager_cancel_text ='Cancel';
 $(document).ready(function(){
     var element;
 
-    $('body').append('<div id="myModal" class="reveal-modal xlarge"><div id="image-manager-frame"></div><p style="text-align: right; padding-right: 10px; padding-top: 5px;"><button id="image-manager-insert" type="button" class="image-manager-btn image-manager-btn-primary">' + image_manager_insert_text + '</button>&nbsp;<button id="image-manager-cancel" type="button" class="image-manager-btn image-manager-btn-default">' + image_manager_cancel_text + '</button></p></div>');
+    $('body').append('<div id="FileManagerModal" class="fm-reveal-modal xlarge"><div id="image-manager-frame"></div><p style="text-align: right; padding-right: 10px; padding-top: 5px;"><button id="image-manager-insert" type="button" class="image-manager-btn image-manager-btn-primary">' + image_manager_insert_text + '</button>&nbsp;<button id="image-manager-cancel" type="button" class="image-manager-btn image-manager-btn-default">' + image_manager_cancel_text + '</button></p></div>');
 
     $( "input.image-manager" ).each(function() {
         //$( this ).prop("readonly",true);
@@ -23,7 +23,7 @@ $(document).ready(function(){
 
         $('#image-manager-frame').empty().append(GetTheHtml(element.val()));
 
-        $('#myModal').reveal();
+        $('#FileManagerModal').reveal();
     });
 
     $(document).on('click', '.file-manager-linked', function () {
@@ -31,13 +31,13 @@ $(document).ready(function(){
 
         $('#image-manager-frame').empty().append(GetTheHtml(element));
 
-        $('#myModal').reveal();
+        $('#FileManagerModal').reveal();
     });
 
     $(document).on('click', '#image-manager-insert', function () {
 //      alert( $('#image-manager-src').val() );
 //        element.val($('#image-manager-src').val());
-        $('#myModal').trigger('reveal:close');
+        $('#FileManagerModal').trigger('reveal:close');
         if (LastEditor=="HTMLeditor") {
            HTMLeditor.focus();
            HTMLeditor.replaceSelection( '<IMG SRC="' +$('#image-manager-src').val() +'">' , 'around');
@@ -58,7 +58,7 @@ $(document).ready(function(){
     });
 
     $(document).on('click', '#image-manager-cancel', function () {
-        $('#myModal').trigger('reveal:close');
+        $('#FileManagerModal').trigger('reveal:close');
     });
 
     function GetTheHtml(existing_files){
@@ -107,7 +107,7 @@ $(document).ready(function(){
             animation: 'fadeAndPop', //fade, fadeAndPop, none
             animationspeed: 300, //how fast animtions are
             closeonbackgroundclick: true, //if you click background will modal close?
-            dismissmodalclass: 'close-reveal-modal' //the class of a button or element that will close an open modal
+            dismissmodalclass: 'close-fm-reveal-modal' //the class of a button or element that will close an open modal
         };
 
         //Extend dem' options
@@ -122,13 +122,13 @@ $(document).ready(function(){
                 topMeasure  = parseInt(modal.css('top')),
                 topOffset = modal.height() + topMeasure,
                 locked = false,
-                modalBG = $('.reveal-modal-bg');
+                modalBG = $('.fm-reveal-modal-bg');
 
             /*---------------------------
              Create Modal BG
              ----------------------------*/
             if(modalBG.length == 0) {
-                modalBG = $('<div class="reveal-modal-bg" />').insertAfter(modal);
+                modalBG = $('<div class="fm-reveal-modal-bg" />').insertAfter(modal);
             }
 
             /*---------------------------

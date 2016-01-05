@@ -361,9 +361,9 @@ input[type="button"].image-manager-btn-block {
 
 /*	--------------------------------------------------
 	Reveal Modals
-	-------------------------------------------------- */
-
-.reveal-modal-bg {
+	--------------------------------------------------
+*/
+.fm-reveal-modal-bg {
     position: fixed;
     height: 100%;
     width: 100%;
@@ -375,7 +375,7 @@ input[type="button"].image-manager-btn-block {
     left: 0;
 }
 
-.reveal-modal {
+.fm-reveal-modal {
     visibility: hidden;
     top: 100px;
     left: 50%;
@@ -387,12 +387,12 @@ input[type="button"].image-manager-btn-block {
     padding: 0;
 }
 
-.reveal-modal.small 		{ width: 200px; margin-left: -140px;}
-.reveal-modal.medium 		{ width: 400px; margin-left: -240px;}
-.reveal-modal.large 		{ width: 600px; margin-left: -340px;}
-.reveal-modal.xlarge 		{ width: 885px; margin-left: -483px;}
+.fm-reveal-modal.small 		{ width: 200px; margin-left: -140px;}
+.fm-reveal-modal.medium 		{ width: 400px; margin-left: -240px;}
+.fm-reveal-modal.large 		{ width: 600px; margin-left: -340px;}
+.fm-reveal-modal.xlarge 		{ width: 885px; margin-left: -483px;}
 
-.reveal-modal .close-reveal-modal {
+.fm-reveal-modal .close-fm-reveal-modal {
     font-size: 22px;
     line-height: .5;
     position: absolute;
@@ -405,13 +405,13 @@ input[type="button"].image-manager-btn-block {
 }
 
 @media (max-width: 600px) {
-    .reveal-modal {
+    .fm-reveal-modal {
         width: 80%;
         margin-left: 0px;
         left: 10%;
     }
 
-    .reveal-modal.xlarge {
+    .fm-reveal-modal.xlarge {
         width: 80%;
         margin-left: 0px;
     }
@@ -423,3 +423,4 @@ input[type="button"].image-manager-btn-block {
         overflow: scroll;
     }
 }
+*/

@@ -65,6 +65,14 @@ if(!unlink($file)){
 	exit();
 }
 
+$tempfile = $file;
+$tempfile = str_replace(".png","_thumb.png",$tempfile);
+$tempfile = str_replace(".gif","_thumb.gif",$tempfile);
+$tempfile = str_replace(".jpg","_thumb.jpg",$tempfile);
+if(is_file($file)){
+	unlink($tempfile);
+}
+
 include 'contents.php';
 
 
