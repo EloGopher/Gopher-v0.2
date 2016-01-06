@@ -76,3 +76,63 @@ html, body {
 	background-position: bottom;
 	background-repeat: repeat-x;
 }
+
+.propheaderrow {
+	border-bottom: 1px solid #ccc;
+	background-color: #ddd;
+	font-weight: bold;
+	padding:3px;
+	padding-left: 8px;
+}
+
+.proprow {
+	border-top: 1px solid #ccc;
+	padding:3px;
+	padding-left: 8px;
+}
+
+.proprow:hover {
+	background-color: #ccc;
+}
+
+.proptype {
+	width:100px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	display: inline-block;
+}
+
+.propname {
+	width:200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	display: inline-block;
+}
+
+.propvalue-number {
+	cursor: pointer;
+	width: 200px;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.propvalue-color {
+	cursor: pointer;
+	width: 200px;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+
+.propvalue-text {
+	cursor: pointer;
+	width: 200px;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: inline-block;
+}

@@ -8,6 +8,7 @@ var iframedoc;
 var requestTimer;
 var xhr;
 var LastEditor;
+var paramArray = [];
 
 //------------------------------------------------------------------------------------------------------------------
 function loadCssFile(pathToFile) {
@@ -31,6 +32,22 @@ function injectHTML(html_string) {
 	}
 }
 
+function findParams(inputText,filetype,paramtype)
+{
+	var re = new RegExp('#'+paramtype+':(.+?)(?=##)##(.+?)(?=##)','gi');
+	var m;
+	while ((m = re.exec(inputText)) !== null) {
+		console.log(m);
+		 paramArray.push({ "filetype":filetype, "type":paramtype, "varname":m[1],"defaultvalue":m[2] });
+
+		 inputText = inputText.substr(0, m.index) + inputText.substr(m.index + m[0].length+2);
+		 var SemiCol = "";
+		 if (m[0].substr([0].length-1)==";") { SemiCol=";"; }
+		 inputText = inputText.substr(0, m.index) + m[2] + SemiCol + inputText.substr(m.index);
+	}
+	return inputText;
+}
+
 //------------------------------------------------------------------------------------------------------------------
 function updateiframe() {
 
@@ -38,37 +55,33 @@ function updateiframe() {
 	var css = CSSeditor.getValue();
 	var html = HTMLeditor.getValue();
 
-	var re = /\#number-(.*)-([^\s]+)/g;
-	var m;
-
 	var newcss = css;
+	var newhtml = html;
+	var newjs = js;
 
-	var paramArray = [];
+	paramArray = [];
 
-	while ((m = re.exec(newcss)) !== null) {
-	    if (m.index === re.lastIndex) {
-	        re.lastIndex++;
-	    }
-		 //console.log(m);
+	newcss = findParams(newcss,'css','text');
+	newcss = findParams(newcss,'css','number');
+	newcss = findParams(newcss,'css','color');
 
-		 paramArray.push({ "type":"css", "varname":m[1],"defaultvalue":m[2] });
+	newhtml = findParams(newhtml,'html','text');
+	newhtml = findParams(newhtml,'html','number');
+	newhtml = findParams(newhtml,'html','color');
 
-		 newcss = newcss.substr(0, m.index) + newcss.substr(m.index + m[0].length);
-		 var SemiCol = "";
-		 if (m[0].substr([0].length-1)==";") { SemiCol=";"; }
-		 newcss = newcss.substr(0, m.index) + m[2] + SemiCol + newcss.substr(m.index);
+	newjs = findParams(newjs,'js','text');
+	newjs = findParams(newjs,'js','number');
+	newjs = findParams(newjs,'js','color');
 
-	    // View your result using the m-variable.
-	    // eg m[0] etc.
-	}
-	$("#ParametersList").html('');
+
+	$("#ParametersList").html("<div class='propheaderrow'><div class='proptype'>File</div><div class='propname'>Name</div><div class='propvalue-text' style='text-align:center'>Value</div></div>");
 
 	for (var i = 0, l = paramArray.length; i < l; i++) {
-		$("#ParametersList").append("<div>"+paramArray[i].varname.replace("_"," ")+" = "+paramArray[i].defaultvalue+"</div>");
+		$("#ParametersList").append("<div class='proprow'><div class='proptype'>"+paramArray[i].filetype+"</div><div class='propname'>"+paramArray[i].varname.replace("_"," ")+"</div><div class='propvalue-"+paramArray[i].type+"'>"+paramArray[i].defaultvalue+"</div></div>");
 	}
 
 
-	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + js + '});</script></head><body>' + html + '</body></html>');
+	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 
 	if (requestTimer) window.clearTimeout(requestTimer); //see if there is a timeout that is active, if there is remove it.
 	if (xhr) xhr.abort(); //kill active Ajax request
