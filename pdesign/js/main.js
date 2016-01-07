@@ -32,18 +32,24 @@ function injectHTML(html_string) {
 	}
 }
 
-function findParams(inputText,filetype,paramtype)
-{
-	var re = new RegExp('#'+paramtype+':(.+?)(?=##)##(.+?)(?=##)','gi');
+function findParams(inputText, filetype, paramtype) {
+	var re = new RegExp('#' + paramtype + ':(.+?)(?=##)##(.+?)(?=##)', 'gi');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
 		console.log(m);
-		 paramArray.push({ "filetype":filetype, "type":paramtype, "varname":m[1],"defaultvalue":m[2] });
+		paramArray.push({
+			"filetype": filetype,
+			"type": paramtype,
+			"varname": m[1],
+			"defaultvalue": m[2]
+		});
 
-		 inputText = inputText.substr(0, m.index) + inputText.substr(m.index + m[0].length+2);
-		 var SemiCol = "";
-		 if (m[0].substr([0].length-1)==";") { SemiCol=";"; }
-		 inputText = inputText.substr(0, m.index) + m[2] + SemiCol + inputText.substr(m.index);
+		inputText = inputText.substr(0, m.index) + inputText.substr(m.index + m[0].length + 2);
+		var SemiCol = "";
+		if (m[0].substr([0].length - 1) == ";") {
+			SemiCol = ";";
+		}
+		inputText = inputText.substr(0, m.index) + m[2] + SemiCol + inputText.substr(m.index);
 	}
 	return inputText;
 }
@@ -61,23 +67,27 @@ function updateiframe() {
 
 	paramArray = [];
 
-	newcss = findParams(newcss,'css','text');
-	newcss = findParams(newcss,'css','number');
-	newcss = findParams(newcss,'css','color');
+	newcss = findParams(newcss, 'css', 'text');
+	newcss = findParams(newcss, 'css', 'number');
+	newcss = findParams(newcss, 'css', 'color');
 
-	newhtml = findParams(newhtml,'html','text');
-	newhtml = findParams(newhtml,'html','number');
-	newhtml = findParams(newhtml,'html','color');
+	newhtml = findParams(newhtml, 'html', 'text');
+	newhtml = findParams(newhtml, 'html', 'number');
+	newhtml = findParams(newhtml, 'html', 'color');
 
-	newjs = findParams(newjs,'js','text');
-	newjs = findParams(newjs,'js','number');
-	newjs = findParams(newjs,'js','color');
+	newjs = findParams(newjs, 'js', 'text');
+	newjs = findParams(newjs, 'js', 'number');
+	newjs = findParams(newjs, 'js', 'color');
 
 
 	$("#ParametersList").html("<div class='propheaderrow'><div class='proptype'>File</div><div class='propname'>Name</div><div class='propvalue-text' style='text-align:center'>Value</div></div>");
 
 	for (var i = 0, l = paramArray.length; i < l; i++) {
-		$("#ParametersList").append("<div class='proprow'><div class='proptype'>"+paramArray[i].filetype+"</div><div class='propname'>"+paramArray[i].varname.replace("_"," ")+"</div><div class='propvalue-"+paramArray[i].type+"'>"+paramArray[i].defaultvalue+"</div></div>");
+		if (paramArray[i].type=="number") {
+			$("#ParametersList").append("<div class='proprow'><div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace("_", " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\"></div>");
+		} else {
+			$("#ParametersList").append("<div class='proprow'><div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace("_", " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div></div>");
+		}
 	}
 
 
@@ -140,7 +150,6 @@ function completeIfInTag(cm) {
 
 //------------------------------------------------------------------------------------------------------------------
 $(document).ready(function() {
-
 	var rtime;
 	var timeout = false;
 	var delta = 200;
@@ -150,6 +159,7 @@ $(document).ready(function() {
 			timeout = true;
 			setTimeout(resizeend, delta);
 		}
+		$(".history_progress").css({width: ($("#iframesource").width()-140) + 'px' });
 	});
 
 	function resizeend() {
@@ -160,12 +170,14 @@ $(document).ready(function() {
 			$("#editorsdiv").css({
 				height: ($(window).height() - 52) + 'px'
 			});
+
+			$("#iframesource").css({
+				height: ($("#CSSPanel").height() - 40) + 'px'
+			});
+
+			$(".history_progress").css({width: ($("#iframesource").width()-135) + 'px' });
 		}
 	}
-
-	$("#editorsdiv").css({
-		height: ($(window).height() - 52) + 'px'
-	});
 
 	Split(['#TopRow', '#BottomRow'], {
 		gutterSize: 4,
@@ -192,15 +204,19 @@ $(document).ready(function() {
 
 
 	$("#ParametersModal").draggable({
-	    handle: ".modal-header"
+		handle: ".modal-header"
 	});
 
 	$("#ParametersButton").on('click', function() {
-		$("#ParametersModal").modal({show:true});
+		$("#ParametersModal").modal({
+			show: true
+		});
 	});
 
-	$('#ParametersModal').on('shown.bs.modal', function (e) {
-		$('.modal-backdrop.in').css({'opacity':'0'});
+	$('#ParametersModal').on('shown.bs.modal', function(e) {
+		$('.modal-backdrop.in').css({
+			'opacity': '0'
+		});
 	});
 
 
@@ -323,5 +339,72 @@ $(document).ready(function() {
 
 	updateiframe();
 	HTMLeditor.focus();
+
+	$("#editorsdiv").css({
+		height: ($(window).height() - 52) + 'px'
+	});
+
+	$("#iframesource").css({
+		height: ($("#CSSPanel").height() - 40) + 'px'
+	});
+
+	$(".history_progress").css({width: ($("#iframesource").width()-135) + 'px' });
+
+
+
+	var history_perc = 50;
+	var history_playstate = false;
+
+	$('.history_bufferBar').css('width', '100%');
+	$('.history_timeBar').css('width', '100%');
+
+
+	$('.history_btnPlay').on('click', function() {
+		if (!history_playstate) {
+			history_playstate = true;
+			$('.history_btnPlay').addClass('history_paused');
+			$('.history_btnPlay').find('.history_icon-play').addClass('history_icon-pause').removeClass('history_icon-play');
+		} else {
+			history_playstate = false;
+			$('.history_btnPlay').removeClass('history_paused');
+			$('.history_btnPlay').find('.history_icon-pause').removeClass('history_icon-pause').addClass('history_icon-play');
+		}
+
+	});
+
+
+	var history_timeDrag = false; /* check for drag event */
+	$('.history_progress').on('mousedown', function(e) {
+		history_timeDrag = true;
+		history_updatebar(e.pageX);
+	});
+
+	$(document).on('mouseup', function(e) {
+		if (history_timeDrag) {
+			history_timeDrag = false;
+			history_updatebar(e.pageX);
+		}
+	});
+
+	$(document).on('mousemove', function(e) {
+		if (history_timeDrag) {
+			history_updatebar(e.pageX);
+		}
+	});
+
+	var history_updatebar = function(x) {
+		var history_progress = $('.history_progress');
+
+		var history_position = x - history_progress.offset().left;
+		var history_percentage = 100 * history_position / history_progress.width();
+		if (history_percentage > 100) {
+			history_percentage = 100;
+		}
+		if (history_percentage < 0) {
+			history_percentage = 0;
+		}
+		$('.history_timeBar').css('width', history_percentage + '%');
+	};
+
 
 });

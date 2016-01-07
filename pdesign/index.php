@@ -1,5 +1,6 @@
-<?php include_once "op.php"; ?><!DOCTYPE html>
-<html lang="en">
+<?php include_once "op.php"; ?>
+	<!DOCTYPE html>
+	<html lang="en">
 
 	<head>
 		<meta charset="utf-8">
@@ -38,7 +39,7 @@
 		<script type="text/javascript" src="codemirror-5.10/mode/htmlmixed/htmlmixed.js"></script>
 
 
-      <link href="file-manager/jquery.file.manager.css" rel="stylesheet">
+		<link href="file-manager/jquery.file.manager.css" rel="stylesheet">
 
 		<link href="css/jquery-ui.min.css" rel="stylesheet">
 		<link href="css/bootstrap.min.css" rel="stylesheet">
@@ -47,26 +48,26 @@
 		<script src="js/jquery-2.1.4.min.js"></script>
 		<script src="js/jquery-ui.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
-      <script src="file-manager/jquery.file.manager.js"></script>
-      <script src="js/split.min.js"></script>
+		<script src="file-manager/jquery.file.manager.js"></script>
+		<script src="js/split.min.js"></script>
 		<script src="js/main.js"></script>
 	</head>
 
 	<body>
 
-      <div style="height:50px; background:#fafafa; font-size:18px; padding-left:10px;">
-			<div style=" padding-top:10px; display:inline-block;">
-         	Elo Parametric Design
+		<div style="height:50px; background:#fafafa; font-size:18px; padding-left:10px;">
+			<div style=" padding-top:14px; display:inline-block;">
+				Elo Parametric Design
 			</div>
-			<div style="float:right; margin-right:20px; padding-top:6px;">
+			<div style="float:right; margin-right:20px; padding-top:8px;">
 
-				<button class="btn btn-default" data-toggle="modal" id="ParametersButton" >Parameters</button>
+				<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
 
-	         <button class="btn btn-default file-manager-linked" data-input-id="" >Image Library</button>
-				<button class="btn btn-default" id="NewProject" >New Project</button>
+				<button class="btn btn-default file-manager-linked" data-input-id="">Image Library</button>
+				<button class="btn btn-default" id="NewProject">New Project</button>
 			</div>
-      </div>
-      <div id="editorsdiv" style="height:99%;">
+		</div>
+		<div id="editorsdiv" style="height:99%;">
 			<div class="split split-horizontal" id="TopRow">
 				<div class="xPanel split content" id="HTMLPanel">
 					<textarea id="HTMLCode" name="HTMLCode" class="editbox"><?php echo $html; ?></textarea>
@@ -84,31 +85,52 @@
 				</div>
 				<div class="xPanel split content" id="PreviewPanel" style="overflow:hidden">
 					<iframe id="iframesource" src="" class="iframebox"></iframe>
+
+					<div class="history_control">
+						<div class="history_btmControl">
+							<div class="history_btnPlay " title="Play/Pause video">
+								<span class="history_icon-play"></span>
+							</div>
+							<div class="history_progress-bar">
+								<div class="history_progress">
+									<span class="history_bufferBar"></span>
+									<span class="history_timeBar"></span>
+								</div>
+							</div>
+							<div class="history_sound " title="Mute/Unmute sound">
+								<span class="history_icon-sound"></span>
+							</div>
+							<div class="history_btnFS " title="Switch to full screen">
+								<span class="history_icon-fullscreen"></span>
+							</div>
+						</div>
+					</div>
+
 				</div>
 			</div>
-      </div>
+		</div>
 
 		<div id="ParametersModal" class="modal">
-		    <div class="modal-dialog">
-		        <div class="modal-content">
-		            <div class="modal-header">
-		                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-		                 <h4 class="modal-title">Parameters</h4>
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">Parameters</h4>
 
-		            </div>
-		            <div class="modal-body" id="ParametersList">
+					</div>
+					<div class="modal-body" id="ParametersList">
 
-		            </div>
-		            <div class="modal-footer">
-		                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		                <button type="button" class="btn btn-primary">Save changes</button>
-		            </div>
-		        </div>
-		        <!-- /.modal-content -->
-		    </div>
-		    <!-- /.modal-dialog -->
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
 		</div>
 		<!-- /.modal -->
 	</body>
 
-</html>
+	</html>
