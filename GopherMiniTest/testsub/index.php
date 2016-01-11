@@ -1,12 +1,11 @@
 <?php
-require_once('Gopher.php');
 require '../funcs.php';
-
+/*gopher:'hello'*/
 strpos();
 
 $var1 = "xyz";
 
-Gopher("PHP Start ".$var1,"Start Tag");
+/*gopher:$var1*/
 
 $cars = array("Vol vo", "BMW", "Toyota");
 $car = "Honda";
@@ -29,16 +28,16 @@ $cars2 = array($myCar, $yourCar);
 
 
 
-Gopher($cars,"Cars Tag");
-Gopher($car,"Cars Tag");
+/*gopher:$cars*/
+/*gopher:$car*/
 
-Gopher($cars2,"Cars Tag");
+/*gopher:$cars2*/
 
-Gopher("Start Timer","Tag 1");
+/*gopher:"Start Timer*/
 
 usleep(100000);
 
-Gopher("End Timer","Tag 1");
+/*gopher:"End Timer"*/
 
 TestCall2();
 
