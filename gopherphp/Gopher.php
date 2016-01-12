@@ -1,11 +1,46 @@
 <?php
+/*todo:
 
+- admin panel
+  - ignore folders
+
+- logging
+  - d/l and store gopher.js
+  - log php to array and ajax to server evern n sec and on page exit
+  - websockets log js stuff to server
+  - insert js helper to php files with head
+  - insert js helper to html files with head
+
+- display
+  - php include floating div into files with head
+  - floating div use websockets to get log data
+
+
+*/
 
 $SourceFolder = '/users/ekim/phpworkspace/Gopher-v0.2/GopherMiniTest';
-$TargerFolder = '/users/ekim/phpworkspace/gopher-phishproof';
+//$SourceFolder = '/users/ekim/phpworkspace/phishproof';
 
+$TargerFolder = '/users/ekim/phpworkspace/gopher-phishproof';
+$FileList = array();
+
+if (file_exists($TargerFolder.'/gopher-files.txt')) {
+    $str = file_get_contents($TargerFolder.'/gopher-files.txt');
+    $FileList = unserialize($str);
+}
+//print_r($FileList);
+
+$t0 = microtime(true);
 
 recurse_copy($SourceFolder, $TargerFolder);
+
+//echo '<pre>time taken: '.(microtime(true) - $t0)."\n";
+
+$fh = fopen($TargerFolder.'/gopher-files.txt', 'w');
+fwrite($fh, serialize($FileList));
+fclose($fh);
+
+//
 
 if (isset($_POST['op'])) {
     if ($_POST['op'] == 'hello') {
@@ -16,95 +51,118 @@ if (isset($_POST['op'])) {
 
 function recurse_copy($src, $dst)
 {
-   global $SourceFolder;
-    $dir = opendir($src);
+   global $SourceFolder,$FileList;
+   $dir = opendir($src);
 
-    $result = ($dir === false ? false : true);
+   $result = ($dir === false ? false : true);
 
-    if ($result !== false) {
-        $result = @mkdir($dst);
-        $result = true;
+   if ($result !== false) {
+      $result = @mkdir($dst);
+      $result = true;
 
-        if ($result === true)
-        {
-            while (false !== ($file = readdir($dir))) {
-                if (($file != '.') && ($file != '..') && $result) {
-                    if (is_dir($src.'/'.$file)) {
-                        //echo $src.'/'.$file.'<br>';
-                        if ($file == '.git') {
+      if ($result === true) {
+         while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..') && $result) {
+               if (is_dir($src.'/'.$file)) {
+                  //echo $src.'/'.$file.'<br>';
+                  if ($file == '.git') {
+                  } else {
+                      $result = recurse_copy($src.'/'.$file, $dst.'/'.$file);
+                  }
+               } else {
+                  $CurrentFileName = $src.'/'.$file;
+                  $CurrentFileChecksum = md5_file($src.'/'.$file);
+
+                  $skipfile = false;
+                  $filefound = false;
+
+                  foreach ($FileList as &$TheFile) {
+                     if ($CurrentFileName == $TheFile['filename']) {
+                        $filefound = true;
+
+                        if ($CurrentFileChecksum == $TheFile['checksum']) {
+                           //echo "skip ".$CurrentFileName."\n";
+                           $skipfile=true;
                         } else {
-                            $result = recurse_copy($src.'/'.$file, $dst.'/'.$file);
+                           echo $CurrentFileName ." is modified.\n";
+                           $TheFile['checksum'] = $CurrentFileChecksum;
                         }
-                    } else {
-                       $file_ext = pathinfo($file, PATHINFO_EXTENSION);
+                        break;
+                     }
+                  }
 
-                        if ($file_ext=='php')
-                        {
-                           //$result = copy($src.'/'.$file, $dst.'/orig-'.$file);
+                  if (!$skipfile) {
+                     if (!$filefound) {
+                        $FileList[] = array('filename' => $CurrentFileName, 'checksum' => $CurrentFileChecksum);
+                        echo $CurrentFileName ." is new copying it over.\n";
+                     }
 
-                           $shortpath = $src;
-                           $shortpath = str_replace($SourceFolder, '', $shortpath);
+                     $file_ext = pathinfo($file, PATHINFO_EXTENSION);
 
-                           $temppaths= explode('/', $shortpath);
-                           $upfolder = "";
-                           for ($i=0; $i<count($temppaths)-1; $i++) { $upfolder .= "../"; }
+                     if (($file_ext == 'php') || ($file_ext == 'js') ) {
+                        $shortpath = $src;
+                        $shortpath = str_replace($SourceFolder, '', $shortpath);
 
+                        $temppaths = explode('/', $shortpath);
+                        $upfolder = '';
+                        for ($i = 0; $i < count($temppaths) - 1; ++$i) {
+                           $upfolder .= '../';
+                        }
 
-                           $PhpSource = file_get_contents($src.'/'.$file);
+                        $PhpSource = file_get_contents($src.'/'.$file);
 
-                           $index = -1;
+                        $index = -1;
 
-                           $re = "/\\/\\*gopher(?=\\:):(.+?)(?=\\*\\/)/im";
+                        $re = '/\\/\\*gopher(?=\\:):(.+?)(?=\\*\\/)/im';
 
-                           $fh = fopen($src.'/'.$file, 'rb');
-                           $out = fopen($dst.'/'.$file,"w");
+                        $fh = fopen($src.'/'.$file, 'rb');
+                        $out = fopen($dst.'/'.$file, 'w');
 
+                        if ($file_ext == 'php') {
                            fputs($out, '<?php include_once "'.$upfolder.'Gopher.php"; ?>');
-
-
-                           //echo $src.'/'.$file.'<br>';
-
-                           $linex = 1;
-                           while ($line = fgets($fh)) {
-
-                              preg_match_all($re, $line, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
-                              if (count($matches)>0)
-                              {
-                                 //print_r($matches);
-                                 $offsetX = 0;
-                                 foreach ($matches as $match) {
-                                    //echo $linex." ".$match[1][0]. " ". $match[1][1]."<br>";
-
-                                    $shortpath2 = str_replace('\'','\\\'',$shortpath);
-                                    $shortpath2 = str_replace('"','\\"',$shortpath2);
-
-                                    $match2 = str_replace('\'','\\\'',$match[1][0]);
-                                    $match2 = str_replace('"','\\"',$match2);
-                                    $GopherInsertString = 'gopher('. $linex .', \'' . $shortpath2 . '\',\'' . $match2 . '\','. $match[1][0] . '); ';
-                                    //echo
-                                    $line = substr_replace($line, $GopherInsertString, $match[1][0]+$offsetX, 0);
-                                    $offsetX += strlen($match[1][0]);
-                                 }
-                              }
-                              fputs($out, $line);
-                              $linex++;
-                           }
-                           fclose($fh);
-                           fclose($out);
-                        } else {
-                           $result = copy($src.'/'.$file, $dst.'/'.$file);
                         }
-                    }
-                }
+
+                        //echo $src.'/'.$file.'<br>';
+
+                        $linex = 1;
+                        while ($line = fgets($fh)) {
+                           preg_match_all($re, $line, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+                           if (count($matches) > 0) {
+                              //print_r($matches);
+                              $offsetX = 0;
+                              foreach ($matches as $match) {
+                              //echo $linex." ".$match[1][0]. " ". $match[1][1]."<br>";
+
+                                 $shortpath2 = str_replace('\'', '\\\'', $shortpath);
+                                 $shortpath2 = str_replace('"', '\\"', $shortpath2);
+
+                                 $match2 = str_replace('\'', '\\\'', $match[1][0]);
+                                 $match2 = str_replace('"', '\\"', $match2);
+                                 $GopherInsertString = 'gopher('.$linex.', \''.$shortpath2.'\',\''.$match2.'\','.$match[1][0].'); ';
+                                 //echo
+                                 $line = substr_replace($line, $GopherInsertString, $match[1][0] + $offsetX, 0);
+                                 $offsetX += strlen($match[1][0]);
+                              }
+                           }
+                           fputs($out, $line);
+                           ++$linex;
+                        }
+                        fclose($fh);
+                        fclose($out);
+                     } else {
+                        $result = copy($src.'/'.$file, $dst.'/'.$file);
+                     }
+                  }
+               }
             }
-            closedir($dir);
-        }
-    } else
-    {
-      echo $dir . " problem ";
+         }
+         closedir($dir);
+      }
+   } else {
+      echo $dir.' problem ';
    }
 
-    return $result;
+   return $result;
 }
 
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
