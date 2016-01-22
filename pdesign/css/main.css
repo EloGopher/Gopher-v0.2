@@ -79,68 +79,94 @@ html, body {
 	background-repeat: repeat-x;
 }
 
+.paramtable {
+	display: table;
+	border-collapse: collapse;
+	width:100%;
+}
+
 .propheaderrow {
 	border-bottom: 1px solid #ccc;
 	background-color: #ddd;
 	font-weight: bold;
+	display: table-header-group;
+}
+
+.propheadercell {
+	display: table-cell;
 	padding:3px;
 	padding-left: 8px;
 }
 
 .proprow {
-	border-top: 1px solid #ccc;
-	padding:3px;
-	padding-left: 8px;
+	display: table-row;
+	border : 1px solid #ccc;
+	border-left : 0px;
+	border-right : 0px;
 }
 
+
+
 .proprow:hover {
-	background-color: #ccc;
+	border-bottom: 1px solid #333;
 }
 
 .proptype {
+	padding:3px;
+	padding-left: 8px;
 	width:100px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	display: inline-block;
+	display:table-cell;
+	vertical-align: middle;
 }
 
 .propname {
+	padding:3px;
+	padding-left: 8px;
 	width:200px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	display: inline-block;
+	display:table-cell;
+	vertical-align: middle;
 }
 
 .propvalue-number {
-	cursor: pointer;
-	width: 50px;
-	text-align: right;
-	margin-right: 10px;
+	padding:3px;
+	padding-left: 8px;
+	width: 250px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	display: inline-block;
+	display:table-cell;
 }
 
 .propvalue-color {
+	padding:3px;
+	padding-left: 8px;
 	cursor: pointer;
 	width: 200px;
 	text-align: left;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	display: inline-block;
+	display:table-cell;
 }
 
 
 .propvalue-text {
+	padding:3px;
+	padding-left: 8px;
 	cursor: pointer;
 	width: 200px;
 	text-align: left;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	display: inline-block;
+	display:table-cell;
 }
 
-
+.selectednumbermenu {
+	width: 30px;
+	display: table-cell;
+}
 
 input[type=range] {
     /*removes default webkit styles*/
@@ -364,4 +390,13 @@ input[type=range]:focus::-ms-fill-upper {
 	z-index:5;
 	width:0;
 	background: rgba(255,255,255,0.2);
+}
+
+
+.colorselector {
+	width: 100px;
+}
+
+#ParametersModal .modal-dialog{
+	/*min-width: 700px;*/
 }

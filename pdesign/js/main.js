@@ -80,16 +80,74 @@ function updateiframe() {
 	newjs = findParams(newjs, 'js', 'color');
 
 
-	$("#ParametersList").html("<div class='propheaderrow'><div class='proptype'>File</div><div class='propname'>Name</div><div class='propvalue-text' style='text-align:center'>Value</div></div>");
+	$("#ParametersList").html("<div class='propheaderrow'><div class='propheadercell'>File</div><div class='propheadercell'>Name</div><div class='propheadercell'>Value</div></div>");
 
 	for (var i = 0, l = paramArray.length; i < l; i++) {
-		if (paramArray[i].type=="number") {
-			$("#ParametersList").append("<div class='proprow'><div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace("_", " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\"></div>");
+		$("#ParametersList").append("<div class='proprow' id='row_"+ i +"' data-filetype='"+ paramArray[i].filetype +"' data-filetype='"+ paramArray[i].varname +"'></div>");
+        
+		if (paramArray[i].type == "slider") {
+			$("#row_"+i).html("<div class='proprow' data-rowid='row_"+ i +"'><div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
+		} else
+		if (paramArray[i].type == "number") {
+			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><div class='input-group' style='width:200px;'>\
+            <input type='text' class='form-control rangeselector' value='" + paramArray[i].defaultvalue +
+				"'>\
+            <div class='input-group-btn'>\
+                <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>\
+                    <span class='caret'></span>\
+                    <span class='sr-only'>Toggle Dropdown</span>\
+                </button>\
+                <ul class='dropdown-menu pull-right' role='menu'>\
+                    <li><a href='#' data-numberstype='px' data-parentrowid='row_"+ i +"' class='numberstylemenu'>px</a></li>\
+                    <li><a href='#' data-numberstype='%' data-parentrowid='row_"+ i +"' class='numberstylemenu'>%</a></li>\
+                    <li><a href='#' data-numberstype='pt' data-parentrowid='row_"+ i +"' class='numberstylemenu'>pt</a></li>\
+						  <li><a href='#' data-numberstype='none' data-parentrowid='row_"+ i +"' class='numberstylemenu'>none</a></li>\
+                </ul>\
+            </div>\
+        </div>");
+		} else
+		if (paramArray[i].type == "color") {
+			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' value='" + paramArray[i].defaultvalue + "' ></div>");
+		} else
+		if (paramArray[i].type == "text") {
+			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else {
-			$("#ParametersList").append("<div class='proprow'><div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace("_", " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div></div>");
+			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
 		}
 	}
 
+	$(".textselector").css("width", "200px");
+
+	$(".colorselector").ColorPickerSliders({
+		placement: 'right',
+		hsvpanel: true,
+		previewformat: 'hex',
+      onchange: function(container, color) {
+          var body = $('body');
+          body.css("background-color", color.tiny.toRgbString());
+      }
+	});
+
+	$(".rangeselector").TouchSpin({
+		min: 0,
+		max: 100,
+		step: 1,
+		postfix : 'px',
+		decimals: 1,
+		boostat: 5,
+		maxboostedstep: 10,
+		forcestepdivisibility: 'none'
+	});
+
+	$('.numberstylemenu').on('click', function(e) {
+		console.log($(this).data('numberstype'));
+		if ($(this).data('numberstype')=="none") {
+			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html( '' );
+		} else {
+			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html( $(this).data('numberstype') );
+		}
+		e.preventDefault();
+	});
 
 	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 
@@ -159,7 +217,9 @@ $(document).ready(function() {
 			timeout = true;
 			setTimeout(resizeend, delta);
 		}
-		$(".history_progress").css({width: ($("#iframesource").width()-140) + 'px' });
+		$(".history_progress").css({
+			width: ($("#iframesource").width() - 140) + 'px'
+		});
 	});
 
 	function resizeend() {
@@ -175,7 +235,9 @@ $(document).ready(function() {
 				height: ($("#CSSPanel").height() - 40) + 'px'
 			});
 
-			$(".history_progress").css({width: ($("#iframesource").width()-135) + 'px' });
+			$(".history_progress").css({
+				width: ($("#iframesource").width() - 135) + 'px'
+			});
 		}
 	}
 
@@ -348,7 +410,9 @@ $(document).ready(function() {
 		height: ($("#CSSPanel").height() - 40) + 'px'
 	});
 
-	$(".history_progress").css({width: ($("#iframesource").width()-135) + 'px' });
+	$(".history_progress").css({
+		width: ($("#iframesource").width() - 135) + 'px'
+	});
 
 
 

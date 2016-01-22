@@ -39,6 +39,8 @@
 		<script type="text/javascript" src="codemirror-5.10/mode/htmlmixed/htmlmixed.js"></script>
 
 
+		<link href="css/bootstrap.colorpickersliders.css" rel="stylesheet" type="text/css" media="all">
+      <link href="css/jquery.bootstrap-touchspin.css" rel="stylesheet" type="text/css" media="all">
 		<link href="file-manager/jquery.file.manager.css" rel="stylesheet">
 
 		<link href="css/jquery-ui.min.css" rel="stylesheet">
@@ -50,6 +52,11 @@
 		<script src="js/bootstrap.min.js"></script>
 		<script src="file-manager/jquery.file.manager.js"></script>
 		<script src="js/split.min.js"></script>
+
+		<script src="js/tinycolor.min.js"></script>
+	   <script src="js/bootstrap.colorpickersliders.js"></script>
+		<script src="js/jquery.bootstrap-touchspin.js"></script>
+
 		<script src="js/main.js"></script>
 	</head>
 
@@ -118,7 +125,7 @@
 						<h4 class="modal-title">Parameters</h4>
 
 					</div>
-					<div class="modal-body" id="ParametersList">
+					<div class="modal-body paramtable" id="ParametersList">
 
 					</div>
 					<div class="modal-footer">
