@@ -33,7 +33,7 @@ function injectHTML(html_string) {
 }
 
 function findParams(inputText, filetype, paramtype) {
-	var re = new RegExp('#' + paramtype + ':(.+?)(?=##)##(.+?)(?=##)', 'gi');
+	var re = new RegExp('#' + paramtype + ':(.+?)(?=##)##(.+?)(?=##)', 'i');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
 		//console.log(m);
@@ -116,6 +116,83 @@ function updateiframe(refreshparams) {
 
 	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 }
+
+function replaceSourceFromDialog(inputText,filetype) {
+	var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+	var m;
+	var inputTextTemp = inputText;
+	var ReplaceList = [];
+	while ((m = re.exec(inputTextTemp)) !== null) {
+
+		var varname = m[2];
+		var defvalue = m[3];
+
+		var dialogvalue = $("#"+filetype+"-"+varname).val();
+		if ($("#"+filetype+"-"+varname+"-unit").length==0) { /* doesn't have unit*/ } else {
+			dialogvalue += ""+ $("#"+filetype+"-"+varname+"-unit").val();
+		}
+
+		//console.log('#'+m[1]+':'+m[2]+'##'+m[3]+'##     '+dialogvalue);// varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
+
+		ReplaceList.push({"old":'#'+m[1]+':'+m[2]+'##'+m[3]+'##', "new":'#'+m[1]+':'+m[2]+'##'+dialogvalue+'##'});
+
+		inputTextTemp = inputTextTemp.substr(0, m.index+1) + inputTextTemp.substr(m.index + m[0].length + 2);
+		var SemiCol = "";
+		if (m[0].substr([0].length - 1) == ";") {
+			SemiCol = ";";
+		}
+
+		inputTextTemp = inputTextTemp.substr(0, m.index+1) + dialogvalue + SemiCol + inputTextTemp.substr(m.index+1);
+	}
+
+	for (var i=0; i<ReplaceList.length; i++) {
+		inputText = inputText.replace(ReplaceList[i].old,ReplaceList[i].new);
+	}
+	console.log(ReplaceList);
+	return inputText;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------
+function updatesource() {
+
+	var js = JSeditor.getValue();
+	var css = CSSeditor.getValue();
+	var html = HTMLeditor.getValue();
+
+	var newcss = css;
+	var newhtml = html;
+	var newjs = js;
+
+	newcss = replaceSourceFromDialog(newcss,'css');
+	newhtml = replaceSourceFromDialog(newhtml,'html');
+	newjs = replaceSourceFromDialog(newjs,'js');
+
+	JSeditor.setValue(newjs);
+	CSSeditor.setValue(newcss);
+	HTMLeditor.setValue(newhtml);
+
+	updateserver();
+
+	paramArray = [];
+
+	newcss = findParams(newcss, 'css', 'text');
+	newcss = findParams(newcss, 'css', 'number');
+	newcss = findParams(newcss, 'css', 'color');
+
+	newhtml = findParams(newhtml, 'html', 'text');
+	newhtml = findParams(newhtml, 'html', 'number');
+	newhtml = findParams(newhtml, 'html', 'color');
+
+	newjs = findParams(newjs, 'js', 'text');
+	newjs = findParams(newjs, 'js', 'number');
+	newjs = findParams(newjs, 'js', 'color');
+	
+
+
+//	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
+}
+
 
 function updateserver()
 {
@@ -334,6 +411,11 @@ $(document).ready(function() {
 		$('.modal-backdrop.in').css({
 			'opacity': '0'
 		});
+	});
+
+	$("#save-parameters").on('click',function() {
+		updatesource();
+		$("#ParametersModal").modal('hide');
 	});
 
 
