@@ -1,0 +1,193 @@
+* {
+    margin: 0;
+}
+html, body {
+    height: 100%;
+    font-family: 'Open Sans', Arial, sans-serif;
+    color:rgb(34, 34, 34);
+    font-size: 14px;
+    background-color: #F5F5F5;
+    min-width:916px;
+}
+
+
+.time-band, .message-list, .source-code{
+   min-height: 100%;
+    height: 100%;
+    margin: 0;
+    float:left;
+}
+
+.time-band{
+   background-color: #333333;
+   overflow: hidden;
+   width:3%;
+   max-width: 50px;
+   min-width:28px;
+}
+.time-slot{
+    width: 100%;
+    display:inline-block;
+    border-bottom:solid 1px #5b5959;
+    cursor:pointer; 
+}
+.time-slot.last{
+    border-bottom: none;
+}
+.time-slot.selected{
+    background-color: #F5F5F5;
+}
+
+.message-list{
+    float:left;
+    background-color: #F5F5F5;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 96.85%;
+}
+.message-list.with-source{
+    width: 50%;
+    -webkit-transition: width 0.5s;
+}
+.message-list.with-source .item-message{
+    width:100%;
+}
+.item-log{
+    overflow: auto;
+    cursor: pointer;
+}
+.item-filename{
+    float:left;
+    clear:left;
+    width:16%;
+}
+.item-filename.closed{
+    width:0%;
+    /*opacity: 0;*/
+    display:none;
+    /*-webkit-transition: opacity 0.1s,width 0.5s;*/
+}
+.filename-wrapper{
+    margin-top: 14px;
+    margin-left:10px;
+    margin-bottom: 13px;
+    margin-right:0px;
+}
+.filename{
+    background-color:#aaaaaa;
+    color:#FFFFFF;
+    padding: 3px 8px;
+    box-shadow: 0 1px 1px rgba(128,128,128,.3);
+    text-shadow: 0 1px 0 rgba(70,70,70,.4);
+    max-width:210px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    display:inline-block;
+}
+.filename.ext-js{
+    background-color:#268bb5;
+}
+.filename.ext-php{
+    background-color:#4DC3FF;
+}
+.item-message{
+    float:left;
+    clear:right;
+    width:84%;
+    border-bottom: 1px solid #e6e6e6;
+}
+.code-line{
+    text-align: right;
+    vertical-align: top;
+    line-height: 50px;
+    float:left;
+    clear:left;
+    width: 100px;
+    color:#888;
+    padding-right: 10px;
+}
+.repeat-num{
+    margin-left:3px;
+    background-color:#888;
+    color:#FFFFFF;
+    border:1px solid #888;
+    border-radius: 9px;
+    padding:0px 4px;
+    font-weight: normal;
+    text-shadow: none;
+    box-shadow: none;
+    width:13px;
+    margin-right:10px;
+}
+.message-wrapper{
+    float:left;
+    clear:right;
+    border-left: 1px solid #e6e6e6;
+}
+.message-wrapper .message{
+    margin-top:17px;
+    margin-bottom:17px;
+    margin-left:10px;
+}
+.variables .message-wrapper .message{
+    margin-top:10px;
+    margin-bottom:10px;
+    margin-left:10px;
+}
+.message-text{
+    display:inline-block;
+}
+.varname{
+    display:inline-block;
+    background-color:#aaaaaa;
+    color:#FFFFFF;
+    padding: 7px 8px;
+    font-weight: 600;
+    box-shadow: 0 1px 1px rgba(128,128,128,.3);
+    text-shadow: 0 1px 0 rgba(70,70,70,.4);
+}
+.varvalue{
+    display:inline-block;
+    padding-left:3px;
+}
+.varname.ext-js{
+    background-color:#268bb5;
+}
+.varname.ext-php{
+    background-color:#4DC3FF;
+}
+.message-tags{
+    float:right;
+    display:inline-block;
+    max-width: 380px;
+    margin-top:14px;
+    margin-right: 10px;
+}
+.message-tags span{
+    display:inline-block;
+    background-color: #e5e5e5;
+    color:#888;
+    border:1px solid transparent;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 96%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-left: 3px;
+    max-width:300px;
+}
+
+.source-code{
+    background-color: #FBFBFB;
+    width:0%;
+}
+.source-code.opened{
+    width:46.84%;
+    -webkit-transition: width 0.5s;
+}
+
+div[data-template]{
+    display: none;
+}

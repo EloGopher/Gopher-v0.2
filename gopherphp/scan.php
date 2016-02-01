@@ -1,6 +1,6 @@
 <?php
 
-$dir = "/users/ekim/phpworkspace/Gopher-v0.2/GopherMiniTest";
+$dir = __DIR__."/../GopherMiniTest";
 
 $ProjectName = "iEngine 4.8.16";
 $ProjectID = "105";
