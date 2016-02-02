@@ -8,56 +8,56 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>pDesign</title>
 
-		<link rel="stylesheet" href="codemirror-5.10/lib/codemirror.css">
-		<link rel="stylesheet" href="codemirror-5.10/addon/hint/show-hint.css">
+		<link rel="stylesheet" href="../codemirror-5.10/lib/codemirror.css">
+		<link rel="stylesheet" href="../codemirror-5.10/addon/hint/show-hint.css">
 
-		<script src="codemirror-5.10/lib/codemirror.js"></script>
+		<script src="../codemirror-5.10/lib/codemirror.js"></script>
 
-		<script type="text/javascript" src="codemirror-5.10/addon/hint/show-hint.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/hint/xml-hint.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/hint/html-hint.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/hint/javascript-hint.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/hint/css-hint.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/hint/show-hint.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/hint/xml-hint.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/hint/html-hint.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/hint/javascript-hint.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/hint/css-hint.js"></script>
 
-		<script type="text/javascript" src="codemirror-5.10/addon/search/searchcursor.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/search/match-highlighter.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/search/searchcursor.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/search/match-highlighter.js"></script>
 
-		<script type="text/javascript" src="codemirror-5.10/addon/selection/active-line.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/selection/active-line.js"></script>
 
-		<script type="text/javascript" src="codemirror-5.10/addon/comment/continuecomment.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/comment/continuecomment.js"></script>
 
-		<script type="text/javascript" src="codemirror-5.10/addon/edit/matchbrackets.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/edit/closebrackets.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/edit/closetag.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/fold/xml-fold.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/addon/edit/matchtags.js"></script>
-
-
-		<script type="text/javascript" src="codemirror-5.10/mode/xml/xml.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/mode/javascript/javascript.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/mode/css/css.js"></script>
-		<script type="text/javascript" src="codemirror-5.10/mode/htmlmixed/htmlmixed.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/edit/matchbrackets.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/edit/closebrackets.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/edit/closetag.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/fold/xml-fold.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/addon/edit/matchtags.js"></script>
 
 
-		<link href="css/bootstrap.colorpickersliders.css" rel="stylesheet" type="text/css" media="all">
-      <link href="css/jquery.bootstrap-touchspin.css" rel="stylesheet" type="text/css" media="all">
-		<link href="file-manager/jquery.file.manager.css" rel="stylesheet">
+		<script type="text/javascript" src="../codemirror-5.10/mode/xml/xml.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/mode/javascript/javascript.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/mode/css/css.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/mode/htmlmixed/htmlmixed.js"></script>
 
-		<link href="css/jquery-ui.min.css" rel="stylesheet">
-		<link href="css/bootstrap.min.css" rel="stylesheet">
-		<link href="css/main.css" rel="stylesheet">
 
-		<script src="js/jquery-2.1.4.min.js"></script>
-		<script src="js/jquery-ui.min.js"></script>
-		<script src="js/bootstrap.min.js"></script>
-		<script src="file-manager/jquery.file.manager.js"></script>
-		<script src="js/split.min.js"></script>
+		<link href="../css/bootstrap.colorpickersliders.css" rel="stylesheet" type="text/css" media="all">
+      <link href="../css/jquery.bootstrap-touchspin.css" rel="stylesheet" type="text/css" media="all">
+		<link href="../file-manager/jquery.file.manager.css" rel="stylesheet">
 
-		<script src="js/tinycolor.min.js"></script>
-	   <script src="js/bootstrap.colorpickersliders.js"></script>
-		<script src="js/jquery.bootstrap-touchspin.js"></script>
+		<link href="../css/jquery-ui.min.css" rel="stylesheet">
+		<link href="../css/bootstrap.min.css" rel="stylesheet">
+		<link href="../css/main.css" rel="stylesheet">
 
-		<script src="js/main.js"></script>
+		<script src="../js/jquery-2.1.4.min.js"></script>
+		<script src="../js/jquery-ui.min.js"></script>
+		<script src="../js/bootstrap.min.js"></script>
+		<script src="../file-manager/jquery.file.manager.js"></script>
+		<script src="../js/split.min.js"></script>
+
+		<script src="../js/tinycolor.min.js"></script>
+	   <script src="../js/bootstrap.colorpickersliders.js"></script>
+		<script src="../js/jquery.bootstrap-touchspin.js"></script>
+
+		<script src="../js/main.js"></script>
 	</head>
 
 	<body>
@@ -67,6 +67,13 @@
 				Elo Parametric Design
 			</div>
 			<div style="float:right; margin-right:20px; padding-top:8px;">
+
+				<button class="btn btn-default" data-toggle="modal" id="ForkButton">Fork This</button>
+				<button class="btn btn-default" data-toggle="modal" id="TidyButton">Tidy</button>
+				<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
+
+
+				<button class="btn btn-default" data-toggle="modal" id="ProjectButton">Project Info</button>
 
 				<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
 
@@ -129,7 +136,7 @@
 
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal" id="close-parameters">Close</button>
 						<button type="button" id="save-parameters" class="btn btn-primary">Save changes</button>
 					</div>
 				</div>
@@ -138,6 +145,29 @@
 			<!-- /.modal-dialog -->
 		</div>
 		<!-- /.modal -->
+
+		<div id="ProjectModal" class="modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title">Project</h4>
+
+					</div>
+					<div class="modal-body paramtable" id="ProjectDiv">
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal" id="close-parameters">Close</button>
+						<button type="button" id="save-parameters" class="btn btn-primary">Save changes</button>
+					</div>
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+		<!-- /.modal -->
+
 	</body>
 
 	</html>

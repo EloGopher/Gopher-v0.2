@@ -41,12 +41,11 @@ function GenerateNewPage()
          $dbconn->query($newQ);
          if ($dbconn->insert_id > 0) {
             mkdir(dirname(__FILE__).'/pimages/'.$code);
-            $_SESSION["code"] = $code;
             $FoundUnique = true;
          }
       }
    }
-   return $code;
+   return $code."/1";
 }
 
 $html = "";
@@ -59,6 +58,7 @@ if ($_POST["op"]=="update") {
    if (($_POST["html"]!="") || ($_POST["js"]!="") || ($_POST["css"]!="")) {
 
       $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$_SESSION["code"]) .'" ORDER BY version DESC LIMIT 1';
+      //echo $checkQ;
 
       $resultQ = $dbconn->query($checkQ);
 
@@ -73,7 +73,7 @@ if ($_POST["op"]=="update") {
          $dbconn->query($newQ);
          if ($dbconn->insert_id > 0) {
             $saved = true;
-            $returnDelResult[] = array('success' => (bool) true, 'insertID' => (int) $dbconn->insert_id);
+            $returnDelResult[] = array('success' => (bool) true, 'code' => (string) $_SESSION["code"], 'insertID' => (int) $dbconn->insert_id, 'version' => (int) ($version+1));
             echo json_encode($returnDelResult);
          } else {
             $returnDelResult[] = array('success' => (bool) false);
@@ -81,29 +81,45 @@ if ($_POST["op"]=="update") {
          }
       }
    } else {
-      $returnDelResult[] = array('success' => (bool) true, 'Message' => 'nothing to update');
+      $returnDelResult[] = array('success' => (bool) false, 'Message' => 'nothing to update');
       echo json_encode($returnDelResult);
    }
    die();
 }
 
-$code = $_GET["id"];
 
-//---------------------------------------------------------------------------------------------------------------------------------------------------------
-//first visit redirect to code page
-if ($code=="") {
-   header("Location: ".GenerateNewPage());
-   die();
+//echo $_SESSION["code"];
+$compactcode_temp = $_GET["id"];
+$compactcode = explode('/', $compactcode_temp);
 
-} else
-//---------------------------------------------------------------------------------------------------------------------------------------------------------
-//second visit load latest version
-{
+$code = $compactcode[0];
+//echo $code." ".count($compactcode). "-".$compactcode[1]."-";
+//die();
+if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && ($code!="") && ($compactcode[1]=="")) ) {
    $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" ORDER BY version DESC LIMIT 1';
+   //echo $checkQ;
+   //die();
+
+   $resultQ = $dbconn->query($checkQ);
+
+   if (mysqli_num_rows($resultQ)==1) {
+
+      $rowQ = $resultQ->fetch_assoc();
+      $version = $rowQ["version"];
+      $_SESSION["code"] = $code;
+      header("Location: /Gopher-v0.2/pdesign/".$code."/".$version);
+      die();
+   } else {
+      $code = "";
+   }
+} else
+if ( (count($compactcode)==2) && ($code!="") && ($compactcode[1]!="")) {
+   $version = $compactcode[1];
+   $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" AND version="'. mysqli_real_escape_string($dbconn,$version) .'" ORDER BY version DESC LIMIT 1';
    $resultQ = $dbconn->query($checkQ);
 
    if (mysqli_num_rows($resultQ)==0) {
-      header("Location: ".GenerateNewPage());
+      header("Location: /Gopher-v0.2/pdesign/".GenerateNewPage());
       die();
    }
 
@@ -114,6 +130,10 @@ if ($code=="") {
    $html = $rowQ["html"];
    $css = $rowQ["css"];
    $js = $rowQ["js"];
+
+} else {
+   header("Location: /Gopher-v0.2/pdesign/".GenerateNewPage());
+   die();
 }
 
 ?>

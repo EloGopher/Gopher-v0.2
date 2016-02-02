@@ -9,6 +9,7 @@ var requestTimer;
 var xhr;
 var LastEditor;
 var paramArray = [];
+var ParametersModalCloseWithSave = false;
 
 //------------------------------------------------------------------------------------------------------------------
 function loadCssFile(pathToFile) {
@@ -114,7 +115,7 @@ function updateiframe(refreshparams) {
 
 	}
 
-	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
+	injectHTML('<html><head><script src="/Gopher-v0.2/pdesign/js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 }
 
 function replaceSourceFromDialog(inputText,filetype) {
@@ -172,8 +173,6 @@ function updatesource() {
 	CSSeditor.setValue(newcss);
 	HTMLeditor.setValue(newhtml);
 
-	updateserver();
-
 	paramArray = [];
 
 	newcss = findParams(newcss, 'css', 'text');
@@ -187,7 +186,7 @@ function updatesource() {
 	newjs = findParams(newjs, 'js', 'text');
 	newjs = findParams(newjs, 'js', 'number');
 	newjs = findParams(newjs, 'js', 'color');
-	
+
 
 
 //	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
@@ -212,10 +211,16 @@ function updateserver()
 
 		xhr = $.ajax({
 			type: 'POST',
-			url: "op.php",
+			url: "/Gopher-v0.2/pdesign/op.php",
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
+				if (resultData[0].success) {
+					console.log(resultData[0].version);
+					history.pushState(null, null,'/Gopher-v0.2/pdesign/'+resultData[0].code+'/'+resultData[0].version );
+				}
+
+				//
 
 			},
 			error: function(xhr, status, error) {
@@ -254,10 +259,10 @@ function updateparamdialog()
                     <span class='sr-only'>Toggle Dropdown</span>\
                 </button>\
                 <ul class='dropdown-menu pull-right' role='menu'>\
-                    <li><a href='#' data-numberstype='px' data-parentrowid='row_"+ i +"' class='numberstylemenu'>px</a></li>\
-                    <li><a href='#' data-numberstype='%' data-parentrowid='row_"+ i +"' class='numberstylemenu'>%</a></li>\
-                    <li><a href='#' data-numberstype='pt' data-parentrowid='row_"+ i +"' class='numberstylemenu'>pt</a></li>\
-						  <li><a href='#' data-numberstype='none' data-parentrowid='row_"+ i +"' class='numberstylemenu'>none</a></li>\
+                    <li><a href='#' data-numberstype='px' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>px</a></li>\
+                    <li><a href='#' data-numberstype='%' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>%</a></li>\
+                    <li><a href='#' data-numberstype='pt' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>pt</a></li>\
+						  <li><a href='#' data-numberstype='none' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>none</a></li>\
                 </ul>\
             </div>\
         </div>");
@@ -296,11 +301,17 @@ function updateparamdialog()
 	}).on('change',function() {		updateiframe(false);	});
 
 	$('.numberstylemenu').on('click', function(e) {
-		console.log($(this).data('numberstype'));
+
+		//console.log($(this).data('numberstype'));
+		//console.log($(this).data('controllerid'));
+
+
 		if ($(this).data('numberstype')=="none") {
 			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html( '' );
+			$("#" + $(this).data('controllerid') ).val('');
 		} else {
 			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html( $(this).data('numberstype') );
+			$("#" + $(this).data('controllerid') ).val($(this).data('numberstype'));
 		}
 		updateiframe(false);
 		e.preventDefault();
@@ -392,7 +403,17 @@ $(document).ready(function() {
 	})
 
 	$("#NewProject").on('click', function() {
-		window.location.href = 'index.php';
+		window.location.href = '../';
+	});
+
+	$("#ProjectButton").on('click', function() {
+		$("#ProjectModal").modal({
+			show: true
+		});
+	});
+
+	$("#UpdateButton").on('click', function() {
+		updateserver();
 	});
 
 
@@ -413,7 +434,15 @@ $(document).ready(function() {
 		});
 	});
 
+	$('#ParametersModal').on('hidden.bs.modal', function () {
+		if (!ParametersModalCloseWithSave) {
+			updateiframe(true);
+		}
+		ParametersModalCloseWithSave = false;
+	})
+
 	$("#save-parameters").on('click',function() {
+		ParametersModalCloseWithSave = true;
 		updatesource();
 		$("#ParametersModal").modal('hide');
 	});
@@ -464,7 +493,6 @@ $(document).ready(function() {
 
 	HTMLeditor.on('keyup', function() {
 		updateiframe(true);
-		updateserver();
 	});
 
 
@@ -500,7 +528,6 @@ $(document).ready(function() {
 
 	JSeditor.on('keyup', function() {
 		updateiframe(true);
-		updateserver();
 	});
 
 
@@ -536,7 +563,6 @@ $(document).ready(function() {
 
 	CSSeditor.on('keyup', function() {
 		updateiframe(true);
-		updateserver();
 	});
 
 	updateiframe(true);
