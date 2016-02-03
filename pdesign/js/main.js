@@ -230,6 +230,42 @@ function updateserver()
 	}, 500); //delay before making the call
 }
 
+
+function forkproject()
+{
+	var js = JSeditor.getValue();
+	var css = CSSeditor.getValue();
+	var html = HTMLeditor.getValue();
+
+	if (requestTimer) window.clearTimeout(requestTimer); //see if there is a timeout that is active, if there is remove it.
+	if (xhr) xhr.abort(); //kill active Ajax request
+	requestTimer = setTimeout(function() {
+		var PostValues = {
+			"op": "fork",
+			"js": js,
+			"css": css,
+			"html": html
+		};
+
+		xhr = $.ajax({
+			type: 'POST',
+			url: "/Gopher-v0.2/pdesign/op.php",
+			data: PostValues,
+			dataType: "json",
+			success: function(resultData) {
+				console.log(resultData);
+				if (resultData[0].success) {
+					window.location.href = '/Gopher-v0.2/pdesign/'+resultData[0].forkpath;
+				}
+			},
+			error: function(xhr, status, error) {
+				console.log("Network connection error. Please check with your network administrator. Error:" + status);
+			}
+		});
+	}, 500); //delay before making the call
+}
+
+
 function updateparamdialog()
 {
 
@@ -403,8 +439,13 @@ $(document).ready(function() {
 	})
 
 	$("#NewProject").on('click', function() {
-		window.location.href = '../';
+		window.location.href = '/Gopher-v0.2/pdesign/';
 	});
+
+	$("#ForkButton").on('click', function() {
+		forkproject();
+	});
+
 
 	$("#ProjectButton").on('click', function() {
 		$("#ProjectModal").modal({
@@ -416,6 +457,53 @@ $(document).ready(function() {
 		updateserver();
 	});
 
+	$("#TidyButton").on('click', function() {
+
+		var opts = {};
+		opts.indent_size = 1;
+		opts.indent_char = '\t';
+		opts.max_preserve_newlines = 5;
+		opts.preserve_newlines = true;
+		opts.keep_array_indentation = false;
+		opts.break_chained_methods = false;
+		opts.indent_scripts = 'normal';
+		opts.brace_style = 'collapse';
+		opts.space_before_conditional = true;
+		opts.unescape_strings = false;
+		opts.jslint_happy = false;
+		opts.end_with_newline = false;
+		opts.wrap_line_length = 0;
+		opts.indent_inner_html = false;
+		opts.comma_first = false;
+		opts.e4x = false;
+
+	 	var output = html_beautify(HTMLeditor.getValue(), opts);
+		HTMLeditor.setValue(output);
+
+		var output = css_beautify(CSSeditor.getValue(), opts);
+		CSSeditor.setValue(output);
+
+		var tempjs = JSeditor.getValue();
+		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+		var m;
+		var templist = [];
+		var tempcounter = -1;
+		while ((m = re.exec(tempjs)) !== null) {
+			tempcounter++;
+			templist.push(tempjs.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
+
+			tempjs = tempjs.substr(0, m.index+1) + '(('+tempcounter+'))' + tempjs.substr(m.index + m[0].length + 2);
+		}
+		//console.log(templist);
+		var output = js_beautify(tempjs, opts);
+
+		for (var i=0; i<templist.length; i++)
+		{
+			output = output.replace('(('+i+'))',templist[i]);
+		}
+
+		JSeditor.setValue(output);
+	});
 
 	$("#ParametersModal").draggable({
 		handle: ".modal-header"
@@ -505,6 +593,7 @@ $(document).ready(function() {
 			"Ctrl-Space": "autocomplete"
 		},
 		styleActiveLine: true,
+		matchBrackets: true,
 		autoCloseBrackets: true,
 		autoCloseTags: true,
 		highlightSelectionMatches: {
@@ -539,6 +628,7 @@ $(document).ready(function() {
 			"Ctrl-Space": "autocomplete"
 		},
 		styleActiveLine: true,
+		matchBrackets: true,
 		autoCloseBrackets: true,
 		autoCloseTags: true,
 		highlightSelectionMatches: {

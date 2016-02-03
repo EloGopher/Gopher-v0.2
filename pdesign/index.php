@@ -1,5 +1,4 @@
-<?php include_once "op.php"; ?>
-	<!DOCTYPE html>
+<?php include_once "op.php"; ?><!DOCTYPE html>
 	<html lang="en">
 
 	<head>
@@ -32,11 +31,16 @@
 		<script type="text/javascript" src="../codemirror-5.10/addon/fold/xml-fold.js"></script>
 		<script type="text/javascript" src="../codemirror-5.10/addon/edit/matchtags.js"></script>
 
+		<script type="text/javascript" src="../codemirror-5.10/addon/format/formatting.js"></script>
 
 		<script type="text/javascript" src="../codemirror-5.10/mode/xml/xml.js"></script>
-		<script type="text/javascript" src="../codemirror-5.10/mode/javascript/javascript.js"></script>
 		<script type="text/javascript" src="../codemirror-5.10/mode/css/css.js"></script>
+		<script type="text/javascript" src="../codemirror-5.10/mode/javascript/javascript.js"></script>
 		<script type="text/javascript" src="../codemirror-5.10/mode/htmlmixed/htmlmixed.js"></script>
+
+		<script src="../js/beautify.js"></script>
+      <script src="../js/beautify-css.js"></script>
+      <script src="../js/beautify-html.js"></script>
 
 
 		<link href="../css/bootstrap.colorpickersliders.css" rel="stylesheet" type="text/css" media="all">
