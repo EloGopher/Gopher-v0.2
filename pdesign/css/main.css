@@ -267,7 +267,8 @@ input[type=range]:focus::-ms-fill-upper {
 .history_control{
 	color:#ccc;
 	z-index:5;
-	padding-left: 10px;
+	padding-right: 10px;
+	display: inline-block;
 	/*width:560px;*/
 	/*display:none;*/
 }
@@ -361,7 +362,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .history_progress {
-	width:500px;
+	width:200px;
 	height:7px;
 	position:relative;
 	cursor:pointer;

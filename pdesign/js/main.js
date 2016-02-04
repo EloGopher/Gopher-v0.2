@@ -395,9 +395,11 @@ $(document).ready(function() {
 			timeout = true;
 			setTimeout(resizeend, delta);
 		}
+		/*
 		$(".history_progress").css({
 			width: ($("#iframesource").width() - 140) + 'px'
 		});
+		*/
 	});
 
 	function resizeend() {
@@ -409,6 +411,7 @@ $(document).ready(function() {
 				height: ($(window).height() - 52) + 'px'
 			});
 
+			/*
 			$("#iframesource").css({
 				height: ($("#CSSPanel").height() - 40) + 'px'
 			});
@@ -416,6 +419,7 @@ $(document).ready(function() {
 			$(".history_progress").css({
 				width: ($("#iframesource").width() - 135) + 'px'
 			});
+			*/
 		}
 	}
 
@@ -477,28 +481,59 @@ $(document).ready(function() {
 		opts.comma_first = false;
 		opts.e4x = false;
 
-	 	var output = html_beautify(HTMLeditor.getValue(), opts);
-		HTMLeditor.setValue(output);
-
-		var output = css_beautify(CSSeditor.getValue(), opts);
-		CSSeditor.setValue(output);
-
-		var tempjs = JSeditor.getValue();
+		var tempHTML = HTMLeditor.getValue();
 		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
-		while ((m = re.exec(tempjs)) !== null) {
+		while ((m = re.exec(tempHTML)) !== null) {
 			tempcounter++;
-			templist.push(tempjs.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
-
-			tempjs = tempjs.substr(0, m.index+1) + '(('+tempcounter+'))' + tempjs.substr(m.index + m[0].length + 2);
+			templist.push(tempHTML.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
+			tempHTML = tempHTML.substr(0, m.index+1) + '(('+tempcounter+'))' + tempHTML.substr(m.index + m[0].length + 2);
 		}
-		//console.log(templist);
-		var output = js_beautify(tempjs, opts);
+		var output = html_beautify(tempHTML, opts);
 
-		for (var i=0; i<templist.length; i++)
-		{
+		for (var i=0; i<templist.length; i++) {
+			output = output.replace('(('+i+'))',templist[i]);
+		}
+
+		HTMLeditor.setValue(output);
+		//---------------------------
+
+
+		var tempCSS = CSSeditor.getValue();
+		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+		var m;
+		var templist = [];
+		var tempcounter = -1;
+		while ((m = re.exec(tempCSS)) !== null) {
+			tempcounter++;
+			templist.push(tempCSS.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
+			tempCSS = tempCSS.substr(0, m.index+1) + '(('+tempcounter+'))' + tempCSS.substr(m.index + m[0].length + 2);
+		}
+		var output = css_beautify(tempCSS, opts);
+
+		for (var i=0; i<templist.length; i++) {
+			output = output.replace('(('+i+'))',templist[i]);
+		}
+
+		CSSeditor.setValue(output);
+		//---------------------------
+
+
+		var tempJS = JSeditor.getValue();
+		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+		var m;
+		var templist = [];
+		var tempcounter = -1;
+		while ((m = re.exec(tempJS)) !== null) {
+			tempcounter++;
+			templist.push(tempJS.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
+			tempJS = tempJS.substr(0, m.index+1) + '(('+tempcounter+'))' + tempJS.substr(m.index + m[0].length + 2);
+		}
+		var output = js_beautify(tempJS, opts);
+
+		for (var i=0; i<templist.length; i++) {
 			output = output.replace('(('+i+'))',templist[i]);
 		}
 
@@ -662,13 +697,16 @@ $(document).ready(function() {
 		height: ($(window).height() - 52) + 'px'
 	});
 
+	/*
 	$("#iframesource").css({
 		height: ($("#CSSPanel").height() - 40) + 'px'
 	});
 
+
 	$(".history_progress").css({
 		width: ($("#iframesource").width() - 135) + 'px'
 	});
+	*/
 
 
 

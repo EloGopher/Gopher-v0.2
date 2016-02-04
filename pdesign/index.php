@@ -66,43 +66,12 @@
 
 	<body>
 
-		<div style="height:50px; background:#fafafa; font-size:18px; padding-left:10px;">
-			<div style=" padding-top:14px; display:inline-block;">
-				Elo Parametric Design
-			</div>
-			<div style="float:right; margin-right:20px; padding-top:8px;">
-
-				<button class="btn btn-default" data-toggle="modal" id="ForkButton">Fork This</button>
-				<button class="btn btn-default" data-toggle="modal" id="TidyButton">Tidy</button>
-				<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
-
-
-				<button class="btn btn-default" data-toggle="modal" id="ProjectButton">Project Info</button>
-
-				<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
-
-				<button class="btn btn-default file-manager-linked" data-input-id="">Image Library</button>
-				<button class="btn btn-default" id="NewProject">New Project</button>
-			</div>
-		</div>
-		<div id="editorsdiv" style="height:99%;">
-			<div class="split split-horizontal" id="TopRow">
-				<div class="xPanel split content" id="HTMLPanel">
-					<textarea id="HTMLCode" name="HTMLCode" class="editbox"><?php echo $html; ?></textarea>
-					<div id="htmleditor_div_hint" class="EditorHint">HTML</div>
+		<div style="height:50px; background:#fafafa; font-size:18px; padding-left:10px; padding-top:8px; display:flex; width:100%">
+				<div style="flex: 1 0 0;">
+					Elo Parametric Design
 				</div>
-				<div class="xPanel split content" id="JSPanel">
-					<textarea id="JSCode" name="JSCode" class="editbox"><?php echo $js; ?></textarea>
-					<div id="jseditor_div_hint" class="EditorHint">JavaScript</div>
-				</div>
-			</div>
-			<div class="split split-horizontal" id="BottomRow">
-				<div class="xPanel split content" id="CSSPanel">
-					<textarea id="CSSCode" name="CSSCode" class="editbox"><?php echo $css; ?></textarea>
-					<div id="csseditor_div_hint" class="EditorHint">CSS</div>
-				</div>
-				<div class="xPanel split content" id="PreviewPanel" style="overflow:hidden">
-					<iframe id="iframesource" src="" class="iframebox"></iframe>
+
+				<div style="margin-right:20px; margin-top:2px;  flex: 3 0 0; text-align:right">
 
 					<div class="history_control">
 						<div class="history_btmControl">
@@ -123,7 +92,40 @@
 							</div>
 						</div>
 					</div>
+				</div>
 
+				<div style="margin-right:20px;  text-align:right">
+					<button class="btn btn-default" data-toggle="modal" id="ForkButton">Fork This</button>
+					<button class="btn btn-default" data-toggle="modal" id="TidyButton">Tidy</button>
+					<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
+
+
+					<button class="btn btn-default" data-toggle="modal" id="ProjectButton">Project Info</button>
+
+					<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
+
+					<button class="btn btn-default file-manager-linked" data-input-id="">Image Library</button>
+					<button class="btn btn-default" id="NewProject">New Project</button>
+				</div>
+		</div>
+		<div id="editorsdiv" style="height:99%;">
+			<div class="split split-horizontal" id="TopRow">
+				<div class="xPanel split content" id="HTMLPanel">
+					<textarea id="HTMLCode" name="HTMLCode" class="editbox"><?php echo $html; ?></textarea>
+					<div id="htmleditor_div_hint" class="EditorHint">HTML</div>
+				</div>
+				<div class="xPanel split content" id="JSPanel">
+					<textarea id="JSCode" name="JSCode" class="editbox"><?php echo $js; ?></textarea>
+					<div id="jseditor_div_hint" class="EditorHint">JavaScript</div>
+				</div>
+			</div>
+			<div class="split split-horizontal" id="BottomRow">
+				<div class="xPanel split content" id="CSSPanel">
+					<textarea id="CSSCode" name="CSSCode" class="editbox"><?php echo $css; ?></textarea>
+					<div id="csseditor_div_hint" class="EditorHint">CSS</div>
+				</div>
+				<div class="xPanel split content" id="PreviewPanel" style="overflow:hidden">
+					<iframe id="iframesource" src="" class="iframebox"></iframe>
 				</div>
 			</div>
 		</div>
