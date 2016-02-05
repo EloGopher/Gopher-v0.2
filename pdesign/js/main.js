@@ -11,6 +11,8 @@ var LastEditor;
 var paramArray = [];
 var ParametersModalCloseWithSave = false;
 
+var GlobalRoot = '/Gopher-v0.2/pdesign/';
+
 //------------------------------------------------------------------------------------------------------------------
 function loadCssFile(pathToFile) {
 	var css = jQuery("<link>");
@@ -115,7 +117,7 @@ function updateiframe(refreshparams) {
 
 	}
 
-	injectHTML('<html><head><script src="/Gopher-v0.2/pdesign/js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
+	injectHTML('<html><head><script src="'+GlobalRoot+'js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 }
 
 function replaceSourceFromDialog(inputText,filetype) {
@@ -211,13 +213,13 @@ function updateserver()
 
 		xhr = $.ajax({
 			type: 'POST',
-			url: "/Gopher-v0.2/pdesign/op.php",
+			url: GlobalRoot+"op.php",
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
 				if (resultData[0].success) {
 					console.log(resultData[0].version);
-					history.pushState(null, null,'/Gopher-v0.2/pdesign/'+resultData[0].code+'/'+resultData[0].version );
+					history.pushState(null, null,GlobalRoot+''+resultData[0].code+'/'+resultData[0].version );
 				}
 
 				//
@@ -249,13 +251,13 @@ function forkproject()
 
 		xhr = $.ajax({
 			type: 'POST',
-			url: "/Gopher-v0.2/pdesign/op.php",
+			url: GlobalRoot+"op.php",
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
 				console.log(resultData);
 				if (resultData[0].success) {
-					window.location.href = '/Gopher-v0.2/pdesign/'+resultData[0].forkpath;
+					window.location.href = GlobalRoot+''+resultData[0].forkpath;
 				}
 			},
 			error: function(xhr, status, error) {
@@ -389,19 +391,18 @@ $(document).ready(function() {
 	var rtime;
 	var timeout = false;
 	var delta = 200;
+
+
+	//------------------------------------------------------------------------------
 	$(window).resize(function() {
 		rtime = new Date();
 		if (timeout === false) {
 			timeout = true;
 			setTimeout(resizeend, delta);
 		}
-		/*
-		$(".history_progress").css({
-			width: ($("#iframesource").width() - 140) + 'px'
-		});
-		*/
 	});
 
+	//------------------------------------------------------------------------------
 	function resizeend() {
 		if (new Date() - rtime < delta) {
 			setTimeout(resizeend, delta);
@@ -410,46 +411,46 @@ $(document).ready(function() {
 			$("#editorsdiv").css({
 				height: ($(window).height() - 52) + 'px'
 			});
-
-			/*
-			$("#iframesource").css({
-				height: ($("#CSSPanel").height() - 40) + 'px'
-			});
-
-			$(".history_progress").css({
-				width: ($("#iframesource").width() - 135) + 'px'
-			});
-			*/
 		}
 	}
 
+
+	//------------------------------------------------------------------------------
+	$("#editorsdiv").css({
+		height: ($(window).height() - 52) + 'px'
+	});
+
+
+	//------------------------------------------------------------------------------
 	Split(['#TopRow', '#BottomRow'], {
-		gutterSize: 4,
+		gutterSize: 8,
+		sizes: [50, 50],
 		cursor: 'col-resize'
 	})
 
 	Split(['#HTMLPanel', '#JSPanel'], {
 		direction: 'vertical',
-		sizes: [50, 50],
-		gutterSize: 4,
+		sizes: [60, 40],
+		gutterSize: 8,
 		cursor: 'row-resize'
 	})
 
 	Split(['#CSSPanel', '#PreviewPanel'], {
 		direction: 'vertical',
-		sizes: [50, 50],
-		gutterSize: 4,
+		sizes: [40, 60],
+		gutterSize: 8,
 		cursor: 'row-resize'
 	})
 
+
+	//------------------------------------------------------------------------------
 	$("#NewProject").on('click', function() {
-		window.location.href = '/Gopher-v0.2/pdesign/';
+		window.location.href = GlobalRoot;
 	});
 
 	$("#ForkButton").on('click', function() {
 		forkproject();
 	});
-
 
 	$("#ProjectButton").on('click', function() {
 		$("#ProjectModal").modal({
@@ -461,6 +462,38 @@ $(document).ready(function() {
 		updateserver();
 	});
 
+	$("#ParametersModal").draggable({
+		handle: ".modal-header"
+	});
+
+	$("#ParametersButton").on('click', function() {
+		updateparamdialog();
+		$("#ParametersModal").modal({
+			show: true
+		});
+	});
+
+	$('#ParametersModal').on('shown.bs.modal', function(e) {
+		$('.modal-backdrop.in').css({
+			'opacity': '0'
+		});
+	});
+
+	$('#ParametersModal').on('hidden.bs.modal', function () {
+		if (!ParametersModalCloseWithSave) {
+			updateiframe(true);
+		}
+		ParametersModalCloseWithSave = false;
+	})
+
+	$("#save-parameters").on('click',function() {
+		ParametersModalCloseWithSave = true;
+		updatesource();
+		$("#ParametersModal").modal('hide');
+	});
+
+
+	//------------------------------------------------------------------------------
 	$("#TidyButton").on('click', function() {
 
 		var opts = {};
@@ -540,46 +573,41 @@ $(document).ready(function() {
 		JSeditor.setValue(output);
 	});
 
-	$("#ParametersModal").draggable({
-		handle: ".modal-header"
-	});
 
-	$("#ParametersButton").on('click', function() {
-		updateparamdialog();
-		$("#ParametersModal").modal({
-			show: true
-		});
-	});
-
-	$('#ParametersModal').on('shown.bs.modal', function(e) {
-		$('.modal-backdrop.in').css({
-			'opacity': '0'
-		});
-	});
-
-	$('#ParametersModal').on('hidden.bs.modal', function () {
-		if (!ParametersModalCloseWithSave) {
-			updateiframe(true);
-		}
-		ParametersModalCloseWithSave = false;
-	})
-
-	$("#save-parameters").on('click',function() {
-		ParametersModalCloseWithSave = true;
-		updatesource();
-		$("#ParametersModal").modal('hide');
-	});
+	//------------------------------------------------------------------------------
+    $('#fileupload').fileupload({
+        url: GlobalRoot+'phpupload/',
+        dataType: 'json',
+        done: function (e, data) {
+            $.each(data.result.files, function (index, file) {
+                $('<p/>').text(file.name).appendTo('#files');
+            });
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
 
 
+	//------------------------------------------------------------------------------
 	$("#htmleditor_div_hint").show();
 	$("#csseditor_div_hint").show();
 	$("#jseditor_div_hint").show();
 
+
+	//------------------------------------------------------------------------------
 	iframe = document.getElementById('iframesource');
 	iframedoc = iframe.document;
 	if (iframe.contentDocument) iframedoc = iframe.contentDocument;
 	else if (iframe.contentWindow) iframedoc = iframe.contentWindow.document;
 
+
+	//------------------------------------------------------------------------------
 	HTMLeditor = CodeMirror.fromTextArea(document.getElementById("HTMLCode"), {
 		lineNumbers: true,
 		lineWrapping: true,
@@ -619,6 +647,7 @@ $(document).ready(function() {
 	});
 
 
+	//------------------------------------------------------------------------------
 	JSeditor = CodeMirror.fromTextArea(document.getElementById("JSCode"), {
 		lineNumbers: true,
 		lineWrapping: true,
@@ -655,6 +684,7 @@ $(document).ready(function() {
 	});
 
 
+	//------------------------------------------------------------------------------
 	CSSeditor = CodeMirror.fromTextArea(document.getElementById("CSSCode"), {
 		lineNumbers: true,
 		lineWrapping: true,
@@ -690,24 +720,10 @@ $(document).ready(function() {
 		updateiframe(true);
 	});
 
+
+	//------------------------------------------------------------------------------
 	updateiframe(true);
 	HTMLeditor.focus();
-
-	$("#editorsdiv").css({
-		height: ($(window).height() - 52) + 'px'
-	});
-
-	/*
-	$("#iframesource").css({
-		height: ($("#CSSPanel").height() - 40) + 'px'
-	});
-
-
-	$(".history_progress").css({
-		width: ($("#iframesource").width() - 135) + 'px'
-	});
-	*/
-
 
 
 	var history_perc = 50;
