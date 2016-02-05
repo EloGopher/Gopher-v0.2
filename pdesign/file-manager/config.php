@@ -15,7 +15,7 @@ define('ALLOWED_IMG_EXTENSIONS', 'gif,jpg,jpeg,png,json');
 define('RENAME_UPLOADED_FILES', false);
 
 /** Number of folders/images to display per page */
-define('ROWS_PER_PAGE', 12);
+define('ROWS_PER_PAGE', 8);
 
 
 /** Should Images be resized on upload. You will then need to set at least one of the dimensions sizes below */

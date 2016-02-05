@@ -64,7 +64,7 @@ $(document).ready(function(){
     function GetTheHtml(existing_files){
         var html = '';
         html += '<input type="hidden" name="image-manager-src" id="image-manager-src" value="' + existing_files + '"/>';
-        html += '<iframe src="' + url_to_file_manager + 'image.php'+ '?r=' + new Date().getTime() + '&src=' + encodeURI(existing_files) + '" frameborder="0" width="885" height="400"></iframe>';
+        html += '<iframe src="' + url_to_file_manager + 'image.php'+ '?r=' + new Date().getTime() + '&src=' + encodeURI(existing_files) + '" frameborder="0" width="885" height="550"></iframe>';
 
         return html;
     }
@@ -104,8 +104,8 @@ $(document).ready(function(){
 
 
         var defaults = {
-            animation: 'fadeAndPop', //fade, fadeAndPop, none
-            animationspeed: 300, //how fast animtions are
+            animation: 'none', //fade, fadeAndPop, none
+            animationspeed: 100, //how fast animtions are
             closeonbackgroundclick: true, //if you click background will modal close?
             dismissmodalclass: 'close-fm-reveal-modal' //the class of a button or element that will close an open modal
         };
@@ -142,7 +142,7 @@ $(document).ready(function(){
                     lockModal();
                     if(options.animation == "fadeAndPop") {
                         modal.css({'top': $(document).scrollTop()-topOffset, 'opacity' : 0, 'visibility' : 'visible'});
-                        modalBG.fadeIn(options.animationspeed/2);
+                        modalBG.show();
                         modal.delay(options.animationspeed/2).animate({
                             "top": $(document).scrollTop()+topMeasure + 'px',
                             "opacity" : 1
@@ -150,7 +150,7 @@ $(document).ready(function(){
                     }
                     if(options.animation == "fade") {
                         modal.css({'opacity' : 0, 'visibility' : 'visible', 'top': $(document).scrollTop()+topMeasure});
-                        modalBG.fadeIn(options.animationspeed/2);
+                        modalBG.show();
                         modal.delay(options.animationspeed/2).animate({
                             "opacity" : 1
                         }, options.animationspeed,unlockModal());
@@ -169,7 +169,7 @@ $(document).ready(function(){
                 if(!locked) {
                     lockModal();
                     if(options.animation == "fadeAndPop") {
-                        modalBG.delay(options.animationspeed).fadeOut(options.animationspeed);
+                        modalBG.hide()
                         modal.animate({
                             "top":  $(document).scrollTop()-topOffset + 'px',
                             "opacity" : 0
@@ -179,7 +179,7 @@ $(document).ready(function(){
                         });
                     }
                     if(options.animation == "fade") {
-                        modalBG.delay(options.animationspeed).fadeOut(options.animationspeed);
+                        modalBG.hide();
                         modal.animate({
                             "opacity" : 0
                         }, options.animationspeed, function() {
