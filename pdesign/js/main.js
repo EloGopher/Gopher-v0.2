@@ -452,16 +452,70 @@ $(document).ready(function() {
 		forkproject();
 	});
 
+	//------------------------------------------------------------------------------
 	$("#ProjectButton").on('click', function() {
 		$("#ProjectModal").modal({
 			show: true
 		});
 	});
 
+	$('#ProjectModal').on('shown.bs.modal', function(e) {
+		$('.modal-backdrop.in').css({
+			'opacity': '0.1'
+		});
+	});
+
+	$("#save-projectdetails").on('click',function() {
+
+		if ($("#ProjectTitleInput").val()!='') { $("#projecttitle").html( $("#ProjectTitleInput").val() ); } else { $("#projecttitle").html('no title'); }
+
+		if ($("#ProjectDescriptionInput").val()!='') { $("#projectdescription").html( $("#ProjectDescriptionInput").val() ); } else { $("#projectdescription").html('no description'); }
+
+		if ($("#ProjectImageInput").val()!='') { $("#projectpicture").attr('src', $("#ProjectImageInput").val() ); }
+
+		//$("#ProjectTitleInput").val()
+
+
+		$("#ProjectModal").modal('hide');
+	});
+
+    $('#ProjectImageUpload').fileupload({
+		 maxNumberOfFiles:1,
+		  acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+		  disableImageResize : true,
+        url: GlobalRoot+'phpupload/',
+        dataType: 'json',
+		  start: function(e) {
+			 $("#progress").show();
+		  },
+        done: function (e, data) {
+			  console.log(data.result.files[0]);
+			  $("#projectimagepreview").attr('src',data.result.files[0].thumbnailUrl);
+			  $("#ProjectImageInput").val(data.result.files[0].thumbnailUrl);
+			  /*
+            $.each(data.result.files, function (index, file) {
+                $('<p/>').text(file.name).appendTo('#files');
+            });
+				*/
+        },
+        progressall: function (e, data) {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        }
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+
+
+	//------------------------------------------------------------------------------
 	$("#UpdateButton").on('click', function() {
 		updateserver();
 	});
 
+	//------------------------------------------------------------------------------
 	$("#ParametersModal").draggable({
 		handle: ".modal-header"
 	});
@@ -572,26 +626,6 @@ $(document).ready(function() {
 
 		JSeditor.setValue(output);
 	});
-
-
-	//------------------------------------------------------------------------------
-    $('#fileupload').fileupload({
-        url: GlobalRoot+'phpupload/',
-        dataType: 'json',
-        done: function (e, data) {
-            $.each(data.result.files, function (index, file) {
-                $('<p/>').text(file.name).appendTo('#files');
-            });
-        },
-        progressall: function (e, data) {
-            var progress = parseInt(data.loaded / data.total * 100, 10);
-            $('#progress .progress-bar').css(
-                'width',
-                progress + '%'
-            );
-        }
-    }).prop('disabled', !$.support.fileInput)
-        .parent().addClass($.support.fileInput ? undefined : 'disabled');
 
 
 	//------------------------------------------------------------------------------

@@ -110,9 +110,6 @@
 					<button class="btn btn-default" data-toggle="modal" id="TidyButton">Tidy</button>
 					<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
 
-
-					<button class="btn btn-default" data-toggle="modal" id="ProjectButton">Project Info</button>
-
 					<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
 
 					<button class="btn btn-default file-manager-linked" data-input-id="">Image Library</button>
@@ -133,14 +130,27 @@
 		        </div> <!-- /avatar -->
 
 		        <ul class="userDetails">
-
 		            <li><i class="fa fa-map-marker"></i>Wolderlund</li>
-
-
-
 		        </ul> <!-- /userDetails -->
 		      </div> <!-- /ebCont -->
+
+				<div class="ebCont">
+
+					<button class="btn btn-default" data-toggle="modal" id="ProjectButton">Project Info</button>
+
+					<div id="projecttitle" class="projectinfo active" style='margin-top:10px;'>Project title</div>
+
+					<div id="projectdescription" class="projectinfo " style='margin-top:5px;'>Project description</div>
+
+					<div id="projectpicturediv" class="projectinfo " style='margin-top:10px;'><img src='../placeholder.jpg' id='projectpicture' style='width:160px; border:1px solid black;'></div>
+
+
+				<br>
+				</div>
+
 		    </div> <!-- /elementBody -->
+
+
 		  </div>
 
 		</div>
@@ -197,54 +207,56 @@
 					</div>
 					<div class="modal-body" id="ProjectDiv">
 						<form class="form-horizontal">
+							<input type="hidden" name="ProjectImageInput" id="ProjectImageInput" value=''>
 						  <div class="form-group">
-						    <label for="inputEmail3" class="col-sm-2 control-label">Title</label>
+						    <label for="ProjectTitleInput" class="col-sm-2 control-label">Title</label>
 						    <div class="col-sm-10">
-						      <input type="text" class="form-control" id="inputEmail3" placeholder="Email">
+						      <input type="text" class="form-control" id="ProjectTitleInput" placeholder="Title">
 						    </div>
 						  </div>
 						  <div class="form-group">
-						    <label for="inputPassword3" class="col-sm-2 control-label">Description</label>
+						    <label for="ProjectDescriptionInput" class="col-sm-2 control-label">Description</label>
 						    <div class="col-sm-10">
-								<textarea id="ProjectDescription" name="ProjectDescription" class="form-control" rows="5"></textarea>
+								<textarea id="ProjectDescriptionInput" name="ProjectDescriptionInput" class="form-control" rows="5"></textarea>
 						    </div>
 						  </div>
+
 						  <div class="form-group">
-						    <div class="col-sm-offset-2 col-sm-10">
+							<div class="col-sm-2 control-label"></div>
+						   <div class="col-sm-10">
+						  <span class="btn btn-success fileinput-button">
+						          <i class="glyphicon glyphicon-plus"></i>
+						          <span>Select Project Image</span>
+						          <!-- The file input field used as target for the file upload widget -->
+						          <input id="ProjectImageUpload" type="file" name="files[]">
+						      </span>
+						      <!-- The global progress bar -->
+						      <div id="progress" class="progress" style="display:none; margin-top:10px; margin-bottom:10px;">
+						          <div class="progress-bar progress-bar-success"></div>
+						      </div>
+						      <!-- The container for the uploaded files -->
+								<img src='' id='projectimagepreview'>
+						      <!-- div id="files" class="files"></div -->
+						      <br>
+
+						  </div>
+						  </div>
+
+						  <div class="form-group">
+							 <div class="col-sm-2 control-label"></div>
+						    <div class="col-sm-10">
 						      <div class="checkbox">
 						        <label>
-						          <input type="checkbox"> Remember me
+						          <input type="checkbox" id="ProjectPublishInput"> Publish this version
 						        </label>
 						      </div>
 						    </div>
 						  </div>
 
-						  <div class="form-group">
-						    <div class="col-sm-offset-2 col-sm-10">
-						  <span class="btn btn-success fileinput-button">
-						          <i class="glyphicon glyphicon-plus"></i>
-						          <span>Select files...</span>
-						          <!-- The file input field used as target for the file upload widget -->
-						          <input id="fileupload" type="file" name="files[]" multiple>
-						      </span>
-						      <br>
-						      <br>
-						      <!-- The global progress bar -->
-						      <div id="progress" class="progress">
-						          <div class="progress-bar progress-bar-success"></div>
-						      </div>
-						      <!-- The container for the uploaded files -->
-						      <div id="files" class="files"></div>
-						      <br>
-
-						  </div>
-						</div>
-
-
 						</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal" id="close-parameters">Close</button>
-						<button type="button" id="save-parameters" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" id="save-projectdetails" class="btn btn-primary">Save changes</button>
 					</div>
 					</form>
 				</div>

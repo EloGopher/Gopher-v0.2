@@ -46,8 +46,8 @@ class UploadHandler
         $this->response = array();
         $this->options = array(
             'script_url' => $this->get_full_url().'/'.basename($this->get_server_var('SCRIPT_NAME')),
-            'upload_dir' => dirname($this->get_server_var('SCRIPT_FILENAME')).'../pimages/'.$_SESSION["code"],
-            'upload_url' => $this->get_full_url().'../pimages/'.$_SESSION["code"],
+            'upload_dir' => dirname($this->get_server_var('SCRIPT_FILENAME')).'/../pimages/'.$_SESSION["code"]."/",
+            'upload_url' => $this->get_full_url().'/../pimages/'.$_SESSION["code"]."/",
             'user_dirs' => false,
             'mkdir_mode' => 0755,
             'param_name' => 'files',
@@ -91,7 +91,7 @@ class UploadHandler
             // Defines which files can be displayed inline when downloaded:
             'inline_file_types' => '/\.(gif|jpe?g|png)$/i',
             // Defines which files (based on their names) are accepted for upload:
-            'accept_file_types' => '/.+$/i',
+            'accept_file_types' => '/\.(gif|jpe?g|png)$/i',
             // The php.ini settings upload_max_filesize and post_max_size
             // take precedence over the following max_file_size setting:
             'max_file_size' => null,

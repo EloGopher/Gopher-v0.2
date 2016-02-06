@@ -380,12 +380,25 @@ input[type=range]:focus::-ms-fill-upper {
 	font-family: Lato, "Helvetica Neue", Arial, Verdana, Tahoma, "Lucida Sans", FreeSans, "Lucida Sans Unicode", "Luxi Sans", sans-serif;
 }
 
+#sidebar .projectinfo {
+	padding: 0 10px;
+	font-size: 13px;
+	font-weight: 400;
+	position: relative;
+	text-decoration: none;
+}
+
+#sidebar .projectinfo.active {
+	font-weight: 700;
+}
+
+
 #sidebar .element, #sidebar .text {
     margin: 0;
 }
 
 #sidebar .ebCont {
-    padding: 0 10px 15px;
+    padding: 0 10px 5px;
 }
 
 #sidebar .ebCont .avatar {
@@ -418,6 +431,9 @@ input[type=range]:focus::-ms-fill-upper {
 #sidebar .toggler.active {
 	font-weight: 700;
 }
+
+
+
 #sidebar .ebCont .avatar img {
 	float: left;
 	margin-right: 10px;
