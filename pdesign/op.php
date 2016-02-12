@@ -1,17 +1,28 @@
 <?php
-
+ini_set('error_reporting', E_ALL & ~E_DEPRECATED & ~E_NOTICE);
 session_start();
 
 /*gopher:'php begin 2'*/
-define('pdesign_username', 'pdesign');
-define('pdesign_password', 'A123456b');
-define('pdesign_hostname', '127.0.0.1');
-define('pdesign_database', 'pdesign');
 
-$dbconn = new mysqli(pdesign_hostname,pdesign_username,pdesign_password,pdesign_database);
-if ($dbconn->connect_errno) {
-  die('Connect Error: ' . $dbconn->connect_errno);
-}
+
+// Show PHP errors (during development only)
+//error_reporting(E_ALL | E_STRICT);
+//ini_set("display_errors", 2);
+
+// Configuration
+$dbhost = 'localhost';
+$dbname = 'pdesign';
+
+// Connect to test database
+$mongo = new MongoClient("mongodb://".$dbhost);
+$mongodb = $mongo->$dbname;
+
+// Get the users collection
+//$c_users = $db->users;
+
+// Insert this new document into the users collection
+//$c_users->save($user);
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 function generateRandomString($length = 10) {
@@ -27,27 +38,33 @@ function generateRandomString($length = 10) {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 function GenerateNewPage()
 {
-   global $dbconn;
+   global $mongodb;
    $FoundUnique = false;
 
    while (!$FoundUnique)
    {
       $code = generateRandomString();
 
-      $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" LIMIT 1';
-      $resultQ = $dbconn->query($checkQ) or die('Error, insert query failed (7)');
+      $c_projects = $mongodb->projects;
+      $project = $c_projects->find( array('code' => $code ) );
+      $project->next();
+      $project = $project->current();
 
-      if (mysqli_num_rows($resultQ)==0) {
-         $newQ = 'INSERT INTO projects (code,version) VALUES ("'. mysqli_real_escape_string($dbconn,$code) .'",1)';
-         $dbconn->query($newQ) or die('Error, insert query failed (8)');
-         if ($dbconn->insert_id > 0) {
-            mkdir(dirname(__FILE__).'/pimages/'.$code);
-            $FoundUnique = true;
+      if ($project==null) {
 
-            $_SESSION["code"] = $code;
-            $_SESSION["version"] = '1';
-            $_SESSION["dbid"] = $dbconn->insert_id;
-         }
+         $newproject = array(
+         	'code' => $code,
+         	'version' => 1
+         );
+
+         $c_projects = $mongodb->projects;
+         $c_projects->save($newproject);
+
+         mkdir(dirname(__FILE__).'/pimages/'.$code);
+         $FoundUnique = true;
+
+         $_SESSION["code"] = $code;
+         $_SESSION["version"] = '1';
       }
    }
    return $code."/1";
@@ -73,17 +90,20 @@ function recurse_copy($src,$dst) {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 function GenerateNewFork()
 {
-   global $dbconn;
+   global $mongodb;
+
    $FoundUnique = false;
 
    while (!$FoundUnique)
    {
       $code = generateRandomString();
 
-      $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" LIMIT 1';
-      $resultQ = $dbconn->query($checkQ) or die('Error, insert query failed (9)');
+      $c_projects = $mongodb->projects;
+      $project = $c_projects->find( array('code' => $code ) );
+      $project->next();
+      $project = $project->current();
 
-      if (mysqli_num_rows($resultQ)==0) {
+      if ($project==null) {
          $temphtml = $_POST["html"];
          $temphtml = str_replace( $_SESSION['code'] , $code, $temphtml);
 
@@ -93,20 +113,27 @@ function GenerateNewFork()
          $tempjs = $_POST["js"];
          $tempjs = str_replace( $_SESSION['code'] , $code, $tempjs);
 
-         $newQ = 'INSERT INTO projects (code,version,forkid,html,css,js) VALUES ("'. mysqli_real_escape_string($dbconn,$code) .'",1,'. $_SESSION['dbid'] .',"'. mysqli_real_escape_string($dbconn,$temphtml) .'","'. mysqli_real_escape_string($dbconn,$tempcss) .'","'. mysqli_real_escape_string($dbconn,$tempjs) .'")';
+         $forkproject = array(
+         	'code' => $code,
+            'originalcode' => $_SESSION['code'],
+            'html' => $temphtml,
+            'css' => $tempcss,
+            'js' => $tempjs,
+         	'version' => 1
+         );
 
-         $dbconn->query($newQ) or die('Error, insert query failed (2)');
-         if ($dbconn->insert_id > 0) {
-            mkdir(dirname(__FILE__).'/pimages/'.$code);
+         $c_projects = $mongodb->projects;
+         $c_projects->save($forkproject);
 
-            recurse_copy(dirname(__FILE__).'/pimages/'.$_SESSION['code'],dirname(__FILE__).'/pimages/'.$code);
 
-            $_SESSION["code"] = $code;
-            $_SESSION["version"] = '1';
-            $_SESSION["dbid"] = $dbconn->insert_id;
+         mkdir(dirname(__FILE__).'/pimages/'.$code);
 
-            $FoundUnique = true;
-         }
+         recurse_copy(dirname(__FILE__).'/pimages/'.$_SESSION['code'],dirname(__FILE__).'/pimages/'.$code);
+
+         $_SESSION["code"] = $code;
+         $_SESSION["version"] = '1';
+
+         $FoundUnique = true;
       }
    }
    return $code."/1";
@@ -118,31 +145,34 @@ function GenerateNewFork()
 if ($_POST["op"]=="update") {
    if (($_POST["html"]!="") || ($_POST["js"]!="") || ($_POST["css"]!="")) {
 
-      $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$_SESSION["code"]) .'" ORDER BY version DESC LIMIT 1';
-      //echo $checkQ;
+      $c_projects = $mongodb->projects;
+      $project = $c_projects->find( array('code' => $_SESSION["code"]) );
+      $project->sort( array( 'version' => -1 ) );
+      $project->limit(1);
+      $project->next();
+      $project = $project->current();
 
-      $resultQ = $dbconn->query($checkQ) or die('Error, insert query failed (3)');
+      if ($project!=null) {
+         $version = $project["version"];
 
-      if (mysqli_num_rows($resultQ)==1) {
+         $updateproject = array(
+         	'code' => $_SESSION["code"],
+            'html' => $_POST["html"],
+            'css' => $_POST["css"],
+            'js' => $_POST["js"],
+         	'version' => ($version+1)
+         );
 
-         $rowQ = $resultQ->fetch_assoc();
-         $version = $rowQ["version"];
+         $c_projects = $mongodb->projects;
+         $c_projects->save($updateproject);
 
-         $newQ = 'INSERT INTO projects (code,version,html,css,js) VALUES ("'. mysqli_real_escape_string($dbconn,$_SESSION["code"]) .'",'. ($version+1) .',"'. mysqli_real_escape_string($dbconn,$_POST["html"]) .'","'. mysqli_real_escape_string($dbconn,$_POST["css"]) .'","'. mysqli_real_escape_string($dbconn,$_POST["js"]) .'")';
+         $_SESSION["version"] = ($version+1);
 
-         //' SET html="'.mysqli_real_escape_string($dbconn,$_POST["html"]).'" WHERE code="'. mysqli_real_escape_string($dbconn,$_POST["code"]) .'"';
-         $dbconn->query($newQ) or die('Error, insert query failed (4)');
-         if ($dbconn->insert_id > 0) {
-            $saved = true;
-            $_SESSION["version"] = ($version+1);
-            $_SESSION["dbid"] = $dbconn->insert_id;
+         $returnDelResult[] = array('success' => (bool) true, 'code' => (string) $_SESSION["code"], 'version' => (int) ($version+1));
+         echo json_encode($returnDelResult);
 
-            $returnDelResult[] = array('success' => (bool) true, 'code' => (string) $_SESSION["code"], 'insertID' => (int) $dbconn->insert_id, 'version' => (int) ($version+1));
-            echo json_encode($returnDelResult);
-         } else {
-            $returnDelResult[] = array('success' => (bool) false);
-            echo json_encode($returnDelResult);
-         }
+//         $returnDelResult[] = array('success' => (bool) false);
+//         echo json_encode($returnDelResult);
       }
    } else {
       $returnDelResult[] = array('success' => (bool) false, 'Message' => 'nothing to update');
@@ -180,20 +210,21 @@ $code = $compactcode[0];
 
 //die();
 if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && ($code!="") && ($compactcode[1]=="")) ) {
-   $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" ORDER BY version DESC LIMIT 1';
-   //echo $checkQ;
-   //die();
+   // find table with code
+   $c_projects = $mongodb->projects;
+   $project = $c_projects->find( array('code' => $code) );
+   $project->sort( array( 'version' => -1 ) );
+   $project->limit(1);
+   $project->next();
+   $project = $project->current();
 
-   $resultQ = $dbconn->query($checkQ) or die('Error, insert query failed (5)');
+//   var_dump($project);
+//   die();
 
-   if (mysqli_num_rows($resultQ)==1) {
-
-      $rowQ = $resultQ->fetch_assoc();
-      $version = $rowQ["version"];
+   if ($project!=null) {
+      $version = $project["version"];
       $_SESSION["code"] = $code;
-      $_SESSION["version"] = $version;
-      $_SESSION["dbid"] = $rowQ["id"];
-
+      $_SESSION["version"] = $project['version'];
       header("Location: /Gopher-v0.2/pdesign/".$code."/".$version);
       die();
    } else {
@@ -203,24 +234,28 @@ if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && (
 } else
 if ( (count($compactcode)==2) && ($code!="") && ($compactcode[1]!="")) {
    $version = $compactcode[1];
-   $checkQ = 'SELECT * FROM projects WHERE code="'. mysqli_real_escape_string($dbconn,$code) .'" AND version="'. mysqli_real_escape_string($dbconn,$version) .'" ORDER BY version DESC LIMIT 1';
-   $resultQ = $dbconn->query($checkQ)  or die('Error, insert query failed (6)');
 
-   if (mysqli_num_rows($resultQ)==0) {
+   // find table with code
+   $c_projects = $mongodb->projects;
+   $project = $c_projects->find( array('code' => (string) $code, 'version' => (int) $version) );
+
+   $project->next();
+   $project = $project->current();
+
+//   var_dump($project);
+//   die();
+
+   if ($project!=null) {
+      $_SESSION["code"] = $code;
+      $_SESSION["version"] = $version;
+
+      $html = $project["html"];
+      $css = $project["css"];
+      $js = $project["js"];
+   } else {
       header("Location: /Gopher-v0.2/pdesign/".GenerateNewPage());
       die();
    }
-   $rowQ = $resultQ->fetch_assoc();
-
-   $_SESSION["code"] = $code;
-   $_SESSION["version"] = $version;
-   $_SESSION["dbid"] = $rowQ["id"];
-
-
-   $html = $rowQ["html"];
-   $css = $rowQ["css"];
-   $js = $rowQ["js"];
-
 } else {
    header("Location: /Gopher-v0.2/pdesign/".GenerateNewPage());
    die();
