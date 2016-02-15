@@ -13,6 +13,11 @@ var ParametersModalCloseWithSave = false;
 
 var GlobalRoot = '/Gopher-v0.2/pdesign/';
 
+var rtime;
+var timeout = false;
+var delta = 200;
+
+
 //------------------------------------------------------------------------------------------------------------------
 function loadCssFile(pathToFile) {
 	var css = jQuery("<link>");
@@ -35,6 +40,7 @@ function injectHTML(html_string) {
 	}
 }
 
+//------------------------------------------------------------------------------------------------------------------
 function findParams(inputText, filetype, paramtype) {
 	var re = new RegExp('#' + paramtype + ':(.+?)(?=##)##(.+?)(?=##)', 'i');
 	var m;
@@ -57,7 +63,8 @@ function findParams(inputText, filetype, paramtype) {
 	return inputText;
 }
 
-function replaceParamsFromDialog(inputText,filetype) {
+//------------------------------------------------------------------------------------------------------------------
+function replaceParamsFromDialog(inputText, filetype) {
 	var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
@@ -65,21 +72,21 @@ function replaceParamsFromDialog(inputText,filetype) {
 		var varname = m[2];
 		var defvalue = m[3];
 
-		var dialogvalue = $("#"+filetype+"-"+varname).val();
-		if ($("#"+filetype+"-"+varname+"-unit").length==0) { /* doesn't have unit*/ } else {
-			dialogvalue += ""+ $("#"+filetype+"-"+varname+"-unit").val();
+		var dialogvalue = $("#" + filetype + "-" + varname).val();
+		if ($("#" + filetype + "-" + varname + "-unit").length == 0) { /* doesn't have unit*/ } else {
+			dialogvalue += "" + $("#" + filetype + "-" + varname + "-unit").val();
 		}
 
-//		console.log(varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
+		//		console.log(varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
 
-		inputText = inputText.substr(0, m.index+1) + inputText.substr(m.index + m[0].length + 2);
+		inputText = inputText.substr(0, m.index + 1) + inputText.substr(m.index + m[0].length + 2);
 		//console.log(inputText);
 		var SemiCol = "";
 		if (m[0].substr([0].length - 1) == ";") {
 			SemiCol = ";";
 		}
 
-		inputText = inputText.substr(0, m.index+1) + dialogvalue + SemiCol + inputText.substr(m.index+1);
+		inputText = inputText.substr(0, m.index + 1) + dialogvalue + SemiCol + inputText.substr(m.index + 1);
 	}
 	return inputText;
 }
@@ -111,16 +118,17 @@ function updateiframe(refreshparams) {
 		newjs = findParams(newjs, 'js', 'number');
 		newjs = findParams(newjs, 'js', 'color');
 	} else {
-		newcss = replaceParamsFromDialog(newcss,'css');
-		newhtml = replaceParamsFromDialog(newhtml,'html');
-		newjs = replaceParamsFromDialog(newjs,'js');
+		newcss = replaceParamsFromDialog(newcss, 'css');
+		newhtml = replaceParamsFromDialog(newhtml, 'html');
+		newjs = replaceParamsFromDialog(newjs, 'js');
 
 	}
 
-	injectHTML('<html><head><script src="'+GlobalRoot+'js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
+	injectHTML('<html><head><script src="' + GlobalRoot + 'js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 }
 
-function replaceSourceFromDialog(inputText,filetype) {
+//------------------------------------------------------------------------------------------------------------------
+function replaceSourceFromDialog(inputText, filetype) {
 	var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
 	var m;
 	var inputTextTemp = inputText;
@@ -130,26 +138,29 @@ function replaceSourceFromDialog(inputText,filetype) {
 		var varname = m[2];
 		var defvalue = m[3];
 
-		var dialogvalue = $("#"+filetype+"-"+varname).val();
-		if ($("#"+filetype+"-"+varname+"-unit").length==0) { /* doesn't have unit*/ } else {
-			dialogvalue += ""+ $("#"+filetype+"-"+varname+"-unit").val();
+		var dialogvalue = $("#" + filetype + "-" + varname).val();
+		if ($("#" + filetype + "-" + varname + "-unit").length == 0) { /* doesn't have unit*/ } else {
+			dialogvalue += "" + $("#" + filetype + "-" + varname + "-unit").val();
 		}
 
 		//console.log('#'+m[1]+':'+m[2]+'##'+m[3]+'##     '+dialogvalue);// varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
 
-		ReplaceList.push({"old":'#'+m[1]+':'+m[2]+'##'+m[3]+'##', "new":'#'+m[1]+':'+m[2]+'##'+dialogvalue+'##'});
+		ReplaceList.push({
+			"old": '#' + m[1] + ':' + m[2] + '##' + m[3] + '##',
+			"new": '#' + m[1] + ':' + m[2] + '##' + dialogvalue + '##'
+		});
 
-		inputTextTemp = inputTextTemp.substr(0, m.index+1) + inputTextTemp.substr(m.index + m[0].length + 2);
+		inputTextTemp = inputTextTemp.substr(0, m.index + 1) + inputTextTemp.substr(m.index + m[0].length + 2);
 		var SemiCol = "";
 		if (m[0].substr([0].length - 1) == ";") {
 			SemiCol = ";";
 		}
 
-		inputTextTemp = inputTextTemp.substr(0, m.index+1) + dialogvalue + SemiCol + inputTextTemp.substr(m.index+1);
+		inputTextTemp = inputTextTemp.substr(0, m.index + 1) + dialogvalue + SemiCol + inputTextTemp.substr(m.index + 1);
 	}
 
-	for (var i=0; i<ReplaceList.length; i++) {
-		inputText = inputText.replace(ReplaceList[i].old,ReplaceList[i].new);
+	for (var i = 0; i < ReplaceList.length; i++) {
+		inputText = inputText.replace(ReplaceList[i].old, ReplaceList[i].new);
 	}
 	console.log(ReplaceList);
 	return inputText;
@@ -167,9 +178,9 @@ function updatesource() {
 	var newhtml = html;
 	var newjs = js;
 
-	newcss = replaceSourceFromDialog(newcss,'css');
-	newhtml = replaceSourceFromDialog(newhtml,'html');
-	newjs = replaceSourceFromDialog(newjs,'js');
+	newcss = replaceSourceFromDialog(newcss, 'css');
+	newhtml = replaceSourceFromDialog(newhtml, 'html');
+	newjs = replaceSourceFromDialog(newjs, 'js');
 
 	JSeditor.setValue(newjs);
 	CSSeditor.setValue(newcss);
@@ -191,15 +202,27 @@ function updatesource() {
 
 
 
-//	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
+	//	injectHTML('<html><head><script src="js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 }
 
 
-function updateserver()
-{
+//------------------------------------------------------------------------------------------------------------------
+function updateserver() {
 	var js = JSeditor.getValue();
 	var css = CSSeditor.getValue();
 	var html = HTMLeditor.getValue();
+
+	var ProjectInfo = {};
+
+	if ($("#projecttitle").text() != "") {
+		ProjectInfo.title = $("#projecttitle").text();
+		ProjectInfo.description = $("#projectdescription").text();
+		ProjectInfo.title = $("#projectpicture").attr('src');
+		ProjectInfo.publish = ($("#ans").is(':checked')) ? 1 : 0;
+	}
+
+	console.log(ProjectInfo);
+
 
 	if (requestTimer) window.clearTimeout(requestTimer); //see if there is a timeout that is active, if there is remove it.
 	if (xhr) xhr.abort(); //kill active Ajax request
@@ -208,18 +231,19 @@ function updateserver()
 			"op": "update",
 			"js": js,
 			"css": css,
-			"html": html
+			"html": html,
+			"project": ProjectInfo
 		};
 
 		xhr = $.ajax({
 			type: 'POST',
-			url: GlobalRoot+"op.php",
+			url: GlobalRoot + "op.php",
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
 				if (resultData[0].success) {
 					console.log(resultData[0].version);
-					history.pushState(null, null,GlobalRoot+''+resultData[0].code+'/'+resultData[0].version );
+					history.pushState(null, null, GlobalRoot + '' + resultData[0].code + '/' + resultData[0].version);
 				}
 
 				//
@@ -233,8 +257,8 @@ function updateserver()
 }
 
 
-function forkproject()
-{
+//------------------------------------------------------------------------------------------------------------------
+function forkproject() {
 	var js = JSeditor.getValue();
 	var css = CSSeditor.getValue();
 	var html = HTMLeditor.getValue();
@@ -251,13 +275,13 @@ function forkproject()
 
 		xhr = $.ajax({
 			type: 'POST',
-			url: GlobalRoot+"op.php",
+			url: GlobalRoot + "op.php",
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
 				console.log(resultData);
 				if (resultData[0].success) {
-					window.location.href = GlobalRoot+''+resultData[0].forkpath;
+					window.location.href = GlobalRoot + '' + resultData[0].forkpath;
 				}
 			},
 			error: function(xhr, status, error) {
@@ -268,28 +292,34 @@ function forkproject()
 }
 
 
-function updateparamdialog()
-{
+//------------------------------------------------------------------------------------------------------------------
+function updateparamdialog() {
 
 	$("#ParametersList").html("<div class='propheaderrow'><div class='propheadercell'>File</div><div class='propheadercell'>Name</div><div class='propheadercell'>Value</div></div>");
 
 	for (var i = 0, l = paramArray.length; i < l; i++) {
-		$("#ParametersList").append("<div class='proprow' id='row_"+ i +"'></div>");
+		$("#ParametersList").append("<div class='proprow' id='row_" + i + "'></div>");
 
 		if (paramArray[i].type == "slider") {
-			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
 		} else
 		if (paramArray[i].type == "number") {
 			var tempStr = paramArray[i].defaultvalue;
 			var tempUnit = '';
 
-			if (tempStr.indexOf('px')!=-1) { tempUnit = 'px'; }
-			if (tempStr.indexOf('pt')!=-1) { tempUnit = 'pt'; }
-			if (tempStr.indexOf('%')!=-1) { tempUnit = '%'; }
+			if (tempStr.indexOf('px') != -1) {
+				tempUnit = 'px';
+			}
+			if (tempStr.indexOf('pt') != -1) {
+				tempUnit = 'pt';
+			}
+			if (tempStr.indexOf('%') != -1) {
+				tempUnit = '%';
+			}
 
 
-			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='hidden' id='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' value='"+tempUnit+"' ><div class='input-group' style='width:200px;'>\
-            <input type='text' class='form-control rangeselector' id='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"' value='" + paramArray[i].defaultvalue +
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='hidden' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' value='" + tempUnit + "' ><div class='input-group' style='width:200px;'>\
+            <input type='text' class='form-control rangeselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue +
 				"'>\
             <div class='input-group-btn'>\
                 <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>\
@@ -297,46 +327,51 @@ function updateparamdialog()
                     <span class='sr-only'>Toggle Dropdown</span>\
                 </button>\
                 <ul class='dropdown-menu pull-right' role='menu'>\
-                    <li><a href='#' data-numberstype='px' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>px</a></li>\
-                    <li><a href='#' data-numberstype='%' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>%</a></li>\
-                    <li><a href='#' data-numberstype='pt' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>pt</a></li>\
-						  <li><a href='#' data-numberstype='none' data-controllerid='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"-unit' data-parentrowid='row_"+ i +"' class='numberstylemenu'>none</a></li>\
+                    <li><a href='#' data-numberstype='px' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>px</a></li>\
+                    <li><a href='#' data-numberstype='%' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>%</a></li>\
+                    <li><a href='#' data-numberstype='pt' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i +
+				"' class='numberstylemenu'>pt</a></li>\
+						  <li><a href='#' data-numberstype='none' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>none</a></li>\
                 </ul>\
             </div>\
-        </div>");
+        </div>"); //'"
 		} else
 		if (paramArray[i].type == "color") {
-			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' id='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"' value='" + paramArray[i].defaultvalue + "' ></div>");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else
 		if (paramArray[i].type == "text") {
-			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' id='"+ paramArray[i].filetype +"-"+ paramArray[i].varname +"' value='" + paramArray[i].defaultvalue + "' ></div>");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else {
-			$("#row_"+i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
 		}
 	}
 
 	$(".textselector").css("width", "200px");
-	$(".textselector").on('keyup',function() {		updateiframe(false);	});
+	$(".textselector").on('keyup', function() {
+		updateiframe(false);
+	});
 
 	$(".colorselector").ColorPickerSliders({
 		placement: 'right',
 		hsvpanel: true,
 		previewformat: 'hex',
-      onchange: function(container, color) {
+		onchange: function(container, color) {
 			updateiframe(false); //color.tiny.toRgbString()
-   	}
+		}
 	});
 
 	$(".rangeselector").TouchSpin({
 		min: 0,
 		max: 100,
 		step: 1,
-		postfix : 'px',
+		postfix: 'px',
 		decimals: 1,
 		boostat: 5,
 		maxboostedstep: 10,
 		forcestepdivisibility: 'none',
-	}).on('change',function() {		updateiframe(false);	});
+	}).on('change', function() {
+		updateiframe(false);
+	});
 
 	$('.numberstylemenu').on('click', function(e) {
 
@@ -344,12 +379,12 @@ function updateparamdialog()
 		//console.log($(this).data('controllerid'));
 
 
-		if ($(this).data('numberstype')=="none") {
-			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html( '' );
-			$("#" + $(this).data('controllerid') ).val('');
+		if ($(this).data('numberstype') == "none") {
+			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html('');
+			$("#" + $(this).data('controllerid')).val('');
 		} else {
-			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html( $(this).data('numberstype') );
-			$("#" + $(this).data('controllerid') ).val($(this).data('numberstype'));
+			$("#" + $(this).data('parentrowid') + " .bootstrap-touchspin-postfix").html($(this).data('numberstype'));
+			$("#" + $(this).data('controllerid')).val($(this).data('numberstype'));
 		}
 		updateiframe(false);
 		e.preventDefault();
@@ -386,39 +421,46 @@ function completeIfInTag(cm) {
 	});
 }
 
+//------------------------------------------------------------------------------
+function resizeend() {
+	if (new Date() - rtime < delta) {
+		setTimeout(resizeend, delta);
+	} else {
+		timeout = false;
+		$("#editorsdiv").css({
+			height: ($(window).height() - 52) + 'px'
+		});
+	}
+}
+
+//------------------------------------------------------------------------------
+$(window).resize(function() {
+	rtime = new Date();
+	if (timeout === false) {
+		timeout = true;
+		setTimeout(resizeend, delta);
+	}
+});
+
 //------------------------------------------------------------------------------------------------------------------
 $(document).ready(function() {
-	var rtime;
-	var timeout = false;
-	var delta = 200;
-
-
-	//------------------------------------------------------------------------------
-	$(window).resize(function() {
-		rtime = new Date();
-		if (timeout === false) {
-			timeout = true;
-			setTimeout(resizeend, delta);
-		}
-	});
-
-	//------------------------------------------------------------------------------
-	function resizeend() {
-		if (new Date() - rtime < delta) {
-			setTimeout(resizeend, delta);
-		} else {
-			timeout = false;
-			$("#editorsdiv").css({
-				height: ($(window).height() - 52) + 'px'
-			});
-		}
-	}
-
 
 	//------------------------------------------------------------------------------
 	$("#editorsdiv").css({
 		height: ($(window).height() - 52) + 'px'
 	});
+
+	//------------------------------------------------------------------------------
+	$("#htmleditor_div_hint").show();
+	$("#csseditor_div_hint").show();
+	$("#jseditor_div_hint").show();
+
+
+	//------------------------------------------------------------------------------
+	iframe = document.getElementById('iframesource');
+	iframedoc = iframe.document;
+	if (iframe.contentDocument) iframedoc = iframe.contentDocument;
+	else if (iframe.contentWindow) iframedoc = iframe.contentWindow.document;
 
 
 	//------------------------------------------------------------------------------
@@ -442,71 +484,183 @@ $(document).ready(function() {
 		cursor: 'row-resize'
 	})
 
+	//------------------------------------------------------------------------------
+	//toggle `popup` / `inline` mode
+	$.fn.editable.defaults.mode = 'popup';
+
+	//make username editable
+	$('#projecttitle').editable({
+		container: 'body',
+		title : 'Project Title',
+		placeholder : 'Project title',
+		params : function(params) {
+			params.op = 'updateprojectinfo';
+			return params
+		},
+		url: GlobalRoot + 'op.php',
+		pk :1,
+		type:'text'
+
+	});
+
+	$('#projectdescription').editable({
+		container: 'body',
+		title : 'Project description',
+		placeholder : 'Project description',
+		params : function(params) {
+			params.op = 'updateprojectinfo';
+			return params
+		},
+		url: GlobalRoot + 'op.php',
+		pk :1,
+		type : 'textarea',
+		rows : 5,
+
+	});
+
+	//make status editable
+	$('#status').editable({
+		container: 'body',
+		type: 'select',
+		title: 'Select status',
+		placement: 'right',
+		value: 1,
+		source: [{
+				value: 1,
+				text: 'draft'
+			}, {
+				value: 2,
+				text: 'offline'
+			}, {
+				value: 3,
+				text: 'online'
+			}]
+			/*
+			//uncomment these lines to send data on server
+			,pk: 1
+			,url: '/post'
+			*/
+	});
+
 
 	//------------------------------------------------------------------------------
 	$("#NewProject").on('click', function() {
 		window.location.href = GlobalRoot;
 	});
 
+	//------------------------------------------------------------------------------
 	$("#ForkButton").on('click', function() {
 		forkproject();
 	});
 
 	//------------------------------------------------------------------------------
-	$("#ProjectButton").on('click', function() {
-		$("#ProjectModal").modal({
-			show: true
-		});
-	});
+	$("#save-projectdetails").on('click', function() {
 
-	$('#ProjectModal').on('shown.bs.modal', function(e) {
-		$('.modal-backdrop.in').css({
-			'opacity': '0.1'
-		});
-	});
+		if ($("#ProjectTitleInput").val() != '') {
+			$("#projecttitle").html($("#ProjectTitleInput").val());
+		} else {
+			$("#projecttitle").html('no title');
+		}
 
-	$("#save-projectdetails").on('click',function() {
+		if ($("#ProjectDescriptionInput").val() != '') {
+			$("#projectdescription").html($("#ProjectDescriptionInput").val());
+		} else {
+			$("#projectdescription").html('no description');
+		}
 
-		if ($("#ProjectTitleInput").val()!='') { $("#projecttitle").html( $("#ProjectTitleInput").val() ); } else { $("#projecttitle").html('no title'); }
+		if ($("#ProjectImageInput").val() != '') {
+			$("#projectpicture").attr('src', $("#ProjectImageInput").val());
+		}
 
-		if ($("#ProjectDescriptionInput").val()!='') { $("#projectdescription").html( $("#ProjectDescriptionInput").val() ); } else { $("#projectdescription").html('no description'); }
-
-		if ($("#ProjectImageInput").val()!='') { $("#projectpicture").attr('src', $("#ProjectImageInput").val() ); }
-
+		updateserver();
 		//$("#ProjectTitleInput").val()
 
 
 		$("#ProjectModal").modal('hide');
 	});
 
-    $('#ProjectImageUpload').fileupload({
-		 maxNumberOfFiles:1,
-		  acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
-		  disableImageResize : true,
-        url: GlobalRoot+'phpupload/',
-        dataType: 'json',
-		  start: function(e) {
-			 $("#progress").show();
-		  },
-        done: function (e, data) {
-			  console.log(data.result.files[0]);
-			  $("#projectimagepreview").attr('src',data.result.files[0].thumbnailUrl);
-			  $("#ProjectImageInput").val(data.result.files[0].thumbnailUrl);
-			  /*
-            $.each(data.result.files, function (index, file) {
-                $('<p/>').text(file.name).appendTo('#files');
-            });
-				*/
-        },
-        progressall: function (e, data) {
-            var progress = parseInt(data.loaded / data.total * 100, 10);
-            $('#progress .progress-bar').css(
-                'width',
-                progress + '%'
-            );
-        }
-    }).prop('disabled', !$.support.fileInput)
-        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+	//------------------------------------------------------------------------------
+	$('#projectpicturediv').on('click', function() {
+		$('#ProjectImageUpload').click();
+	});
+
+
+	$('#ProjectImageUpload').fileupload({
+			maxNumberOfFiles: 1,
+			acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
+			disableImageResize: true,
+			url: GlobalRoot + 'phpupload/',
+			dataType: 'json',
+			start: function(e) {
+				$("#progress").show();
+			},
+			done: function(e, data) {
+				//console.log(data.result.files[0]);
+
+				setTimeout(function() {
+					$("#progress").fadeOut();
+
+					var oldImg = $("#fade1");
+
+					var img = new Image();
+					img.src = data.result.files[0].thumbnailUrl;
+
+					var newImg = $(img).hide();
+
+					var loaded = false,
+						wait;
+
+					img.addEventListener('load', function() {
+						loaded = true;
+					}, true);
+
+					wait = setInterval(function() {
+						if (loaded) {
+							clearInterval(wait);
+							var newimg_width = img.width;
+							var newimg_height = img.height;
+							if (newimg_width > 160) {
+								newimg_width = 160;
+							}
+							if (newimg_height > 160) {
+								newimg_height = 160;
+							}
+
+							//console.log(img.width+ 'x' + img.height);
+
+							$("#fadeContainer").append(img);
+
+							newImg.css({
+								'top': 80 - (img.height / 2) + 'px',
+								'left': 80 - (img.width / 2) + 'px'
+							});
+
+
+							oldImg.stop(true).fadeOut(500, function() {
+								$(this).remove();
+								newImg.attr('id', 'fade1');
+								$(".progress-bar").css({
+									'width': '0%'
+								});
+								console.log(newImg.height());
+							});
+							newImg.fadeIn(500);
+						}
+					}, 0);
+				}, 500);
+
+				/*
+         $.each(data.result.files, function (index, file) {
+             $('<p/>').text(file.name).appendTo('#files');
+         });
+			*/
+			},
+			progressall: function(e, data) {
+				var progress = parseInt(data.loaded / data.total * 100, 10);
+				$('#progress .progress-bar').css('width', progress + '%');
+			}
+		}).prop('disabled', !$.support.fileInput)
+		.parent().addClass($.support.fileInput ? undefined : 'disabled');
 
 
 
@@ -516,15 +670,15 @@ $(document).ready(function() {
 	});
 
 	//------------------------------------------------------------------------------
-	$("#ParametersModal").draggable({
-		handle: ".modal-header"
-	});
-
 	$("#ParametersButton").on('click', function() {
 		updateparamdialog();
 		$("#ParametersModal").modal({
 			show: true
 		});
+	});
+
+	$("#ParametersModal").draggable({
+		handle: ".modal-header"
 	});
 
 	$('#ParametersModal').on('shown.bs.modal', function(e) {
@@ -533,14 +687,14 @@ $(document).ready(function() {
 		});
 	});
 
-	$('#ParametersModal').on('hidden.bs.modal', function () {
+	$('#ParametersModal').on('hidden.bs.modal', function() {
 		if (!ParametersModalCloseWithSave) {
 			updateiframe(true);
 		}
 		ParametersModalCloseWithSave = false;
 	})
 
-	$("#save-parameters").on('click',function() {
+	$("#save-parameters").on('click', function() {
 		ParametersModalCloseWithSave = true;
 		updatesource();
 		$("#ParametersModal").modal('hide');
@@ -575,13 +729,13 @@ $(document).ready(function() {
 		var tempcounter = -1;
 		while ((m = re.exec(tempHTML)) !== null) {
 			tempcounter++;
-			templist.push(tempHTML.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
-			tempHTML = tempHTML.substr(0, m.index+1) + '(('+tempcounter+'))' + tempHTML.substr(m.index + m[0].length + 2);
+			templist.push(tempHTML.substr(m.index + 1, m[0].length + 1)); //  m[0]+'##');
+			tempHTML = tempHTML.substr(0, m.index + 1) + '((' + tempcounter + '))' + tempHTML.substr(m.index + m[0].length + 2);
 		}
 		var output = html_beautify(tempHTML, opts);
 
-		for (var i=0; i<templist.length; i++) {
-			output = output.replace('(('+i+'))',templist[i]);
+		for (var i = 0; i < templist.length; i++) {
+			output = output.replace('((' + i + '))', templist[i]);
 		}
 
 		HTMLeditor.setValue(output);
@@ -595,13 +749,13 @@ $(document).ready(function() {
 		var tempcounter = -1;
 		while ((m = re.exec(tempCSS)) !== null) {
 			tempcounter++;
-			templist.push(tempCSS.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
-			tempCSS = tempCSS.substr(0, m.index+1) + '(('+tempcounter+'))' + tempCSS.substr(m.index + m[0].length + 2);
+			templist.push(tempCSS.substr(m.index + 1, m[0].length + 1)); //  m[0]+'##');
+			tempCSS = tempCSS.substr(0, m.index + 1) + '((' + tempcounter + '))' + tempCSS.substr(m.index + m[0].length + 2);
 		}
 		var output = css_beautify(tempCSS, opts);
 
-		for (var i=0; i<templist.length; i++) {
-			output = output.replace('(('+i+'))',templist[i]);
+		for (var i = 0; i < templist.length; i++) {
+			output = output.replace('((' + i + '))', templist[i]);
 		}
 
 		CSSeditor.setValue(output);
@@ -615,30 +769,17 @@ $(document).ready(function() {
 		var tempcounter = -1;
 		while ((m = re.exec(tempJS)) !== null) {
 			tempcounter++;
-			templist.push(tempJS.substr(m.index+1, m[0].length+1 ));//  m[0]+'##');
-			tempJS = tempJS.substr(0, m.index+1) + '(('+tempcounter+'))' + tempJS.substr(m.index + m[0].length + 2);
+			templist.push(tempJS.substr(m.index + 1, m[0].length + 1)); //  m[0]+'##');
+			tempJS = tempJS.substr(0, m.index + 1) + '((' + tempcounter + '))' + tempJS.substr(m.index + m[0].length + 2);
 		}
 		var output = js_beautify(tempJS, opts);
 
-		for (var i=0; i<templist.length; i++) {
-			output = output.replace('(('+i+'))',templist[i]);
+		for (var i = 0; i < templist.length; i++) {
+			output = output.replace('((' + i + '))', templist[i]);
 		}
 
 		JSeditor.setValue(output);
 	});
-
-
-	//------------------------------------------------------------------------------
-	$("#htmleditor_div_hint").show();
-	$("#csseditor_div_hint").show();
-	$("#jseditor_div_hint").show();
-
-
-	//------------------------------------------------------------------------------
-	iframe = document.getElementById('iframesource');
-	iframedoc = iframe.document;
-	if (iframe.contentDocument) iframedoc = iframe.contentDocument;
-	else if (iframe.contentWindow) iframedoc = iframe.contentWindow.document;
 
 
 	//------------------------------------------------------------------------------

@@ -139,6 +139,34 @@ function GenerateNewFork()
    return $code."/1";
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------
+//update editor content
+if ($_POST["op"]=="updateprojectinfo") {
+
+   $returnDelResult[] = array('success' => (bool) false, 'Message' => 'nothing to update');
+   $c_projects = $mongodb->projects;
+
+   if ($_POST['name']=='projecttitle') {
+      $newdata = array('project' => array('title' => (string) $_POST['value'], 'updated_at' => new MongoDate() ));
+
+      $c_projects->update(array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
+                          array('$set' => $newdata) );
+   }
+
+   if ($_POST['name']=='projectdescription') {
+      $newdata = array('project' => array('description' => (string) $_POST['value'], 'updated_at' => new MongoDate() ));
+
+      $c_projects->update(array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
+                          array('$set' => $newdata) );
+   }
+
+   $c_projects->update(array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
+                       array('$set' => array('js' => '123')) );
+
+   echo json_encode($returnDelResult);
+   die();
+} else
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 //update editor content
@@ -160,6 +188,7 @@ if ($_POST["op"]=="update") {
             'html' => $_POST["html"],
             'css' => $_POST["css"],
             'js' => $_POST["js"],
+            'project' => $_POST["project"],
          	'version' => ($version+1)
          );
 

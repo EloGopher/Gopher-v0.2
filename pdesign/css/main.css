@@ -462,3 +462,16 @@ h1, h2, h3, h4, h5, h6 {
 	font-size: 100%;
 	font-weight: 400;
 }
+
+#fadeContainer {
+
+	 border:1px solid #ccc;
+	 cursor:pointer;
+	 width: 162px;
+	 height: 162px;
+	 position: relative;
+}
+
+#fadeContainer img {
+    position: absolute;
+}

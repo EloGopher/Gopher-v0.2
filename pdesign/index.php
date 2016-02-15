@@ -50,6 +50,8 @@
 
 		<link href="../css/jquery-ui.min.css" rel="stylesheet">
 		<link href="../css/bootstrap.min.css" rel="stylesheet">
+		<link href="../css/bootstrap-editable.css" rel="stylesheet">
+
 		<link href="../css/main.css" rel="stylesheet">
 
 		<link href="../css/jquery.fileupload.css" rel="stylesheet">
@@ -64,6 +66,7 @@
 		<script src="../js/tinycolor.min.js"></script>
 	   <script src="../js/bootstrap.colorpickersliders.js"></script>
 		<script src="../js/jquery.bootstrap-touchspin.js"></script>
+		<script src="../js/bootstrap-editable.js"></script>
 
 		<script src="../js/vendor/jquery.ui.widget.js"></script>
 		<script src="../js/jquery.iframe-transport.js"></script>
@@ -118,8 +121,8 @@
 				</div>
 		</div>
 
-		<div id="sidebar">
-			<div id="author_toggler" class="toggler active">Parametric Design Author</div>
+		<div id="sidebar" >
+			<div id="author_toggler" class="toggler active">Design Author</div>
 
 			<div class="element">
 		    <div class="elementBody" style="padding-top: 0px; border-top-style: none; padding-bottom: 0px; border-bottom-style: none; overflow: hidden; opacity: 1; height: auto;">
@@ -137,21 +140,37 @@
 
 				<div class="ebCont">
 
-					<button class="btn btn-default" data-toggle="modal" id="ProjectButton">Project Info</button>
+					<div class="projectinfo active" style='margin-top:10px; ' >
+		      		<a href="#" id="projecttitle" data-type="text" data-placement="right" data-title="Enter title">Project title</a>
+					</div>
 
-					<div id="projecttitle" class="projectinfo active" style='margin-top:10px;'>Project title</div>
+					<div class="projectinfo" style='margin-top:5px;' >
+						<a href="#" id="projectdescription" data-type="textarea" data-placement="right" data-title="Enter title">Project description</a>
+					</div>
 
-					<div id="projectdescription" class="projectinfo " style='margin-top:5px;'>Project description</div>
+					<div class="projectinfo " style='margin-top:5px;'>
+					  <span>Status:</span>
+					  <a href="#" id="status"></a>
+					</div>
 
-					<div id="projectpicturediv" class="projectinfo " style='margin-top:10px;'><img src='../placeholder.jpg' id='projectpicture' style='width:160px; border:1px solid black;'></div>
 
+					<input id="ProjectImageUpload" type="file" name="files[]" style="display: none;">
+					<div id="projectpicturediv" style='margin-top:10px; width:160px; margin-left:10px; cursor:pointer'>
+						<div id="fadeContainer">
+							<img src='../placeholder.jpg' id='fade1' style='width:160px;'>
+						</div>
+					</div>
 
-				<br>
+					<div style='margin-top:10px; width:160px; margin-left:10px;'>
+						<!-- The global progress bar -->
+						<div id="progress" class="progress" style="display:none; margin-top:10px; margin-bottom:10px;">
+							<div class="progress-bar progress-bar-success"></div>
+						</div>
+						<!-- div id="files" class="files"></div -->
+					</div>
 				</div>
 
-		    </div> <!-- /elementBody -->
-
-
+		   	</div> <!-- /elementBody -->
 		  </div>
 
 		</div>
@@ -198,74 +217,6 @@
 		</div>
 		<!-- /.modal -->
 
-		<div id="ProjectModal" class="modal">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title">Project</h4>
-
-					</div>
-					<div class="modal-body" id="ProjectDiv">
-						<form class="form-horizontal">
-							<input type="hidden" name="ProjectImageInput" id="ProjectImageInput" value=''>
-						  <div class="form-group">
-						    <label for="ProjectTitleInput" class="col-sm-2 control-label">Title</label>
-						    <div class="col-sm-10">
-						      <input type="text" class="form-control" id="ProjectTitleInput" placeholder="Title">
-						    </div>
-						  </div>
-						  <div class="form-group">
-						    <label for="ProjectDescriptionInput" class="col-sm-2 control-label">Description</label>
-						    <div class="col-sm-10">
-								<textarea id="ProjectDescriptionInput" name="ProjectDescriptionInput" class="form-control" rows="5"></textarea>
-						    </div>
-						  </div>
-
-						  <div class="form-group">
-							<div class="col-sm-2 control-label"></div>
-						   <div class="col-sm-10">
-						  <span class="btn btn-success fileinput-button">
-						          <i class="glyphicon glyphicon-plus"></i>
-						          <span>Select Project Image</span>
-						          <!-- The file input field used as target for the file upload widget -->
-						          <input id="ProjectImageUpload" type="file" name="files[]">
-						      </span>
-						      <!-- The global progress bar -->
-						      <div id="progress" class="progress" style="display:none; margin-top:10px; margin-bottom:10px;">
-						          <div class="progress-bar progress-bar-success"></div>
-						      </div>
-						      <!-- The container for the uploaded files -->
-								<img src='' id='projectimagepreview'>
-						      <!-- div id="files" class="files"></div -->
-						      <br>
-
-						  </div>
-						  </div>
-
-						  <div class="form-group">
-							 <div class="col-sm-2 control-label"></div>
-						    <div class="col-sm-10">
-						      <div class="checkbox">
-						        <label>
-						          <input type="checkbox" id="ProjectPublishInput"> Publish this version
-						        </label>
-						      </div>
-						    </div>
-						  </div>
-
-						</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						<button type="button" id="save-projectdetails" class="btn btn-primary">Save changes</button>
-					</div>
-					</form>
-				</div>
-				<!-- /.modal-content -->
-			</div>
-			<!-- /.modal-dialog -->
-		</div>
-		<!-- /.modal -->
 
 	</body>
 
