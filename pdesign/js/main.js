@@ -212,18 +212,6 @@ function updateserver() {
 	var css = CSSeditor.getValue();
 	var html = HTMLeditor.getValue();
 
-	var ProjectInfo = {};
-
-	if ($("#projecttitle").text() != "") {
-		ProjectInfo.title = $("#projecttitle").text();
-		ProjectInfo.description = $("#projectdescription").text();
-		ProjectInfo.title = $("#projectpicture").attr('src');
-		ProjectInfo.publish = ($("#ans").is(':checked')) ? 1 : 0;
-	}
-
-	console.log(ProjectInfo);
-
-
 	if (requestTimer) window.clearTimeout(requestTimer); //see if there is a timeout that is active, if there is remove it.
 	if (xhr) xhr.abort(); //kill active Ajax request
 	requestTimer = setTimeout(function() {
@@ -231,8 +219,7 @@ function updateserver() {
 			"op": "update",
 			"js": js,
 			"css": css,
-			"html": html,
-			"project": ProjectInfo
+			"html": html
 		};
 
 		xhr = $.ajax({

@@ -204,12 +204,18 @@ if ($_POST["op"]=="update") {
       if ($project!=null) {
          $version = $project["version"];
 
+         $origproject = $c_projects->find( array('code' => (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]) );
+         $origproject->limit(1);
+         $origproject->next();
+         $origproject = $origproject->current();
+
+
          $updateproject = array(
          	'code' => $_SESSION["code"],
             'html' => $_POST["html"],
             'css' => $_POST["css"],
             'js' => $_POST["js"],
-            'project' => $_POST["project"],
+            'project' => $origproject["project"],
          	'version' => ($version+1)
          );
 
@@ -312,15 +318,17 @@ if ( (count($compactcode)==2) && ($code!="") && ($compactcode[1]!="")) {
       $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
       if ($ProjectImage=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
 
-      list($imagewidth, $imageheight) = getimagesize($ProjectRealImage);
+      $imagewidth=80;
+      $imageheight=80;
+      if (file_exists($ProjectRealImage)) {
+         list($imagewidth, $imageheight) = getimagesize($ProjectRealImage);
+      }
+
       if ($project["project"]["browsers"]==null) {
          $ProjectBrowsers = '';
       } else {
          $ProjectBrowsers = implode (",", $project["project"]["browsers"] );
       }
-
-
-
 
       $html = $project["html"];
       $css = $project["css"];
