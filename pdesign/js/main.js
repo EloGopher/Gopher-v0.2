@@ -488,11 +488,19 @@ $(document).ready(function() {
 	//toggle `popup` / `inline` mode
 	$.fn.editable.defaults.mode = 'popup';
 
-	//make username editable
+	//make title editable
 	$('#projecttitle').editable({
 		container: 'body',
 		title : 'Project Title',
 		placeholder : 'Project title',
+		value: function() {
+			if ($('#projecttitle').text() == 'Project Title') {
+				return ''
+			} else {
+				return $('#projecttitle').text()
+			}
+		},
+
 		params : function(params) {
 			params.op = 'updateprojectinfo';
 			return params
@@ -503,10 +511,19 @@ $(document).ready(function() {
 
 	});
 
+	//make description editable
 	$('#projectdescription').editable({
 		container: 'body',
-		title : 'Project description',
-		placeholder : 'Project description',
+		title : 'Project Description',
+		placeholder : 'Project Description',
+		value: function() {
+			if ($('#projectdescription').text() == 'Project Description') {
+				return ''
+			} else {
+				return $('#projectdescription').text()
+			}
+		},
+
 		params : function(params) {
 			params.op = 'updateprojectinfo';
 			return params
@@ -515,33 +532,74 @@ $(document).ready(function() {
 		pk :1,
 		type : 'textarea',
 		rows : 5,
-
 	});
 
 	//make status editable
-	$('#status').editable({
+	$('#projectstatus').editable({
 		container: 'body',
-		type: 'select',
 		title: 'Select status',
+		params : function(params) {
+			params.op = 'updateprojectinfo';
+			return params
+		},
+
 		placement: 'right',
-		value: 1,
+		value: function() {
+			return $('#projectstatus').text()
+		},
 		source: [{
-				value: 1,
+				value: 'draft',
 				text: 'draft'
 			}, {
-				value: 2,
+				value: 'offline',
 				text: 'offline'
 			}, {
-				value: 3,
+				value: 'online',
 				text: 'online'
-			}]
-			/*
-			//uncomment these lines to send data on server
-			,pk: 1
-			,url: '/post'
-			*/
+			}],
+			url: GlobalRoot + 'op.php',
+			type: 'select',
+			pk :1
 	});
 
+
+	//browsers
+	$('#projectbrowsers').editable({
+		container: 'body',
+		title: 'Select Browsers',
+		params : function(params) {
+			params.op = 'updateprojectinfo';
+			return params
+		},
+		display: function(value, sourceData) {
+		   //display checklist as comma-separated values
+		   var html = [],
+		      checked = $.fn.editableutils.itemsByValue(value, sourceData);
+
+		   if(checked.length) {
+		      $.each(checked, function(i, v) { html.push($.fn.editableutils.escape(v.text)); });
+		      $(this).html(html.join(', '));
+		   } else {
+		      $(this).empty();
+		   }
+		},
+		placement: 'right',
+      /*value: ['chrome', 'firefox'],*/
+      source: [
+            	{value: 'chrome', text: 'chrome'},
+					{value: 'firefox', text: 'firefox'},
+					{value: 'safari', text: 'safari'},
+					{value: 'MSIE9', text: 'MSIE9'},
+					{value: 'MSIE10', text: 'MSIE10'},
+					{value: 'MSIE11', text: 'MSIE11'},
+					{value: 'MS Edge', text: 'MS Edge'},
+					{value: 'ios safari', text: 'ios safari'},
+					{value: 'android', text: 'android'}
+         	],
+		type: 'checklist',
+		url: GlobalRoot + 'op.php',
+		pk: 1
+	});
 
 	//------------------------------------------------------------------------------
 	$("#NewProject").on('click', function() {
@@ -605,10 +663,31 @@ $(document).ready(function() {
 					var img = new Image();
 					img.src = data.result.files[0].thumbnailUrl;
 
+					// Update Image on path on server
+					var PostValues = {
+						"op": "updateprojectinfo",
+						"name": "projectimage",
+						"value": data.result.files[0].name
+					};
+
+					xhr = $.ajax({
+						type: 'POST',
+						url: GlobalRoot + "op.php",
+						data: PostValues,
+						dataType: "json",
+						success: function(resultData) {
+							if (resultData[0].success) {
+							}
+						},
+						error: function(xhr, status, error) {
+							console.log("Network connection error. Please check with your network administrator. Error:" + status);
+						}
+					});
+
+
 					var newImg = $(img).hide();
 
-					var loaded = false,
-						wait;
+					var loaded = false, wait;
 
 					img.addEventListener('load', function() {
 						loaded = true;

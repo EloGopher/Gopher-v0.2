@@ -110,6 +110,8 @@
 				</div>
 
 				<div style="margin-right:20px;  text-align:right">
+					<button class="btn btn-default" data-toggle="modal" id="PreviewButton">Preview</button>
+
 					<button class="btn btn-default" data-toggle="modal" id="ForkButton">Fork This</button>
 					<button class="btn btn-default" data-toggle="modal" id="TidyButton">Tidy</button>
 					<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
@@ -141,23 +143,27 @@
 				<div class="ebCont">
 
 					<div class="projectinfo active" style='margin-top:10px; ' >
-		      		<a href="#" id="projecttitle" data-type="text" data-placement="right" data-title="Enter title">Project title</a>
+		      		<a href="#" id="projecttitle" data-type="text" data-placement="right" data-title="Enter title"><?php echo $ProjectTitle; ?></a>
 					</div>
 
 					<div class="projectinfo" style='margin-top:5px;' >
-						<a href="#" id="projectdescription" data-type="textarea" data-placement="right" data-title="Enter title">Project description</a>
+						<a href="#" id="projectdescription" data-type="textarea" data-placement="right" data-title="Enter description"><?php echo $ProjectDescription; ?></a>
 					</div>
 
 					<div class="projectinfo " style='margin-top:5px;'>
 					  <span>Status:</span>
-					  <a href="#" id="status"></a>
+					  <a href="#" id="projectstatus"><?php echo $ProjectStatus; ?></a>
 					</div>
 
+					<div class="projectinfo " style='margin-top:5px;'>
+					  <span>Browser Support:</span>
+					  <a href="#" id="projectbrowsers" data-title="Select Browsers" data-value='<?php echo $ProjectBrowsers; ?>'></a>
+					</div>
 
 					<input id="ProjectImageUpload" type="file" name="files[]" style="display: none;">
 					<div id="projectpicturediv" style='margin-top:10px; width:160px; margin-left:10px; cursor:pointer'>
 						<div id="fadeContainer">
-							<img src='../placeholder.jpg' id='fade1' style='width:160px;'>
+							<img src='<?php echo $ProjectImage; ?>' id='fade1' style='max-width:160px; left:<?php echo 80-($imagewidth/2); ?>px; top:<?php echo 80-($imageheight/2); ?>px'>
 						</div>
 					</div>
 
@@ -221,3 +227,23 @@
 	</body>
 
 	</html>
+
+<!--
+
+** TODO
+
+** Preview code
+** sign up (use mysql/php component)
+** login (use mysql/php component)
+** membership panel (use mysql/php component)
+** own code
+** make code private
+** index page with online public codes
+** download customized version
+
+** add editable areas for magento
+** integrate into magento products
+** integrate login with magento user login
+** create private fork for people who bought it from magento
+
+-->

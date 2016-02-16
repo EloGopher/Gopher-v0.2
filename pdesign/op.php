@@ -46,7 +46,7 @@ function GenerateNewPage()
       $code = generateRandomString();
 
       $c_projects = $mongodb->projects;
-      $project = $c_projects->find( array('code' => $code ) );
+      $project = $c_projects->find( array('code' => (string) $code ) );
       $project->next();
       $project = $project->current();
 
@@ -92,6 +92,15 @@ function GenerateNewFork()
 {
    global $mongodb;
 
+   $c_projects = $mongodb->projects;
+   $origproject = $c_projects->find( array('code' => (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]) );
+   $origproject->next();
+   $origproject = $origproject->current();
+   $origproject['project']['status'] = 'draft';
+
+//   var_dump($origproject);
+//   die();
+
    $FoundUnique = false;
 
    while (!$FoundUnique)
@@ -99,7 +108,7 @@ function GenerateNewFork()
       $code = generateRandomString();
 
       $c_projects = $mongodb->projects;
-      $project = $c_projects->find( array('code' => $code ) );
+      $project = $c_projects->find( array('code' => (string) $code ) );
       $project->next();
       $project = $project->current();
 
@@ -119,6 +128,7 @@ function GenerateNewFork()
             'html' => $temphtml,
             'css' => $tempcss,
             'js' => $tempjs,
+            'project' => $origproject['project'],
          	'version' => 1
          );
 
@@ -143,26 +153,37 @@ function GenerateNewFork()
 //update editor content
 if ($_POST["op"]=="updateprojectinfo") {
 
-   $returnDelResult[] = array('success' => (bool) false, 'Message' => 'nothing to update');
    $c_projects = $mongodb->projects;
 
-   if ($_POST['name']=='projecttitle') {
-      $newdata = array('project' => array('title' => (string) $_POST['value'], 'updated_at' => new MongoDate() ));
+   $newdata = null;
 
-      $c_projects->update(array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
-                          array('$set' => $newdata) );
+   if ($_POST['name']=='projecttitle') {
+      $newdata = array('project.title' => (string) $_POST['value'], 'updated_at' => new MongoDate() );
    }
 
    if ($_POST['name']=='projectdescription') {
-      $newdata = array('project' => array('description' => (string) $_POST['value'], 'updated_at' => new MongoDate() ));
-
-      $c_projects->update(array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
-                          array('$set' => $newdata) );
+      $newdata = array('project.description' => (string) $_POST['value'], 'updated_at' => new MongoDate() );
    }
 
-   $c_projects->update(array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
-                       array('$set' => array('js' => '123')) );
+   if ($_POST['name']=='projectstatus') {
+      $newdata = array('project.status' => (string) $_POST['value'], 'updated_at' => new MongoDate() );
+   }
 
+   if ($_POST['name']=='projectimage') {
+      $newdata = array('project.image' => (string) $_POST['value'], 'updated_at' => new MongoDate() );
+   }
+
+   if ($_POST['name']=='projectbrowsers') {
+      $newdata = array('project.browsers' => $_POST['value'], 'updated_at' => new MongoDate() );
+   }
+
+
+   if ($newdata!=null) {
+      $c_projects->update( array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
+                           array('$set' => $newdata) );
+   }
+
+   $returnDelResult[] = array('success' => (bool) true, 'Message' => 'information updated');
    echo json_encode($returnDelResult);
    die();
 } else
@@ -174,7 +195,7 @@ if ($_POST["op"]=="update") {
    if (($_POST["html"]!="") || ($_POST["js"]!="") || ($_POST["css"]!="")) {
 
       $c_projects = $mongodb->projects;
-      $project = $c_projects->find( array('code' => $_SESSION["code"]) );
+      $project = $c_projects->find( array('code' => (string) $_SESSION["code"]) );
       $project->sort( array( 'version' => -1 ) );
       $project->limit(1);
       $project->next();
@@ -241,7 +262,7 @@ $code = $compactcode[0];
 if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && ($code!="") && ($compactcode[1]=="")) ) {
    // find table with code
    $c_projects = $mongodb->projects;
-   $project = $c_projects->find( array('code' => $code) );
+   $project = $c_projects->find( array('code' => (string) $code) );
    $project->sort( array( 'version' => -1 ) );
    $project->limit(1);
    $project->next();
@@ -277,6 +298,29 @@ if ( (count($compactcode)==2) && ($code!="") && ($compactcode[1]!="")) {
    if ($project!=null) {
       $_SESSION["code"] = $code;
       $_SESSION["version"] = $version;
+
+      $ProjectTitle = $project["project"]["title"];
+      if ($ProjectTitle=='') { $ProjectTitle = 'Project Title'; }
+
+      $ProjectDescription = $project["project"]["description"];
+      if ($ProjectDescription=='') { $ProjectDescription = 'Project Description'; }
+
+      $ProjectStatus = $project["project"]["status"];
+      if ($ProjectStatus=='') { $ProjectStatus = 'draft'; }
+
+      $ProjectImage = '../pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
+      $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
+      if ($ProjectImage=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
+
+      list($imagewidth, $imageheight) = getimagesize($ProjectRealImage);
+      if ($project["project"]["browsers"]==null) {
+         $ProjectBrowsers = '';
+      } else {
+         $ProjectBrowsers = implode (",", $project["project"]["browsers"] );
+      }
+
+
+
 
       $html = $project["html"];
       $css = $project["css"];
