@@ -30,7 +30,7 @@ if(!file_exists('gophersettings.php')) {
 	<div class="filemanager">
 		<div class="breadcrumbs" style="border-radius: 3px; padding:10px; width:96%;  background-color: #373743;"></div>
 
-		<ul class="data"></ul>
+		<ul class="data" id="project_files"></ul>
 
 		<div class="nothingfound">
 			<div class="nofiles"></div>

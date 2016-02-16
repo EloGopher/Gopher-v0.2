@@ -38,6 +38,7 @@ $(document).ready(function() {
 
 	//---------------------------------------------------------------------------------------------------------------------------------------
 	function AddRemoveCheck(xthis) {
+		var ignoreThis = $(xthis).find('.ignoreThis');
 		if ($(xthis).hasClass("FileChecked")) {
 
 			$(xthis).removeClass("FileChecked");
@@ -48,7 +49,8 @@ $(document).ready(function() {
 				MarkFileData(response,$(xthis).data("filename"), "0");
 			});
 			*/
-
+			$(ignoreThis).html('<i class="fa fa-flag-o"></i>&nbsp;Ignore');
+			$(ignoreThis).removeClass('checked');
 		} else {
 			$(xthis).removeClass("FileNotChecked");
 			$(xthis).addClass("FileChecked");
@@ -59,8 +61,14 @@ $(document).ready(function() {
 				MarkFileData(response,$(xthis).data("filename"), "1");
 			});
 			*/
+			$(ignoreThis).html('<i class="fa fa-flag"></i>&nbsp;Track this');
+			$(ignoreThis).addClass('checked');
 		}
+		
+		var lastBreadcrumb = $('.breadcrumbs').find('span.folderName:last');
+		$(lastBreadcrumb).removeAttr('data-ignored').attr('data-ignored',$('.data').find('li.folders.FileChecked').length+'/'+$('.data').find('li.folders').length);
 	}
+
 
 
 	// Start by fetching the file data from scan.php with an AJAX request
@@ -81,25 +89,62 @@ $(document).ready(function() {
 		// Clicking on folders
 		fileList.on('click', 'li.folders', function(e) {
 			e.preventDefault();
+			if($(e.target).hasClass('ignoreThis') === false){
+				var nextDir = $(this).find('a.folders').attr('href');
 
-			var nextDir = $(this).find('a.folders').attr('href');
+				breadcrumbsUrls.push(nextDir);
 
-			breadcrumbsUrls.push(nextDir);
-
-			window.location.hash = encodeURIComponent(nextDir);
-			//goto(nextDir);
-			currentPath = nextDir;
+				window.location.hash = encodeURIComponent(nextDir);
+				//goto(nextDir);
+				currentPath = nextDir;
+			}
 		});
 
 
 		// Clicking on files
-		fileList.on('click', 'li.files', function(e) {
+		fileList.on('click', '.ignoreThis', function(e) {
 			e.preventDefault();
-			AddRemoveCheck(this);
+			
+			var fileBlock = $(this).closest('li');
+			var postdata = {
+				filePath:'',
+				op:''
+			}
+
+			postdata.filePath = $(fileBlock).find('.folders').attr('href');
+			if ($(fileBlock).hasClass("FileChecked")) {
+				postdata.op = 'trackthis';
+			}else{
+				postdata.op = 'ignorethis';
+			}
+			
+			$.ajax({
+				url: 'scan.php',
+				type: 'POST',
+				dataType: 'json',
+				data: postdata,
+				complete: function(xhr, textStatus) {
+					//called when complete
+				},
+				success: function(data, textStatus, xhr) {
+					//called when successful
+					console.log(data[0].debug);
+					if(data[0].success){
+						AddRemoveCheck(fileBlock);
+					}
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					//called when there is an error
+					callBack(textStatus,null);
+				}
+			});
+			
+			
 		});
 
 		// Clicking on breadcrumbs
 		breadcrumbs.on('click', 'a', function(e) {
+			
 			e.preventDefault();
 
 			var index = breadcrumbs.find('a').index($(this)),
@@ -108,8 +153,8 @@ $(document).ready(function() {
 			breadcrumbsUrls.length = Number(index);
 
 			//goto(nextDir);
-
 			window.location.hash = encodeURIComponent(nextDir);
+			
 		});
 
 		// Navigates to the given hash (path)
@@ -131,6 +176,9 @@ $(document).ready(function() {
 				breadcrumbsUrls = generateBreadcrumbs(hash[0]);
 
 				render(rendered.data);
+				
+				var lastBreadcrumb = $('.breadcrumbs').find('span.folderName:last');
+				$(lastBreadcrumb).removeAttr('data-ignored').attr('data-ignored',$('.data').find('li.folders.FileChecked').length+'/'+$('.data').find('li.folders').length);
 			}
 			// if there is no hash
 			else {
@@ -204,7 +252,7 @@ $(document).ready(function() {
 
 		function render(data) {
 			console.log("render");
-			//			console.log(data);
+			//console.log(data);
 			var scannedFolders = [];
 			var scannedFiles = [];
 
@@ -233,6 +281,9 @@ $(document).ready(function() {
 			}
 
 			if (scannedFolders.length) {
+				var totalFolders = scannedFolders.length;
+				var ignoredCount = 0;
+				
 				scannedFolders.forEach(function(f) {
 
 					var itemsLength = f.items.length,
@@ -266,11 +317,21 @@ $(document).ready(function() {
 					} else {
 						FoundNumber = "";
 					}
+					
+					var CheckMarkStyle = "FileNotChecked";
+					var CheckMarkInsert = "", ignoreBtn = "<div class=\"ignoreThis\"><i class=\"fa fa-flag-o\"></i>&nbsp;Ignore</div>";
+					if (f.ischecked == "1") {
+						ignoredCount++;
+						CheckMarkStyle = "FileChecked";
+						CheckMarkInsert = "<div class=\"topCheck\"><i style=\"color:white;\" class=\"fa fa-3x fa-check\"></i></div>";
+						ignoreBtn = "<div class=\"ignoreThis checked\"><i class=\"fa fa-flag\"></i>&nbsp;Track this</div>";
+					}
 
-					var folder = $('<li class="folders folderBorder"><a href="' + f.path + '" title="' + f.path + '" class="folders">' + icon + '<span class="name">' + name + '</span> <span class="details">' + itemsLength + '<br>' + FoundNumber + '</span></a></li>');
+					var folder = $('<li class="folders folderBorder '+CheckMarkStyle+'"><a href="' + f.path + '" title="' + f.path + '" class="folders">' + icon + '<span class="name">' + name + '</span> <span class="details">' + itemsLength + '<br>' + FoundNumber + '</span> '+ignoreBtn+'</a>'+CheckMarkInsert+'</li>');
 
 					folder.appendTo(fileList);
 				});
+				
 			}
 
 			if (scannedFiles.length) {
@@ -296,7 +357,7 @@ $(document).ready(function() {
 							CheckMarkInsert = "<div class=\"topCheck\"><i style=\"color:white;\" class=\"fa fa-3x fa-check\"></i></div>";
 						}
 
-						var file = $('<li class="files ' + CheckMarkStyle + '" data-filename="' + f.path + '"><span title="' + f.path + '" class="files">' + icon + '<span class="name">' + name + '</span> <span class="details">' + fileSize + '</span></span>' + CheckMarkInsert + '</li>');
+						var file = $('<li class="files ' + CheckMarkStyle + '" data-filename="' + f.path + '"><span title="' + f.path + '" class="files">' + icon + '<span class="name">' + name + '</span> <span class="details">' + fileSize + '</span> </span>' + CheckMarkInsert + '</li>');
 
 						file.appendTo(fileList);
 					}
@@ -309,7 +370,13 @@ $(document).ready(function() {
 			var url = '';
 
 			fileList.addClass('animated');
-
+			
+			
+			var dataIgnored = [];
+			$('.breadcrumbs').find('.folderName').each(function(){
+				dataIgnored.push($(this).data('ignored'));
+			});
+			
 			breadcrumbsUrls.forEach(function(u, i) {
 
 				var name = u.split('/');
@@ -318,11 +385,12 @@ $(document).ready(function() {
 				if (name[name.length - 1] == "..") {
 					xname = "Home";
 				}
-
+				
+				var ignoredDataVal = dataIgnored[i];
 				if (i !== breadcrumbsUrls.length - 1) {
-					url += '<a href="' + u + '"><span class="folderName">' + xname + '</span></a> <i class="fa fa-long-arrow-right"></i> ';
+					url += '<a href="' + u + '"><span class="folderName" data-ignored="'+ignoredDataVal+'">' + xname + '</span></a> <i class="fa fa-long-arrow-right"></i> ';
 				} else {
-					url += '<span class="folderName">' + xname + '</span>';
+					url += '<span class="folderName" data-ignored="'+ignoredDataVal+'">' + xname + '</span>';
 				}
 			});
 

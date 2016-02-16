@@ -110,6 +110,10 @@ body {
 	background-color: #42424E;
 
 }
+.filemanager .data li:hover .ignoreThis{
+	color:#b6c1c9;
+
+}
 
 .filemanager .data li a {
 	position: absolute;
@@ -143,6 +147,35 @@ body {
 	white-space: nowrap;
 	position: absolute;
 	display: inline-block;
+}
+.filemanager .data li .ignoreThis {
+  color: #373743;
+  font-size: 13px;
+  font-weight: 400;
+  width: 100%;
+  height: 28px;
+  top: 88px;
+  left: 0px;
+  white-space: nowrap;
+  position: absolute;
+  text-align: center;
+  line-height: 28px;
+	display: inline-block;
+	
+	background-color: transparent;
+}
+.filemanager .data li .ignoreThis:hover {
+  color: #b6c1c9;
+	background-color: #23232E;
+}
+.filemanager .data li .ignoreThis.checked {
+  color: #777783;
+	background-color: transparent;
+}
+
+.filemanager .data li .ignoreThis.checked:hover {
+  color: #23232E;
+	background-color: #e0e0e0;
 }
 
 .filemanager .nothingfound {
