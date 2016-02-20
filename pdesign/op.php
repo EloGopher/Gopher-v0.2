@@ -264,7 +264,61 @@ $compactcode = explode('/', $compactcode_temp);
 
 $code = $compactcode[0];
 
-//die();
+
+if ((count($compactcode)==3) && ($code=="preview")) {
+   $code = $compactcode[1];
+   $version = $compactcode[2];
+
+   $c_projects = $mongodb->projects;
+   $project = $c_projects->find( array('code' => (string) $code, 'version' => (int) $version) );
+
+   $project->next();
+   $project = $project->current();
+
+//   var_dump($project);
+//   die();
+
+   if ($project!=null) {
+      $_SESSION["code"] = $code;
+      $_SESSION["version"] = $version;
+
+      $ProjectTitle = $project["project"]["title"];
+      if ($ProjectTitle=='') { $ProjectTitle = 'Project Title'; }
+
+      $ProjectDescription = $project["project"]["description"];
+      if ($ProjectDescription=='') { $ProjectDescription = 'Project Description'; }
+
+      $ProjectStatus = $project["project"]["status"];
+      if ($ProjectStatus=='') { $ProjectStatus = 'draft'; }
+
+      $ProjectImage = '../pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
+      $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
+      if ($ProjectImage=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
+
+      $imagewidth=80;
+      $imageheight=80;
+      if (file_exists($ProjectRealImage)) {
+         list($imagewidth, $imageheight) = getimagesize($ProjectRealImage);
+      }
+
+      if ($project["project"]["browsers"]==null) {
+         $ProjectBrowsers = '';
+      } else {
+         $ProjectBrowsers = implode (",", $project["project"]["browsers"] );
+      }
+
+      $html = $project["html"];
+      $css = $project["css"];
+      $js = $project["js"];
+   }
+
+//   var_dump($compactcode);
+   include_once 'preview.php';
+   die();
+}
+
+
+
 if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && ($code!="") && ($compactcode[1]=="")) ) {
    // find table with code
    $c_projects = $mongodb->projects;

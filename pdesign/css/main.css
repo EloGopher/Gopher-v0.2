@@ -89,6 +89,7 @@ html, body {
 	padding: 3px;
 	padding-left: 8px;
 }
+
 .proprow {
 	display: table-row;
 	border: 1px solid #ccc;
@@ -98,6 +99,17 @@ html, body {
 .proprow:hover {
 	border-bottom: 1px solid #333;
 }
+
+.proprow_preview {
+	border: 1px solid #ccc;
+	border-left: 0px;
+	border-right: 0px;
+}
+.proprow_preview:hover {
+	border-bottom: 1px solid #333;
+}
+
+
 .proptype {
 	padding: 3px;
 	padding-left: 8px;
@@ -107,6 +119,16 @@ html, body {
 	display: table-cell;
 	vertical-align: middle;
 }
+
+.proptype_preview {
+	padding: 3px;
+	padding-left: 8px;
+	width: 100px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	vertical-align: middle;
+}
+
 .propname {
 	padding: 3px;
 	padding-left: 8px;
@@ -379,6 +401,18 @@ input[type=range]:focus::-ms-fill-upper {
 	border-right: solid 1px #e9eced;
 	font-family: Lato, "Helvetica Neue", Arial, Verdana, Tahoma, "Lucida Sans", FreeSans, "Lucida Sans Unicode", "Luxi Sans", sans-serif;
 }
+
+#sidebar_preview {
+	color: #39464E;
+	position: absolute;
+	background-color: #FFF;
+	overflow: auto;
+	width: 200px;
+	height: calc(100vh - 50px);
+	border-right: solid 1px #e9eced;
+	font-family: Lato, "Helvetica Neue", Arial, Verdana, Tahoma, "Lucida Sans", FreeSans, "Lucida Sans Unicode", "Luxi Sans", sans-serif;
+}
+
 
 #sidebar .projectinfo {
 	padding: 0 10px;

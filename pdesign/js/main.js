@@ -42,7 +42,7 @@ function injectHTML(html_string) {
 
 //------------------------------------------------------------------------------------------------------------------
 function findParams(inputText, filetype, paramtype) {
-	var re = new RegExp('#' + paramtype + ':(.+?)(?=##)##(.+?)(?=##)', 'i');
+	var re = new RegExp('\\[#' + paramtype + ':(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
 		//console.log(m);
@@ -65,7 +65,7 @@ function findParams(inputText, filetype, paramtype) {
 
 //------------------------------------------------------------------------------------------------------------------
 function replaceParamsFromDialog(inputText, filetype) {
-	var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+	var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
 
@@ -77,16 +77,16 @@ function replaceParamsFromDialog(inputText, filetype) {
 			dialogvalue += "" + $("#" + filetype + "-" + varname + "-unit").val();
 		}
 
-		//		console.log(varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
+//				console.log(varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
 
-		inputText = inputText.substr(0, m.index + 1) + inputText.substr(m.index + m[0].length + 2);
+		inputText = inputText.substr(0, m.index ) + inputText.substr(m.index + m[0].length + 2);
 		//console.log(inputText);
 		var SemiCol = "";
 		if (m[0].substr([0].length - 1) == ";") {
 			SemiCol = ";";
 		}
 
-		inputText = inputText.substr(0, m.index + 1) + dialogvalue + SemiCol + inputText.substr(m.index + 1);
+		inputText = inputText.substr(0, m.index ) + dialogvalue + SemiCol + inputText.substr(m.index );
 	}
 	return inputText;
 }
@@ -129,7 +129,7 @@ function updateiframe(refreshparams) {
 
 //------------------------------------------------------------------------------------------------------------------
 function replaceSourceFromDialog(inputText, filetype) {
-	var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+	var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 	var m;
 	var inputTextTemp = inputText;
 	var ReplaceList = [];
@@ -789,7 +789,7 @@ $(document).ready(function() {
 		opts.e4x = false;
 
 		var tempHTML = HTMLeditor.getValue();
-		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+		var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
@@ -809,7 +809,7 @@ $(document).ready(function() {
 
 
 		var tempCSS = CSSeditor.getValue();
-		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+		var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
@@ -829,7 +829,7 @@ $(document).ready(function() {
 
 
 		var tempJS = JSeditor.getValue();
-		var re = new RegExp('[^#]#(.+?):(.+?)(?=##)##(.+?)(?=##)', 'i');
+		var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
