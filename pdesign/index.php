@@ -8,6 +8,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>pDesign</title>
 
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,300,300italic,400italic,600italic,700,700italic' rel='stylesheet' type='text/css'>
+
 		<link rel="stylesheet" href="../codemirror-5.10/lib/codemirror.css">
 		<link rel="stylesheet" href="../codemirror-5.10/addon/hint/show-hint.css">
 
@@ -75,14 +77,18 @@
 		<script src="../js/main.js"></script>
 	</head>
 
+	<script>
+		var ThisPageCode = '<?php echo $_SESSION["code"]; ?>';
+		var ThisPageVersion = '<?php echo $_SESSION["version"]; ?>';
+	</script>
 	<body>
 
-		<div style="height:50px; background:#fff; font-size:18px; padding-left:10px; padding-top:8px; display:flex; width:100%; position:relative;   box-shadow: 0 0 5px rgba(57,70,78,.3); z-index:100;">
+		<div style="height:50px;  background-color:#F9F9F9; font-size:18px; padding-left:10px; padding-top:8px; display:flex; width:100%; position:relative;   box-shadow: 0 0 5px rgba(57,70,78,.3); z-index:100;">
 			<div style=" margin-right:5px;">
 				<img src="../17602239_s.jpg" style="height:40px;">
 			</div>
 
-				<div style=" margin-top:6px;">
+				<div class="logo-font">
 					Elo Parametric Design
 				</div>
 
@@ -236,8 +242,9 @@
 ** sign up (use mysql/php component)
 ** login (use mysql/php component)
 ** membership panel (use mysql/php component)
-** own code
-** make code private
+** own code with cookie (only owner can update)
+** own code (only member can update, if it is not private others can see and fork it)
+** membership page with list of own projects
 ** index page with online public codes
 ** download customized version
 

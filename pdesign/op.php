@@ -293,7 +293,7 @@ if ((count($compactcode)==3) && ($code=="preview")) {
 
       $ProjectImage = '../pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
       $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
-      if ($ProjectImage=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
+      if ($project["project"]["image"]=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
 
       $imagewidth=80;
       $imageheight=80;
@@ -370,10 +370,10 @@ if ( (count($compactcode)==2) && ($code!="") && ($compactcode[1]!="")) {
 
       $ProjectImage = '../pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
       $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
-      if ($ProjectImage=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
+      if ($project["project"]["image"]=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'zzzz.jpg';}
 
-      $imagewidth=80;
-      $imageheight=80;
+      $imagewidth=160;
+      $imageheight=160;
       if (file_exists($ProjectRealImage)) {
          list($imagewidth, $imageheight) = getimagesize($ProjectRealImage);
       }

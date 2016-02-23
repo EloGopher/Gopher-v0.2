@@ -229,7 +229,11 @@ function updateserver() {
 			dataType: "json",
 			success: function(resultData) {
 				if (resultData[0].success) {
-					console.log(resultData[0].version);
+					//console.log(resultData[0].version);
+					ThisPageCode = resultData[0].code;
+					ThisPageVersion = resultData[0].version;
+
+					resultData[0].version
 					history.pushState(null, null, GlobalRoot + '' + resultData[0].code + '/' + resultData[0].version);
 				}
 
@@ -543,6 +547,9 @@ $(document).ready(function() {
 			}, {
 				value: 'online',
 				text: 'online'
+			}, {
+				value: 'private online',
+				text: 'private online'
 			}],
 			url: GlobalRoot + 'op.php',
 			type: 'select',
@@ -592,6 +599,14 @@ $(document).ready(function() {
 	$("#NewProject").on('click', function() {
 		window.location.href = GlobalRoot;
 	});
+
+	$("#PreviewButton").on('click', function(e) {
+
+		e.preventDefault();
+
+	   window.open(GlobalRoot+'preview/'+ThisPageCode+'/'+ThisPageVersion, '_blank_preview');
+	});
+
 
 	//------------------------------------------------------------------------------
 	$("#ForkButton").on('click', function() {

@@ -73,7 +73,7 @@ function replaceParamsFromDialog(inputText, filetype) {
 		var defvalue = m[3];
 //                console.log('=====');
 //		console.log(varname+" "+defvalue+" "+filetype);
-                
+
 
 		var dialogvalue = $("#" + filetype + "-" + varname).val();
 		if ($("#" + filetype + "-" + varname + "-unit").length == 0) { /* doesn't have unit*/ } else {
@@ -101,7 +101,7 @@ function replaceParamsFromDialog(inputText, filetype) {
 function updateiframe(refreshparams) {
 
 	var newcss = css;
-        
+
 	var newhtml = html;
 	var newjs = js;
 
@@ -171,12 +171,19 @@ function replaceSourceFromDialog(inputText, filetype) {
 function updateparamdialog() {
 
 	$("#ParametersList").html("");
+	var PrevType = '';
 
 	for (var i = 0, l = paramArray.length; i < l; i++) {
+
+		if (paramArray[i].filetype!=PrevType) {
+			$("#ParametersList").append("<div class='proprow_preview_header'>"+ paramArray[i].filetype +"</div>");
+			PrevType = paramArray[i].filetype;
+		}
 		$("#ParametersList").append("<div class='proprow_preview' id='row_" + i + "'></div>");
 
+
 		if (paramArray[i].type == "slider") {
-			$("#row_" + i).html("<div class='proptype_preview'>" + paramArray[i].filetype + " - " + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
+			$("#row_" + i).html("<div class='proprow_preview_title'>" + paramArray[i].filetype + " - " + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
 		} else
 		if (paramArray[i].type == "number") {
 			var tempStr = paramArray[i].defaultvalue;
@@ -193,7 +200,7 @@ function updateparamdialog() {
 			}
 
 
-			$("#row_" + i).html("<div class='proptype_preview'>" + paramArray[i].filetype + " - " + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='hidden' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' value='" + tempUnit + "' ><div class='input-group' style='width:200px;'>\
+			$("#row_" + i).html("<div class='proprow_preview_title'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='preview_propvalue-" + paramArray[i].type + "'><input type='hidden' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' value='" + tempUnit + "' ><div class='input-group' style='width:200px;'>\
             <input type='text' class='form-control rangeselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue +
 				"'>\
             <div class='input-group-btn'>\
@@ -212,12 +219,12 @@ function updateparamdialog() {
         </div>"); //'"
 		} else
 		if (paramArray[i].type == "color") {
-			$("#row_" + i).html("<div class='proptype_preview'>" + paramArray[i].filetype + " -" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
+			$("#row_" + i).html("<div class='proprow_preview_title'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class=''preview_propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else
 		if (paramArray[i].type == "text") {
-			$("#row_" + i).html("<div class='proptype_preview'>" + paramArray[i].filetype + " - " + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
+			$("#row_" + i).html("<div class='proprow_preview_title'>" + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class=''preview_propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else {
-			$("#row_" + i).html("<div class='proptype_preview'>" + paramArray[i].filetype + " - " + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
+			$("#row_" + i).html("<div class='proprow_preview_title'>" + paramArray[i].filetype + " - " + paramArray[i].varname.replace(/\_/g, " ") + "</div><div class=''preview_propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
 		}
 	}
 
@@ -264,6 +271,24 @@ function updateparamdialog() {
 		updateiframe(false);
 		e.preventDefault();
 	});
+
+
+	$(document).on("shown.bs.dropdown", ".input-group-btn", function () {
+	    // calculate the required sizes, spaces
+	    var $ul = $(this).children(".dropdown-menu");
+	    var $button = $(this).children(".dropdown-toggle");
+	    var ulOffset = $ul.offset();
+	    // how much space would be left on the top if the dropdown opened that direction
+	    var spaceUp = (ulOffset.top - $button.height() - $ul.height()) - $(window).scrollTop();
+	    // how much space is left at the bottom
+	    var spaceDown = $(window).scrollTop() + $(window).height() - (ulOffset.top + $ul.height());
+	    // switch to dropup only if there is no space at the bottom AND there is space at the top, or there isn't either but it would be still better fit
+	    if (spaceDown < 0 && (spaceUp >= 0 || spaceUp > spaceDown))
+	      $(this).addClass("dropup");
+	}).on("hidden.bs.dropdown", ".input-group-btn", function() {
+	    // always reset after close
+	    $(this).removeClass("dropup");
+	});
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -303,8 +328,7 @@ function resizeend() {
 	} else {
 		timeout = false;
 		$("#iframesource").css({
-			height: ($(window).height() - 52) + 'px',
-			width: ($(window).width() - 220) + 'px'
+			height: ($(window).height() - 52) + 'px'
 		});
 	}
 }
@@ -321,8 +345,7 @@ $(window).resize(function() {
 //------------------------------------------------------------------------------------------------------------------
 $(document).ready(function() {
 	$("#iframesource").css({
-		height: ($(window).height() - 52) + 'px',
-		width: ($(window).width() - 220) + 'px'
+		height: ($(window).height() - 52) + 'px'
 	});
 
 	//------------------------------------------------------------------------------

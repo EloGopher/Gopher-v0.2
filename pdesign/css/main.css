@@ -3,11 +3,17 @@ html, body {
 	height: 100%;
 	overflow: hidden;
 	background: #f3f5f6;
-	font-family: 'Oswald', sans-serif;
+	font-family: "Open Sans","Helvetica Neue",Arial,Helvetica,Verdana,sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-webkit-font-smoothing: subpixel-antialiased;
 
 }
+
+.logo-font {
+	font-family: 'Oswald', sans-serif;
+	margin-top:6px;
+}
+
 .xPanel {
 	overflow: hidden;
 	position: relative;
@@ -100,13 +106,40 @@ html, body {
 	border-bottom: 1px solid #333;
 }
 
-.proprow_preview {
-	border: 1px solid #ccc;
-	border-left: 0px;
-	border-right: 0px;
+.proprow_preview_header {
+	margin-top:10px;
+	border-top: 1px solid #cecece;
+	font-size: 15px;
+	background: #f2f2f2;
+	text-transform: capitalize;
+	font-weight: 600;
+	padding-left: 18px;
+	line-height: 36px;
+
+	color: #484848;
+	font-family: "Open Sans","Helvetica Neue",Arial,Helvetica,Verdana,sans-serif;
+
 }
+
+
+.proprow_preview {
+	padding-left: 18px;
+	color: #484848;
+	font-family: "Open Sans","Helvetica Neue",Arial,Helvetica,Verdana,sans-serif;
+	font-size: 15px;
+	padding-top:4px;
+	padding-bottom:4px;
+
+}
+
 .proprow_preview:hover {
-	border-bottom: 1px solid #333;
+	background: #fafafa;
+}
+
+.proprow_preview_title {
+	padding-top:6px;
+	padding-bottom:6px;
+
 }
 
 
@@ -404,10 +437,11 @@ input[type=range]:focus::-ms-fill-upper {
 
 #sidebar_preview {
 	color: #39464E;
-	position: absolute;
 	background-color: #FFF;
 	overflow: auto;
-	width: 200px;
+	width: 300px;
+	float: left;
+
 	height: calc(100vh - 50px);
 	border-right: solid 1px #e9eced;
 	font-family: Lato, "Helvetica Neue", Arial, Verdana, Tahoma, "Lucida Sans", FreeSans, "Lucida Sans Unicode", "Luxi Sans", sans-serif;
@@ -508,4 +542,13 @@ h1, h2, h3, h4, h5, h6 {
 
 #fadeContainer img {
     position: absolute;
+}
+
+
+.preview_title {
+	    -webkit-font-smoothing: antialiased;
+	font-weight: 600;
+	color: #484848;
+	font-family: "Open Sans","Helvetica Neue",Arial,Helvetica,Verdana,sans-serif;
+	font-size: 17px;
 }

@@ -7,6 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>pDesign</title>
 
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,300,300italic,400italic,600italic,700,700italic' rel='stylesheet' type='text/css'>
 		<link href="../../css/font-awesome.min.css" rel="stylesheet">
 		<link href="../../css/bootstrap.colorpickersliders.css" rel="stylesheet" type="text/css" media="all">
       <link href="../../css/jquery.bootstrap-touchspin.css" rel="stylesheet" type="text/css" media="all">
@@ -50,50 +51,49 @@
 
 	<body>
 
-		<div style="height:50px; background:#fff; font-size:18px; padding-left:10px; padding-top:8px; display:flex; width:100%; position:relative;   box-shadow: 0 0 5px rgba(57,70,78,.3); z-index:100;">
+		<div style="height:50px; background-color:#F9F9F9; font-size:18px; padding-left:10px; padding-top:8px; display:flex; width:100%; position:relative;   box-shadow: 0 0 5px rgba(57,70,78,.3); z-index:100;">
 			<div style=" margin-right:5px;">
 				<img src="../../17602239_s.jpg" style="height:40px;">
 			</div>
 
-				<div style=" margin-top:6px;">
-					Elo Parametric Design
+				<div class="logo-font">
+					Elo Parametric Design <b>Preview</b>
 				</div>
 
 				<div style="margin-right:10px; margin-top:2px;  flex: 3 0 0; text-align:right">
 				</div>
 
 				<div style="margin-right:20px;  text-align:right">
-					<button class="btn btn-default" data-toggle="modal" id="PreviewButton">Preview</button>
-
-					<button class="btn btn-default" data-toggle="modal" id="ForkButton">Fork This</button>
-					<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
-
-					<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
-
-					<button class="btn btn-default file-manager-linked" data-input-id="">Image Library</button>
-					<button class="btn btn-default" id="NewProject">New Project</button>
+					<button class="btn btn-default" data-toggle="modal" id="DownloadPreviewButton">Download Preview</button>
+					<button class="btn btn-default" id="ClosePreview">Close</button>
 				</div>
 		</div>
 
-		<div id="sidebar_preview" style='width:400px;' >
+		<div style='overflow: hidden;'>
 
-			<div class="element">
-		    <div class="elementBody" style="padding-top: 0px; border-top-style: none; padding-bottom: 0px; border-bottom-style: none; overflow: hidden; opacity: 1; height: auto;">
-				<div class="ebCont">
+			<div id="sidebar_preview">
 
-					<div class="projectinfo active" style='margin-top:10px; ' >
-		      		<a href="#" id="projecttitle" data-type="text" data-placement="right" data-title="Enter title"><?php echo $ProjectTitle; ?></a>
+				<div class="element">
+			    <div class="elementBody" style="padding-top: 0px; border-top-style: none; padding-bottom: 0px; border-bottom-style: none; overflow: hidden; opacity: 1; height: auto;">
+					<div class="ebCont">
+
+						<div class="projectinfo active" style='margin-top:10px; text-align:center ' >
+			      		<span class='preview_title'><?php echo $ProjectTitle; ?></span>
+						</div>
 					</div>
-				</div>
 
-				<div id='ParametersList'></div>
+					<div id='ParametersList'></div>
 
-		   </div> <!-- /elementBody -->
-		  </div>
+			   </div> <!-- /elementBody -->
+			  </div>
 
+			</div>
+		<div style='overflow: hidden; background-color: white;'>
+			<iframe id="iframesource" src="" class="iframebox_preview" style='width:100%; border:0px;'></iframe>
 		</div>
 
-		<iframe id="iframesource" src="" class="iframebox" style='margin-left:400px; background-color: white;'></iframe>
+	</div>
+
 	</body>
 
 	</html>
