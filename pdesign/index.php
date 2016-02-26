@@ -9,6 +9,7 @@
 		<title>pDesign</title>
 
 		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,300,300italic,400italic,600italic,700,700italic' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
 		<link rel="stylesheet" href="../codemirror-5.10/lib/codemirror.css">
 		<link rel="stylesheet" href="../codemirror-5.10/addon/hint/show-hint.css">
@@ -81,11 +82,20 @@
 		var ThisPageCode = '<?php echo $_SESSION["code"]; ?>';
 		var ThisPageVersion = '<?php echo $_SESSION["version"]; ?>';
 	</script>
+
+	<script>
+	  var HW_config = {
+	    selector: "#applogo", // CSS selector where to inject the badge
+	    account: "n7Q8gx" // your account ID
+	  };
+	</script>
+	<script async src="//cdn.headwayapp.co/widget.js"></script>
+
 	<body>
 
 		<div style="height:50px;  background-color:#F9F9F9; font-size:18px; padding-left:10px; padding-top:8px; display:flex; width:100%; position:relative;   box-shadow: 0 0 5px rgba(57,70,78,.3); z-index:100;">
-			<div style=" margin-right:5px;">
-				<img src="../17602239_s.jpg" style="height:40px;">
+			<div style=" margin-right:5px; height:40px; width:40px;" id="applogo">
+				<img src="../17602239_s.jpg" style="height:40px; float:left;">
 			</div>
 
 				<div class="logo-font">
@@ -116,16 +126,14 @@
 				</div>
 
 				<div style="margin-right:20px;  text-align:right">
-					<button class="btn btn-default" data-toggle="modal" id="PreviewButton">Preview</button>
+					<button class="btn btn-default" data-toggle="modal" id="PreviewButton"><i class="fa fa-eye"></i> Preview</button>
 
-					<button class="btn btn-default" data-toggle="modal" id="ForkButton">Fork This</button>
-					<button class="btn btn-default" data-toggle="modal" id="TidyButton">Tidy</button>
-					<button class="btn btn-default" data-toggle="modal" id="UpdateButton">Update</button>
-
-					<button class="btn btn-default" data-toggle="modal" id="ParametersButton">Parameters</button>
-
-					<button class="btn btn-default file-manager-linked" data-input-id="">Image Library</button>
-					<button class="btn btn-default" id="NewProject">New Project</button>
+					<button class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-code-fork"></i> Fork</button>
+					<button class="btn btn-default" data-toggle="modal" id="TidyButton"><i class="fa fa-align-left"></i> Tidy</button>
+					<button class="btn btn-default" data-toggle="modal" id="UpdateButton"><i class="fa fa-pencil-square-o"></i> Update</button>
+					<button class="btn btn-default" data-toggle="modal" id="ParametersButton"><i class="fa fa-cogs"></i> Parameters</button>
+					<button class="btn btn-default file-manager-linked" data-input-id=""><i class="fa fa-picture-o"></i> Images</button>
+					<button class="btn btn-default" id="NewProject"><i class="fa fa-file-o"></i> New</button>
 				</div>
 		</div>
 
@@ -239,6 +247,8 @@
 ** TODO
 
 ** Preview code
+** make history slider work
+** optional min-max for integers
 ** sign up (use mysql/php component)
 ** login (use mysql/php component)
 ** membership panel (use mysql/php component)

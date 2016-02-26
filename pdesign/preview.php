@@ -8,6 +8,8 @@
 		<title>pDesign</title>
 
 		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,300,300italic,400italic,600italic,700,700italic' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
 		<link href="../../css/font-awesome.min.css" rel="stylesheet">
 		<link href="../../css/bootstrap.colorpickersliders.css" rel="stylesheet" type="text/css" media="all">
       <link href="../../css/jquery.bootstrap-touchspin.css" rel="stylesheet" type="text/css" media="all">
@@ -64,8 +66,8 @@
 				</div>
 
 				<div style="margin-right:20px;  text-align:right">
-					<button class="btn btn-default" data-toggle="modal" id="DownloadPreviewButton">Download Preview</button>
-					<button class="btn btn-default" id="ClosePreview">Close</button>
+					<button class="btn btn-default" data-toggle="modal" id="DownloadPreviewButton"><i class="fa fa-download"></i> Download</button>
+					<button class="btn btn-default" id="ClosePreview"><i class="fa fa-times"></i> Close</button>
 				</div>
 		</div>
 
