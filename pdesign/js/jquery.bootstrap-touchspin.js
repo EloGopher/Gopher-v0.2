@@ -95,6 +95,8 @@
 
     return this.each(function() {
 
+//      console.log( $(this).attr('id')+' '+$(this).data('max') ) ;
+
       var settings,
           originalinput = $(this),
           originalinput_data = originalinput.data(),
@@ -156,17 +158,19 @@
       }
 
       function _initSettings() {
-        settings = $.extend({}, defaults, originalinput_data, _parseAttributes(), options);
+        settings = $.extend({}, defaults, originalinput_data, options, _parseAttributes());
       }
 
       function _parseAttributes() {
         var data = {};
         $.each(attributeMap, function(key, value) {
           var attrName = 'bts-' + value + '';
+
           if (originalinput.is('[data-' + attrName + ']')) {
-            data[key] = originalinput.data(attrName);
+             data[key] = originalinput.data(attrName);
           }
         });
+
         return data;
       }
 

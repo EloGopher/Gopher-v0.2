@@ -6,7 +6,9 @@ var CSSeditor;
 var iframe;
 var iframedoc;
 var requestTimer;
+var requestTimerIFrame;
 var xhr;
+var xhrIFrame;
 var LastEditor;
 var paramArray = [];
 var ParametersModalCloseWithSave = false;
@@ -29,23 +31,23 @@ function loadCssFile(pathToFile) {
 	$("head").append(css);
 }
 
-//------------------------------------------------------------------------------------------------------------------
-function injectHTML(html_string) {
-	if (iframedoc) {
-		iframedoc.open();
-		iframedoc.writeln(html_string);
-		iframedoc.close();
-	} else {
-		alert('Cannot inject dynamic contents into iframe.');
-	}
+
+function varnamefromstr(inputstr)
+{
+	var outputstr=inputstr;
+	outputstr = outputstr.replace(/ /ig,'_');
+	return outputstr;
 }
 
 //------------------------------------------------------------------------------------------------------------------
 function findParams(inputText, filetype, paramtype) {
 	var re = new RegExp('#' + paramtype + '\\s?\\((.+?)\\)#', 'i');
 	var m;
+	var varcounter = 0;
 	while ((m = re.exec(inputText)) !== null) {
-		console.log(m[1]);
+//		console.log(m[1]);
+
+		varcounter++;
 
 		var params_str = m[1];
 		var defaultvalue = '';
@@ -55,7 +57,8 @@ function findParams(inputText, filetype, paramtype) {
 			paramArray.push({
 				"filetype": filetype,
 				"type": paramtype,
-				"varname": params[0],
+				"vartext": params[0],
+				"varname": varnamefromstr(params[0]),
 				"defaultvalue": params[1]
 			});
 			defaultvalue = params[1];
@@ -71,7 +74,8 @@ function findParams(inputText, filetype, paramtype) {
 			paramArray.push({
 				"filetype": filetype,
 				"type": paramtype,
-				"varname": params[0],
+				"vartext": params[0],
+				"varname": varnamefromstr(params[0]),
 				"defaultvalue": params[1],
 				"minvalue": params[2],
 				"maxvalue": params[3],
@@ -87,7 +91,8 @@ function findParams(inputText, filetype, paramtype) {
 			paramArray.push({
 				"filetype": filetype,
 				"type": paramtype,
-				"varname": params[0],
+				"vartext": params[0],
+				"varname": varnamefromstr(params[0]),
 				"defaultvalue": params[1]
 			});
 
@@ -108,28 +113,60 @@ function findParams(inputText, filetype, paramtype) {
 //------------------------------------------------------------------------------------------------------------------
 function replaceParamsFromDialog(inputText, filetype) {
 	var re = new RegExp('#(.+?)\\s?\\((.+?)\\)#', 'i');
-//	var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
 
-		var varname = m[2];
-		var defvalue = m[3];
+		var params_str = m[2];
+		var varname = '';
+		var defvalue = '';
+		var paramtype = m[1];
+		var minvalue = 0;
+		var maxvalue = 100;
+		var defunit = '';
 
-		var dialogvalue = $("#" + filetype + "-" + varname).val();
-		if ($("#" + filetype + "-" + varname + "-unit").length == 0) { /* doesn't have unit*/ } else {
-			dialogvalue += "" + $("#" + filetype + "-" + varname + "-unit").val();
+		if (paramtype=='text') {
+			var params = params_str.split(',');
+
+			varname = varnamefromstr(params[0]);
+			defvalue = params[1];
+		} else
+		if (paramtype=='int') {
+			var params = params_str.split(',');
+
+			if (params[2]==undefined) { params[2] = 0; }
+			if (params[3]==undefined) { params[3] = 100; }
+			if (params[4]==undefined) { params[4] = ''; }
+
+			varname = varnamefromstr(params[0]);
+			defvalue = params[1]+params[4];
+
+			minvalue = params[2];
+			maxvalue = params[3];
+			defunit  = params[4];
+		} else
+		if (paramtype=='color') {
+			var params = params_str.split(',');
+
+			varname = varnamefromstr(params[0]);
+			defvalue = params[1];
 		}
 
-//				console.log(varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
+//		console.log( "#" + filetype + varname + " = " +$("#" + filetype + varname).val() );
 
-		inputText = inputText.substr(0, m.index ) + inputText.substr(m.index + m[0].length + 2);
-		//console.log(inputText);
+		var dialogvalue = $("#" + filetype + varname).val();
+		if ($("#" + filetype + varname + "unit").length == 0) { /* doesn't have unit*/ } else {
+			dialogvalue += "" + $("#" + filetype +  varname + "unit").val();
+		}
+
+//		console.log(inputText);
+
+		inputText = inputText.substr(0, m.index) + inputText.substr(m.index + m[0].length );
 		var SemiCol = "";
 		if (m[0].substr([0].length - 1) == ";") {
 			SemiCol = ";";
 		}
-
-		inputText = inputText.substr(0, m.index ) + dialogvalue + SemiCol + inputText.substr(m.index );
+		inputText = inputText.substr(0, m.index) + dialogvalue + SemiCol + inputText.substr(m.index);
+//		console.log(inputText);
 	}
 	return inputText;
 }
@@ -167,7 +204,33 @@ function updateiframe(refreshparams) {
 
 	}
 
-	injectHTML('<html><head><script src="' + GlobalRoot + 'js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
+	//*** save source and reload iframe
+
+	if (xhrIFrame) xhrIFrame.abort(); //kill active Ajax request
+	var PostValues = {
+		"op": "updateiframe",
+		"js": newjs,
+		"css": newcss,
+		"html": newhtml
+	};
+
+	xhrIFrame = $.ajax({
+		type: 'POST',
+		url: GlobalRoot + "op.php",
+		data: PostValues,
+		dataType: "json",
+		success: function(resultData) {
+			if (resultData[0].success) {
+				document.getElementById('iframesource').contentWindow.location.reload();
+			}
+		},
+		error: function(xhr, status, error) {
+			console.log("Network connection error. Please check with your network administrator. Error:" + status);
+		}
+	});
+
+
+//	injectHTML('<html><head><script src="' + GlobalRoot + 'js/jquery-2.1.4.min.js"></script><style>' + newcss + '</style><script>$(document).ready(function () {' + newjs + '});</script></head><body>' + newhtml + '</body></html>');
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -178,29 +241,52 @@ function replaceSourceFromDialog(inputText, filetype) {
 	var inputTextTemp = inputText;
 	var ReplaceList = [];
 	while ((m = re.exec(inputTextTemp)) !== null) {
+		var params_str = m[2];
+		var params = params_str.split(',');
+		var paramtype = m[1];
+		var varname = varnamefromstr(params[0]);
+		var newstring = '';
 
-		var varname = m[2];
-		var defvalue = m[3];
-
-		var dialogvalue = $("#" + filetype + "-" + varname).val();
-		if ($("#" + filetype + "-" + varname + "-unit").length == 0) { /* doesn't have unit*/ } else {
-			dialogvalue += "" + $("#" + filetype + "-" + varname + "-unit").val();
+		var newvalue = $("#" + filetype + varname).val();
+		var dialogvalue = newvalue;
+		var newunit = '';
+		if ($("#" + filetype + varname + "unit").length == 0) { /* doesn't have unit*/ } else {
+			newunit = "" + $("#" + filetype + varname + "unit").val();
+			dialogvalue += newunit;
 		}
 
-		//console.log('#'+m[1]+':'+m[2]+'##'+m[3]+'##     '+dialogvalue);// varname+" "+defvalue+" "+dialogvalue+" "+"#"+filetype+"-"+varname+"-unit  "+$("#"+filetype+"-"+varname+"-unit").val());
+
+
+		if (paramtype=='text') {
+			newstring = '#text('+params[0]+','+ newvalue +')#';
+		} else
+		if (paramtype=='int') {
+			var params = params_str.split(',');
+
+			if (params[2]==undefined) { params[2] = 0; }
+			if (params[3]==undefined) { params[3] = 100; }
+			if (params[4]==undefined) { params[4] = ''; }
+
+			newstring = '#int('+params[0] +','+ newvalue +','+ params[2] +','+ params[3] +','+ params[4] +')#';
+		} else
+		if (paramtype=='color') {
+			var params = params_str.split(',');
+
+			newstring = '#color('+params[0]+','+ newvalue +')#';
+		}
+
 
 		ReplaceList.push({
-			"old": '#' + m[1] + ':' + m[2] + '##' + m[3] + '##',
-			"new": '#' + m[1] + ':' + m[2] + '##' + dialogvalue + '##'
+			"old": m[0],
+			"new": newstring
 		});
 
-		inputTextTemp = inputTextTemp.substr(0, m.index + 1) + inputTextTemp.substr(m.index + m[0].length + 2);
+		inputTextTemp = inputTextTemp.substr(0, m.index) + inputTextTemp.substr(m.index + m[0].length );
 		var SemiCol = "";
 		if (m[0].substr([0].length - 1) == ";") {
 			SemiCol = ";";
 		}
-
-		inputTextTemp = inputTextTemp.substr(0, m.index + 1) + dialogvalue + SemiCol + inputTextTemp.substr(m.index + 1);
+		inputTextTemp = inputTextTemp.substr(0, m.index) + dialogvalue + SemiCol + inputTextTemp.substr(m.index);
 	}
 
 	for (var i = 0; i < ReplaceList.length; i++) {
@@ -287,7 +373,10 @@ function updateserver() {
 				console.log("Network connection error. Please check with your network administrator. Error:" + status);
 			}
 		});
-	}, 500); //delay before making the call
+
+		updateiframe(true);
+
+	}, 100); //delay before making the call
 }
 
 
@@ -331,52 +420,41 @@ function updateparamdialog() {
 
 	$("#ParametersList").html("<div class='propheaderrow'><div class='propheadercell'>File</div><div class='propheadercell'>Name</div><div class='propheadercell'>Value</div></div>");
 
+	//console.log(paramArray);
+
 	for (var i = 0, l = paramArray.length; i < l; i++) {
 		$("#ParametersList").append("<div class='proprow' id='row_" + i + "'></div>");
 
 		if (paramArray[i].type == "slider") {
-			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].vartext + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div><input type=\"range\">");
 		} else
 		if (paramArray[i].type == "int") {
-			var tempStr = paramArray[i].defaultvalue;
-			var tempUnit = '';
 
-			if (tempStr.indexOf('px') != -1) {
-				tempUnit = 'px';
-			}
-			if (tempStr.indexOf('pt') != -1) {
-				tempUnit = 'pt';
-			}
-			if (tempStr.indexOf('%') != -1) {
-				tempUnit = '%';
-			}
-
-
-			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='hidden' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' value='" + tempUnit + "' ><div class='input-group' style='width:200px;'>\
-            <input type='text' class='form-control rangeselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue +
-				"'>\
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].vartext + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='hidden' id='" + paramArray[i].filetype + paramArray[i].varname + "unit' value='" + paramArray[i].unit + "' ><div class='input-group' style='width:200px;'>\
+            <input type='text' class='form-control rangeselector' id='" + paramArray[i].filetype + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue +
+				"' data-bts-min='"+paramArray[i].minvalue+"'  data-bts-max='"+paramArray[i].maxvalue+"'  data-bts-postfix='"+paramArray[i].unit+"'>\
             <div class='input-group-btn'>\
                 <button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>\
                     <span class='caret'></span>\
                     <span class='sr-only'>Toggle Dropdown</span>\
                 </button>\
                 <ul class='dropdown-menu pull-right' role='menu'>\
-                    <li><a href='#' data-numberstype='px' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>px</a></li>\
-                    <li><a href='#' data-numberstype='%' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>%</a></li>\
-                    <li><a href='#' data-numberstype='pt' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i +
+                    <li><a href='#' data-numberstype='px' data-controllerid='" + paramArray[i].filetype + paramArray[i].varname + "unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>px</a></li>\
+                    <li><a href='#' data-numberstype='%' data-controllerid='" + paramArray[i].filetype + paramArray[i].varname + "unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>%</a></li>\
+                    <li><a href='#' data-numberstype='pt' data-controllerid='" + paramArray[i].filetype + paramArray[i].varname + "unit' data-parentrowid='row_" + i +
 				"' class='numberstylemenu'>pt</a></li>\
-						  <li><a href='#' data-numberstype='none' data-controllerid='" + paramArray[i].filetype + "-" + paramArray[i].varname + "-unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>none</a></li>\
+						  <li><a href='#' data-numberstype='none' data-controllerid='" + paramArray[i].filetype + paramArray[i].varname + "unit' data-parentrowid='row_" + i + "' class='numberstylemenu'>none</a></li>\
                 </ul>\
             </div>\
         </div>"); //'"
 		} else
 		if (paramArray[i].type == "color") {
-			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].vartext + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control colorselector' id='" + paramArray[i].filetype + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else
 		if (paramArray[i].type == "text") {
-			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' id='" + paramArray[i].filetype + "-" + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].vartext + "</div><div class='propvalue-" + paramArray[i].type + "'><input type='text' class='form-control textselector' id='" + paramArray[i].filetype + paramArray[i].varname + "' value='" + paramArray[i].defaultvalue + "' ></div>");
 		} else {
-			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].varname + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
+			$("#row_" + i).html("<div class='proptype'>" + paramArray[i].filetype + "</div><div class='propname'>" + paramArray[i].vartext + "</div><div class='propvalue-" + paramArray[i].type + "'>" + paramArray[i].defaultvalue + "</div>");
 		}
 	}
 
@@ -639,6 +717,11 @@ $(document).ready(function() {
 	});
 
 	//------------------------------------------------------------------------------
+	$("#RunButton").on('click', function() {
+		updateiframe(true);
+	});
+
+	//------------------------------------------------------------------------------
 	$("#NewProject").on('click', function() {
 		window.location.href = GlobalRoot;
 	});
@@ -791,6 +874,7 @@ $(document).ready(function() {
 	//------------------------------------------------------------------------------
 	$("#UpdateButton").on('click', function() {
 		updateserver();
+
 	});
 
 	//------------------------------------------------------------------------------
@@ -944,11 +1028,6 @@ $(document).ready(function() {
 		$("#htmleditor_div_hint").fadeIn(250);
 	});
 
-	HTMLeditor.on('keyup', function() {
-		updateiframe(true);
-	});
-
-
 	//------------------------------------------------------------------------------
 	JSeditor = CodeMirror.fromTextArea(document.getElementById("JSCode"), {
 		lineNumbers: true,
@@ -979,10 +1058,6 @@ $(document).ready(function() {
 
 	JSeditor.on('blur', function() {
 		$("#jseditor_div_hint").fadeIn(250);
-	});
-
-	JSeditor.on('keyup', function() {
-		updateiframe(true);
 	});
 
 
@@ -1018,13 +1093,8 @@ $(document).ready(function() {
 		$("#csseditor_div_hint").fadeIn(250);
 	});
 
-	CSSeditor.on('keyup', function() {
-		updateiframe(true);
-	});
-
 
 	//------------------------------------------------------------------------------
-	updateiframe(true);
 	HTMLeditor.focus();
 
 
@@ -1081,6 +1151,8 @@ $(document).ready(function() {
 		}
 		$('.history_timeBar').css('width', history_percentage + '%');
 	};
+
+	updateiframe(true);
 
 
 });

@@ -126,14 +126,16 @@
 				</div>
 
 				<div style="margin-right:20px;  text-align:right">
+					<button class="btn btn-default" data-toggle="modal" id="RunButton"><i class="fa fa-play"></i> Run</button>
+					<button class="btn btn-default" data-toggle="modal" id="UpdateButton"><i class="fa fa-pencil-square-o"></i> Update</button>
 					<button class="btn btn-default" data-toggle="modal" id="PreviewButton"><i class="fa fa-eye"></i> Preview</button>
 
-					<button class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-code-fork"></i> Fork</button>
 					<button class="btn btn-default" data-toggle="modal" id="TidyButton"><i class="fa fa-align-left"></i> Tidy</button>
-					<button class="btn btn-default" data-toggle="modal" id="UpdateButton"><i class="fa fa-pencil-square-o"></i> Update</button>
 					<button class="btn btn-default" data-toggle="modal" id="ParametersButton"><i class="fa fa-cogs"></i> Parameters</button>
 					<button class="btn btn-default file-manager-linked" data-input-id=""><i class="fa fa-picture-o"></i> Images</button>
 					<button class="btn btn-default" id="NewProject"><i class="fa fa-file-o"></i> New</button>
+					<button class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-code-fork"></i> Fork</button>
+
 				</div>
 		</div>
 
@@ -210,8 +212,13 @@
 					<textarea id="CSSCode" name="CSSCode" class="editbox"><?php echo $css; ?></textarea>
 					<div id="csseditor_div_hint" class="EditorHint">CSS</div>
 				</div>
-				<div class="xPanel split content" id="PreviewPanel" style="overflow:hidden">
-					<iframe id="iframesource" src="" class="iframebox"></iframe>
+				<div class="xPanel split content" id="PreviewPanel" style="overflow:hidden;">
+					<iframe id="iframesource" src="<?php if (file_exists(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html')) {
+						echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+					} else {
+						file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html','first commit!');
+						echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+					} ?>" class="iframebox"></iframe>
 				</div>
 			</div>
 		</div>
@@ -246,21 +253,20 @@
 
 ** TODO
 
+** make preview in editor use real files loaded from server (separate file for html, css and js, files should be saved to the code folder)  ...OK
+** optional min-max for integers  ...OK
 ** Preview code
-** make history slider work
-** optional min-max for integers
+
 ** sign up (use mysql/php component)
 ** login (use mysql/php component)
 ** membership panel (use mysql/php component)
 ** own code with cookie (only owner can update)
 ** own code (only member can update, if it is not private others can see and fork it)
+
+** make history slider work
+
 ** membership page with list of own projects
 ** index page with online public codes
 ** download customized version
-
-** add editable areas for magento
-** integrate into magento products
-** integrate login with magento user login
-** create private fork for people who bought it from magento
 
 -->

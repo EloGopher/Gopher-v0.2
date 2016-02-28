@@ -17,6 +17,9 @@ $dbname = 'pdesign';
 $mongo = new MongoClient("mongodb://".$dbhost);
 $mongodb = $mongo->$dbname;
 
+$GlobalRoot = '/Gopher-v0.2/pdesign/';
+
+
 // Get the users collection
 //$c_users = $db->users;
 
@@ -61,6 +64,8 @@ function GenerateNewPage()
          $c_projects->save($newproject);
 
          mkdir(dirname(__FILE__).'/pimages/'.$code);
+         file_put_contents(dirname(__FILE__).'/pimages/'.$code.'/index.html','first commit!');
+
          $FoundUnique = true;
 
          $_SESSION["code"] = $code;
@@ -135,8 +140,8 @@ function GenerateNewFork()
          $c_projects = $mongodb->projects;
          $c_projects->save($forkproject);
 
-
          mkdir(dirname(__FILE__).'/pimages/'.$code);
+         file_put_contents(dirname(__FILE__).'/pimages/'.$code.'/index.html','first commit!');
 
          recurse_copy(dirname(__FILE__).'/pimages/'.$_SESSION['code'],dirname(__FILE__).'/pimages/'.$code);
 
@@ -188,6 +193,21 @@ if ($_POST["op"]=="updateprojectinfo") {
    die();
 } else
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------
+//update preview files
+if ($_POST["op"]=="updateiframe") {
+
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.css',$_POST["css"]);
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.js',"$(document).ready(function () {\n\n".$_POST["js"]."\n\n});");
+
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html',"<html>\n<head>\n<script src='".$GlobalRoot."js/jquery-2.1.4.min.js'></script>\n<script src='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.js'></script>\n<link href='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.css' rel='stylesheet' type='text/css'>\n</head>\n<body>".$_POST["html"]."</body>\n</html>");
+
+   $returnDelResult[] = array('success' => (bool) true, 'Message' => 'information updated');
+   echo json_encode($returnDelResult);
+   die();
+
+}
+
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 //update editor content
@@ -202,6 +222,9 @@ if ($_POST["op"]=="update") {
       $project = $project->current();
 
       if ($project!=null) {
+
+         file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html'.$_SESSION["code"],'first commit!');
+
          $version = $project["version"];
 
          $origproject = $c_projects->find( array('code' => (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]) );
@@ -291,8 +314,8 @@ if ((count($compactcode)==3) && ($code=="preview")) {
       $ProjectStatus = $project["project"]["status"];
       if ($ProjectStatus=='') { $ProjectStatus = 'draft'; }
 
-      $ProjectImage = '../pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
-      $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
+      $ProjectImage = '../pimages/'.$_SESSION["code"].'/thumbnail/'.$project["project"]["image"];
+      $ProjectRealImage = 'pimages/'.$_SESSION["code"].'/thumbnail/'.$project["project"]["image"];
       if ($project["project"]["image"]=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
 
       $imagewidth=80;
@@ -335,7 +358,7 @@ if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && (
       $version = $project["version"];
       $_SESSION["code"] = $code;
       $_SESSION["version"] = $project['version'];
-      header("Location: /Gopher-v0.2/pdesign/".$code."/".$version);
+      header("Location: /Gopher-v0.2/pdesign/".$_SESSION["code"]."/".$version);
       die();
    } else {
       header("Location: /Gopher-v0.2/pdesign/".GenerateNewPage());
