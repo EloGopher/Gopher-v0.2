@@ -21,17 +21,6 @@ var delta = 200;
 
 
 //------------------------------------------------------------------------------------------------------------------
-function loadCssFile(pathToFile) {
-	var css = jQuery("<link>");
-	css.attr({
-		rel: "stylesheet",
-		type: "text/css",
-		href: pathToFile
-	});
-	$("head").append(css);
-}
-
-
 function varnamefromstr(inputstr)
 {
 	var outputstr=inputstr;
@@ -112,7 +101,7 @@ function findParams(inputText, filetype, paramtype) {
 
 //------------------------------------------------------------------------------------------------------------------
 function replaceParamsFromDialog(inputText, filetype) {
-	var re = new RegExp('#(.+?)\\s?\\((.+?)\\)#', 'i');
+	var re = new RegExp('#(int|color|text)\\s?\\((.+?)\\)#', 'i');
 	var m;
 	while ((m = re.exec(inputText)) !== null) {
 
@@ -235,8 +224,7 @@ function updateiframe(refreshparams) {
 
 //------------------------------------------------------------------------------------------------------------------
 function replaceSourceFromDialog(inputText, filetype) {
-	var re = new RegExp('#(.+?)\\s?\\((.+?)\\)#', 'i');
-//	var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
+	var re = new RegExp('#(int|color|text)\\s?\\((.+?)\\)#', 'i');
 	var m;
 	var inputTextTemp = inputText;
 	var ReplaceList = [];
@@ -931,15 +919,14 @@ $(document).ready(function() {
 		opts.e4x = false;
 
 		var tempHTML = HTMLeditor.getValue();
-		var re = new RegExp('#(.+?)\\s?\\((.+?)\\)#', 'i');
-//		var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
+		var re = new RegExp('#(int|color|text)\\s?\\((.+?)\\)#', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
 		while ((m = re.exec(tempHTML)) !== null) {
 			tempcounter++;
-			templist.push(tempHTML.substr(m.index + 1, m[0].length + 1)); //  m[0]+'##');
-			tempHTML = tempHTML.substr(0, m.index + 1) + '((' + tempcounter + '))' + tempHTML.substr(m.index + m[0].length + 2);
+			templist.push(tempHTML.substr(m.index , m[0].length )); //  m[0]+'##');
+			tempHTML = tempHTML.substr(0, m.index ) + '((' + tempcounter + '))' + tempHTML.substr(m.index + m[0].length );
 		}
 		var output = html_beautify(tempHTML, opts);
 
@@ -952,15 +939,14 @@ $(document).ready(function() {
 
 
 		var tempCSS = CSSeditor.getValue();
-		var re = new RegExp('#(.+?)\\s?\\((.+?)\\)#', 'i');
-//		var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
+		var re = new RegExp('#(int|color|text)\\s?\\((.+?)\\)#', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
 		while ((m = re.exec(tempCSS)) !== null) {
 			tempcounter++;
-			templist.push(tempCSS.substr(m.index + 1, m[0].length + 1)); //  m[0]+'##');
-			tempCSS = tempCSS.substr(0, m.index + 1) + '((' + tempcounter + '))' + tempCSS.substr(m.index + m[0].length + 2);
+			templist.push(tempCSS.substr(m.index , m[0].length )); //  m[0]+'##');
+			tempCSS = tempCSS.substr(0, m.index ) + '((' + tempcounter + '))' + tempCSS.substr(m.index + m[0].length);
 		}
 		var output = css_beautify(tempCSS, opts);
 
@@ -973,15 +959,14 @@ $(document).ready(function() {
 
 
 		var tempJS = JSeditor.getValue();
-		var re = new RegExp('#(.+?)\\s?\\((.+?)\\)#', 'i');
-//		var re = new RegExp('\\[#(.+?):(.+?)(?=##)##(.+?)(?=#\\])', 'i');
+		var re = new RegExp('#(int|color|text)\\s?\\((.+?)\\)#', 'i');
 		var m;
 		var templist = [];
 		var tempcounter = -1;
 		while ((m = re.exec(tempJS)) !== null) {
 			tempcounter++;
-			templist.push(tempJS.substr(m.index + 1, m[0].length + 1)); //  m[0]+'##');
-			tempJS = tempJS.substr(0, m.index + 1) + '((' + tempcounter + '))' + tempJS.substr(m.index + m[0].length + 2);
+			templist.push(tempJS.substr(m.index , m[0].length )); //  m[0]+'##');
+			tempJS = tempJS.substr(0, m.index ) + '((' + tempcounter + '))' + tempJS.substr(m.index + m[0].length );
 		}
 		var output = js_beautify(tempJS, opts);
 

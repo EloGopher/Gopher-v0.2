@@ -162,26 +162,44 @@ html, body {
 	vertical-align: middle;
 }
 
-.propname {
+.propname_preview {
 	padding: 3px;
 	padding-left: 8px;
+	width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	display: block;
+	vertical-align: middle;
+}
+
+
+.propname {
+	/*padding: 3px;
+	padding-left: 8px;*/
+	padding-top:5px;
+	padding-bottom:5px;
 	width: 200px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	display: table-cell;
 	vertical-align: middle;
 }
-.propvalue-number {
-	padding: 3px;
-	padding-left: 8px;
+
+.propvalue-int {
+	/*padding: 3px;
+	padding-left: 8px;*/
+	padding-top:5px;
+	padding-bottom:5px;
 	width: 250px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	display: table-cell;
 }
 .propvalue-color {
-	padding: 3px;
-	padding-left: 8px;
+	/*padding: 3px;
+	padding-left: 8px;*/
+	padding-top:5px;
+	padding-bottom:5px;
 	cursor: pointer;
 	width: 200px;
 	text-align: left;
@@ -190,8 +208,10 @@ html, body {
 	display: table-cell;
 }
 .propvalue-text {
-	padding: 3px;
-	padding-left: 8px;
+	/*padding: 3px;
+	padding-left: 8px;*/
+	padding-top:5px;
+	padding-bottom:5px;
 	cursor: pointer;
 	width: 200px;
 	text-align: left;
@@ -199,6 +219,38 @@ html, body {
 	white-space: nowrap;
 	display: table-cell;
 }
+
+
+.propvalue-preview-int {
+	/*padding: 3px;
+	padding-left: 8px;*/
+	width: 250px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: table-cell;
+}
+.propvalue-preview--color {
+	/*padding: 3px;
+	padding-left: 8px;*/
+	cursor: pointer;
+	width: 200px;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: table-cell;
+}
+.propvalue-preview--text {
+	/*padding: 3px;
+	padding-left: 8px;*/
+	cursor: pointer;
+	width: 200px;
+	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: table-cell;
+}
+
+
 .selectednumbermenu {
 	width: 30px;
 	display: table-cell;
@@ -413,7 +465,7 @@ input[type=range]:focus::-ms-fill-upper {
 	background: rgba(255, 255, 255, 0.2);
 }
 .colorselector {
-	width: 100px;
+	width: 200px;
 }
 #ParametersModal .modal-dialog {
 	/*min-width: 700px;*/

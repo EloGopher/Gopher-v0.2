@@ -39,6 +39,7 @@
           _throttleDelay = 70,
           _inMoveHandler = false,
           _lastMoveHandlerRun = 0,
+          oldcolor = '',
           color = {
             tiny: null,
             hsla: null,
@@ -163,7 +164,7 @@
       function _buildComponent() {
         _initElements();
         _renderSwatches();
-        _updateAllElements();
+        _updateAllElements(false,false);
         _bindControllerEvents();
       }
 
@@ -197,39 +198,51 @@
       }
 
       function updateColor(newcolor, disableinputupdate) {
-        var updatedcolor = tinycolor(newcolor);
 
-        if (updatedcolor.isValid()) {
-          color.tiny = updatedcolor;
-          color.hsla = updatedcolor.toHsl();
-          color.rgba = updatedcolor.toRgb();
-          color.hsv = updatedcolor.toHsv();
-          color.cielch = $.fn.ColorPickerSliders.rgb2lch(color.rgba);
+         if (newcolor != oldcolor) {
+            oldcolor = newcolor;
 
-          if (settings.flat || visible) {
-            container.removeClass('cp-unconvertible-cie-color');
-            _updateAllElements(disableinputupdate);
-          }
-          else {
-            if (!disableinputupdate) {
-              _updateConnectedInput();
-            }
-            _updateTriggerelementColor();
-          }
+           var updatedcolor = tinycolor(newcolor);
 
-          return true;
-        }
-        else {
-          return false;
+           if (updatedcolor.isValid()) {
+             color.tiny = updatedcolor;
+             color.hsla = updatedcolor.toHsl();
+             color.rgba = updatedcolor.toRgb();
+             color.hsv = updatedcolor.toHsv();
+             color.cielch = $.fn.ColorPickerSliders.rgb2lch(color.rgba);
+
+             if (settings.flat || visible) {
+               container.removeClass('cp-unconvertible-cie-color');
+               _updateAllElements(disableinputupdate,true);
+             }
+             else {
+               if (!disableinputupdate) {
+                 _updateConnectedInput();
+               }
+               _updateTriggerelementColor();
+             }
+
+             return true;
+           }
+           else {
+
+             return false;
+           }
+        } else
+        {
+           return false;
         }
       }
 
       function show(disableLastlyUsedGroupUpdate) {
+         oldcolor = triggerelement.val();
+
         if (settings.flat) {
           return;
         }
 
         if (visible) {
+
           // repositions the popover
           triggerelement.popover('hide');
           triggerelement.popover('show');
@@ -469,6 +482,7 @@
 
         triggerelement.on('colorpickersliders.show', function() {
           show();
+
         });
 
         triggerelement.on('colorpickersliders.hide', function() {
@@ -506,7 +520,6 @@
 
           $(triggerelement).on('focus', function(ev) {
             show();
-
             ev.stopPropagation();
           });
 
@@ -524,6 +537,7 @@
         if (connectedinput) {
           connectedinput.on('keyup change', function() {
             var $input = $(this);
+            //console.log("333");
 
             updateColor($input.val(), true);
           });
@@ -541,26 +555,28 @@
           _renderSwatches();
         });
 
-        elements.swatches.on('touchstart mousedown click', 'li span', function(ev) {
+        elements.swatches.on('touchstart click', 'li span', function(ev) {
           var color = $(this).css('background-color');
           updateColor(color);
-          //_updateAllElements();
+
+          _updateAllElements(false,false);
           ev.preventDefault();
+          ev.stopPropagation();
         });
 
-        elements.swatches_add.on('touchstart mousedown click', function(ev) {
+        elements.swatches_add.on('touchstart click', function(ev) {
           _addCurrentColorToSwatches();
           ev.preventDefault();
           ev.stopPropagation();
         });
 
-        elements.swatches_remove.on('touchstart mousedown click', function(ev) {
+        elements.swatches_remove.on('touchstart click', function(ev) {
           _removeActualColorFromSwatches();
           ev.preventDefault();
           ev.stopPropagation();
         });
 
-        elements.swatches_reset.on('touchstart touchend mousedown click', function(ev) {
+        elements.swatches_reset.on('touchstart touchend click', function(ev) {
           // prevent multiple fire on android...
           if (ev.type === 'click' || ev.type === 'touchend') {
             _resetSwatches();
@@ -582,7 +598,7 @@
 
           _updateColorsProperty('hsla', 'h', 3.6 * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.saturation.parent().on('touchstart mousedown', function(ev) {
@@ -598,7 +614,7 @@
 
           _updateColorsProperty('hsla', 's', percent / 100);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.lightness.parent().on('touchstart mousedown', function(ev) {
@@ -614,7 +630,7 @@
 
           _updateColorsProperty('hsla', 'l', percent / 100);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.opacity.parent().on('touchstart mousedown', function(ev) {
@@ -630,7 +646,7 @@
 
           _updateColorsProperty('hsla', 'a', percent / 100);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.red.parent().on('touchstart mousedown', function(ev) {
@@ -646,7 +662,7 @@
 
           _updateColorsProperty('rgba', 'r', 2.55 * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.green.parent().on('touchstart mousedown', function(ev) {
@@ -662,7 +678,7 @@
 
           _updateColorsProperty('rgba', 'g', 2.55 * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.blue.parent().on('touchstart mousedown', function(ev) {
@@ -678,7 +694,7 @@
 
           _updateColorsProperty('rgba', 'b', 2.55 * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.hsvpanel.sv.on('touchstart mousedown', function(ev) {
@@ -695,7 +711,7 @@
           _updateColorsProperty('hsv', 's', percent.horizontal / 100);
           _updateColorsProperty('hsv', 'v', (100 - percent.vertical) / 100);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.hsvpanel.h.on('touchstart mousedown', function(ev) {
@@ -711,7 +727,7 @@
 
           _updateColorsProperty('hsv', 'h', 3.6 * percent.vertical);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.hsvpanel.a.on('touchstart mousedown', function(ev) {
@@ -727,7 +743,7 @@
 
           _updateColorsProperty('hsv', 'a', (100 - percent.vertical) / 100);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.cielightness.parent().on('touchstart mousedown', function(ev) {
@@ -743,7 +759,7 @@
 
           _updateColorsProperty('cielch', 'l', (MAXLIGHT / 100) * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.ciechroma.parent().on('touchstart mousedown', function(ev) {
@@ -759,7 +775,7 @@
 
           _updateColorsProperty('cielch', 'c', (MAXVALIDCHROMA / 100) * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.ciehue.parent().on('touchstart mousedown', function(ev) {
@@ -775,7 +791,7 @@
 
           _updateColorsProperty('cielch', 'h', 3.6 * percent);
 
-          _updateAllElements();
+          _updateAllElements(false,true);
         });
 
         elements.sliders.preview.on('click', function() {
@@ -918,8 +934,7 @@
 
         setLastlyUsedGroup('hsvpanel');
 
-        _updateAllElements(true);
-
+        _updateAllElements(true,false);
         show(true);
 
         return true;
@@ -937,7 +952,7 @@
 
         setLastlyUsedGroup('sliders');
 
-        _updateAllElements(true);
+        _updateAllElements(true,false);
 
         show(true);
 
@@ -956,7 +971,7 @@
 
         setLastlyUsedGroup('swatches');
 
-        _updateAllElements(true);
+        _updateAllElements(true,false);
 
         show(true);
 
@@ -1037,7 +1052,7 @@
             break;
         }
 
-        _updateAllElements();
+        _updateAllElements(false,true);
 
         ev.preventDefault();
         _inMoveHandler = false;
@@ -1247,13 +1262,13 @@
 
       var updateAllElementsTimeout;
 
-      function _updateAllElementsTimer(disableinputupdate) {
+      function _updateAllElementsTimer(disableinputupdate,triggerevent) {
         updateAllElementsTimeout = setTimeout(function() {
-          _updateAllElements(disableinputupdate);
+          _updateAllElements(disableinputupdate,triggerevent);
         }, settings.updateinterval);
       }
 
-      function _updateAllElements(disableinputupdate) {
+      function _updateAllElements(disableinputupdate,triggerevent) {
         clearTimeout(updateAllElementsTimeout);
 
         Date.now = Date.now || function() {
@@ -1326,7 +1341,10 @@
           _findActualColorsSwatch();
         }
 
-        settings.onchange(container, color);
+        if (triggerevent) {
+           settings.onchange(container, color);
+        }
+        //settings.onchange(container, color);
 
         triggerelement.data('color', color);
       }

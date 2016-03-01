@@ -200,7 +200,7 @@ if ($_POST["op"]=="updateiframe") {
    file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.css',$_POST["css"]);
    file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.js',"$(document).ready(function () {\n\n".$_POST["js"]."\n\n});");
 
-   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html',"<html>\n<head>\n<script src='".$GlobalRoot."js/jquery-2.1.4.min.js'></script>\n<script src='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.js'></script>\n<link href='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.css' rel='stylesheet' type='text/css'>\n</head>\n<body>".$_POST["html"]."</body>\n</html>");
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html',"<html>\n<head>\n<script src='".$GlobalRoot."js/jquery-2.1.4.min.js'></script>\n<script src='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.js?rnd=".rand()."'></script>\n<link href='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.css?rnd=".rand()."'' rel='stylesheet' type='text/css'>\n</head>\n<body>".$_POST["html"]."</body>\n</html>");
 
    $returnDelResult[] = array('success' => (bool) true, 'Message' => 'information updated');
    echo json_encode($returnDelResult);

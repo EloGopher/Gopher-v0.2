@@ -256,6 +256,7 @@
 ** make preview in editor use real files loaded from server (separate file for html, css and js, files should be saved to the code folder)  ...OK
 ** optional min-max for integers  ...OK
 ** Preview code
+** Preview unsaved changes
 
 ** sign up (use mysql/php component)
 ** login (use mysql/php component)

@@ -91,7 +91,12 @@
 
 			</div>
 		<div style='overflow: hidden; background-color: white;'>
-			<iframe id="iframesource" src="" class="iframebox_preview" style='width:100%; border:0px;'></iframe>
+			<iframe id="iframesource" src="<?php if (file_exists(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html')) {
+				echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+			} else {
+				file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html','first commit!');
+				echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+			} ?>" class="iframebox_preview" style='width:100%; border:0px;'></iframe>
 		</div>
 
 	</div>
