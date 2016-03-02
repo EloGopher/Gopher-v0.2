@@ -3,6 +3,22 @@ $(document).ready(function(){
 		$("#preview").hide();
 	}
 
+	//------------------------------------------------------------------------------------------------------------------
+	function getParameterByName(name)
+	{
+	  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+	  var regexS = "[\\?&]" + name + "=([^&#]*)";
+	  var regex = new RegExp(regexS,'i');
+	  var results = regex.exec(window.location.search);
+	  if(results == null)
+	    return "";
+	  else
+	    return decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+
+	var CurrentCode = getParameterByName('code');
+
+
 	var originalWidth, originalHeight, loaded = false;
 
 	function MySerach(needle, haystack){
@@ -57,7 +73,7 @@ $(document).ready(function(){
             page = "";
         }
 
-        $.post('lib.php' + '?dummy=' + new Date().getTime(),{path: path, toggle: toggle, page: page}, function(returned){
+        $.post('lib.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path: path, toggle: toggle, page: page}, function(returned){
             if(returned.success == 1){
                 empty_append('#gallery-images', returned.html);
             }else{
@@ -77,7 +93,7 @@ $(document).ready(function(){
 
 		empty_append('#lib-title', trans_searching + '... <a href="" id="clear-search">' + trans_clear + '</a>');
 
-		$.post('search.php',{}, function(returned){
+		$.post('search.php?code='+CurrentCode,{}, function(returned){
 			search_haystack = getArray(returned);
 		}, 'json');
 	});
@@ -171,7 +187,7 @@ $(document).ready(function(){
 
         	$('#myTab a[href="#tab1"]').tab('show');
         	parent.document.getElementById("image-manager-src").value= $(this).attr("rel");
-        	$.post("update_recent.php" + "?dummy=" + new Date().getTime(), { src: $(this).attr("rel") } );
+        	$.post("update_recent.php" + "?dummy=" + new Date().getTime()+'&code='+CurrentCode, { src: $(this).attr("rel") } );
 		return false;
 	});
 
@@ -181,18 +197,18 @@ $(document).ready(function(){
 
 		$("#preview").attr("src", $(this).data("icon"));
 		if ($("#preview").attr('src')!=="") { $("#preview").show(); }
-		
+
 		$("#width").val();
 		$("#height").val();
 		$("#source_pdf").val($(this).attr("rel"));
         $('#myTab a[href="#tab1"]').tab('show');
         parent.document.getElementById("image-manager-src").value= $(this).attr("rel");
-        $.post("update_recent.php" + "?dummy=" + new Date().getTime(), { src: $(this).attr("rel") } );
+        $.post("update_recent.php" + "?dummy=" + new Date().getTime()+'&code='+CurrentCode, { src: $(this).attr("rel") } );
 		return false;
 	});
 
 	$("#source").bind("change", function () {
-		$.post("update_recent.php" + "?dummy=" + new Date().getTime(), { src: this.value } );
+		$.post("update_recent.php" + "?dummy=" + new Date().getTime()+'&code='+CurrentCode, { src: this.value } );
 		$("#preview").attr("src", this.value + '?dummy=' + new Date().getTime());
 		parent.document.getElementById("image-manager-src").value= this.value;
 	});
@@ -202,7 +218,7 @@ $(document).ready(function(){
 	$("#get-recent").bind("click", function () {
 		empty_append('#recent-images', '<div id="ajax-loader-div"><img src="bootstrap/img/ajax-loader.gif" alt="Loading..." class="ajax-loader"></div>');
 
-        $.post('recent.php',{}, function(returned){
+        $.post('recent.php?code='+CurrentCode,{}, function(returned){
 			if(returned.success == 1){
 				empty_append('#recent-images', returned.html);
 			}else{
@@ -252,7 +268,7 @@ $(document).ready(function(){
 
 		empty_append('#new-folder-msg', trans_creating + '...&nbsp;&nbsp;&nbsp;');
 
-		$.post('new_folder.php' + '?dummy=' + new Date().getTime(),{path: $("#refresh").attr("rel"), folder: $('#newfolder_name').val()}, function(returned){
+		$.post('new_folder.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path: $("#refresh").attr("rel"), folder: $('#newfolder_name').val()}, function(returned){
 			if(returned.success == 1){
 				$('#newfolder_name').val("");
                 empty_append('#gallery-images', returned.html);
@@ -280,7 +296,7 @@ $(document).ready(function(){
 			return false;
 		}
 		$(this).parent().parent().empty().append('<p>' + trans_deleting + '...</p>');
-		$.post('delete_file.php' + '?dummy=' + new Date().getTime(),{path: $(this).data("path"),file: $(this).attr("rel")}, function(returned){
+		$.post('delete_file.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path: $(this).data("path"),file: $(this).attr("rel")}, function(returned){
 			if(returned.success == 1){
                 empty_append('#gallery-images', returned.html);
 			}else{
@@ -302,7 +318,7 @@ $(document).ready(function(){
 			return false;
 		}
 		$(this).parent().parent().empty().append('<p>' + trans_deleting + '...</p>');
-		$.post('delete_folder.php' + '?dummy=' + new Date().getTime(),{path: $("#refresh").attr("rel"),folder: $(this).attr("rel")}, function(returned){
+		$.post('delete_folder.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path: $("#refresh").attr("rel"),folder: $(this).attr("rel")}, function(returned){
 			if(returned.success == 1){
 				empty_append('#gallery-images', returned.html);
 			}else{
@@ -333,7 +349,7 @@ $(document).ready(function(){
 		$(this).parent().parent().empty().append('<p>' + trans_saving + '...</p>');
 
 
-		$.post('rename_folder.php' + '?dummy=' + new Date().getTime(),{path: $("#refresh").attr("rel"),new_name: r,current_name: current_value}, function(returned){
+		$.post('rename_folder.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path: $("#refresh").attr("rel"),new_name: r,current_name: current_value}, function(returned){
 			if(returned.success == 1){
 				empty_append('#gallery-images', returned.html);
 			}else{
@@ -369,7 +385,7 @@ $(document).ready(function(){
 
 		$(this).parent().parent().empty().append('<p>' + trans_saving + '...</p>');
 
-		$.post('rename_file.php' + '?dummy=' + new Date().getTime(),{path: $("#refresh").attr("rel"),new_name: (r + "." + extension),current_name: current_value}, function(returned){
+		$.post('rename_file.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path: $("#refresh").attr("rel"),new_name: (r + "." + extension),current_name: current_value}, function(returned){
 			if(returned.success == 1){
 				empty_append('#gallery-images', returned.html);
 			}else{
@@ -386,7 +402,7 @@ $(document).ready(function(){
 	$(document).on('click', '#refresh-dirs', function () {
 		empty_append('#select-dir-msg', trans_loading + '...&nbsp;&nbsp;&nbsp;');
 
-		$.post('refresh_dir_list.php' + '?dummy=' + new Date().getTime(),{}, function(returned){
+		$.post('refresh_dir_list.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{}, function(returned){
 			if(returned.success == 1){
 				empty_append('#select-dir-msg', '<span style="color: green;">' + trans_done + '...&nbsp;&nbsp;&nbsp;</span>');
 				setTimeout(function(){ $('#select-dir-msg').empty() }, 5000);
@@ -399,7 +415,7 @@ $(document).ready(function(){
 	$(document).on('change', '#select-dir', function () {
 		empty_append('#select-dir-msg', trans_sending + '...&nbsp;&nbsp;&nbsp;');
 
-		$.post('set_upload_directory.php' + '?dummy=' + new Date().getTime(),{path:$(this).val() }, function(returned){
+		$.post('set_upload_directory.php' + '?dummy=' + new Date().getTime()+'&code='+CurrentCode,{path:$(this).val() }, function(returned){
 			if(returned.success == 1){
 				empty_append('#select-dir-msg', '<span style="color: green;">' + trans_done + '...&nbsp;&nbsp;&nbsp;</span>');
 				setTimeout(function(){ $('#select-dir-msg').empty() }, 5000);

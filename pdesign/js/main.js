@@ -19,6 +19,17 @@ var rtime;
 var timeout = false;
 var delta = 200;
 
+var CurrentCode = '';
+var CurrentVersion = '';
+
+var CurrentPath = window.location.pathname;
+CurrentPath = CurrentPath.replace(GlobalRoot,'');
+
+console.log(CurrentPath);
+var CurrentPathParts = CurrentPath.split('/');
+CurrentCode = CurrentPathParts[0];
+CurrentVersion = CurrentPathParts[1];
+
 
 //------------------------------------------------------------------------------------------------------------------
 function varnamefromstr(inputstr)
@@ -198,6 +209,8 @@ function updateiframe(refreshparams) {
 	if (xhrIFrame) xhrIFrame.abort(); //kill active Ajax request
 	var PostValues = {
 		"op": "updateiframe",
+		"code": CurrentCode,
+		"version": CurrentVersion,
 		"js": newjs,
 		"css": newcss,
 		"html": newhtml
@@ -280,7 +293,7 @@ function replaceSourceFromDialog(inputText, filetype) {
 	for (var i = 0; i < ReplaceList.length; i++) {
 		inputText = inputText.replace(ReplaceList[i].old, ReplaceList[i].new);
 	}
-	console.log(ReplaceList);
+	//console.log(ReplaceList);
 	return inputText;
 }
 
@@ -335,6 +348,8 @@ function updateserver() {
 	requestTimer = setTimeout(function() {
 		var PostValues = {
 			"op": "update",
+			"code": CurrentCode,
+			"version": CurrentVersion,
 			"js": js,
 			"css": css,
 			"html": html
@@ -379,6 +394,8 @@ function forkproject() {
 	requestTimer = setTimeout(function() {
 		var PostValues = {
 			"op": "fork",
+			"code": CurrentCode,
+			"version": CurrentVersion,
 			"js": js,
 			"css": css,
 			"html": html
@@ -390,7 +407,7 @@ function forkproject() {
 			data: PostValues,
 			dataType: "json",
 			success: function(resultData) {
-				console.log(resultData);
+				//console.log(resultData);
 				if (resultData[0].success) {
 					window.location.href = GlobalRoot + '' + resultData[0].forkpath;
 				}
@@ -760,6 +777,7 @@ $(document).ready(function() {
 
 
 	$('#ProjectImageUpload').fileupload({
+			formData: { 'projectFolder' : CurrentCode },
 			maxNumberOfFiles: 1,
 			acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
 			disableImageResize: true,
@@ -782,6 +800,8 @@ $(document).ready(function() {
 					// Update Image on path on server
 					var PostValues = {
 						"op": "updateprojectinfo",
+						"code": CurrentCode,
+						"version": CurrentVersion,
 						"name": "projectimage",
 						"value": data.result.files[0].name
 					};
@@ -837,7 +857,7 @@ $(document).ready(function() {
 								$(".progress-bar").css({
 									'width': '0%'
 								});
-								console.log(newImg.height());
+								//console.log(newImg.height());
 							});
 							newImg.fadeIn(500);
 						}

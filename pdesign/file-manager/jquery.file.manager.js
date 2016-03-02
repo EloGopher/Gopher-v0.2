@@ -64,7 +64,7 @@ $(document).ready(function(){
     function GetTheHtml(existing_files){
         var html = '';
         html += '<input type="hidden" name="image-manager-src" id="image-manager-src" value="' + existing_files + '"/>';
-        html += '<iframe src="' + url_to_file_manager + 'image.php'+ '?r=' + new Date().getTime() + '&src=' + encodeURI(existing_files) + '" frameborder="0" width="885" height="550"></iframe>';
+        html += '<iframe src="' + url_to_file_manager + 'image.php'+ '?r=' + new Date().getTime() + '&src=' + encodeURI(existing_files) + '&code='+ CurrentCode +'" frameborder="0" width="885" height="550"></iframe>';
 
         return html;
     }

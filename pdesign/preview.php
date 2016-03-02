@@ -91,11 +91,11 @@
 
 			</div>
 		<div style='overflow: hidden; background-color: white;'>
-			<iframe id="iframesource" src="<?php if (file_exists(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html')) {
-				echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+			<iframe id="iframesource" src="<?php if (file_exists(dirname(__FILE__).'/pimages/'.$CurrentCode.'/index.html')) {
+				echo $GlobalRoot.'pimages/'.$CurrentCode.'/index.html?rnd='.rand();
 			} else {
-				file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html','first commit!');
-				echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+				file_put_contents(dirname(__FILE__).'/pimages/'.$CurrentCode.'/index.html','first commit!');
+				echo $GlobalRoot.'pimages/'.$CurrentCode.'/index.html?rnd='.rand();
 			} ?>" class="iframebox_preview" style='width:100%; border:0px;'></iframe>
 		</div>
 

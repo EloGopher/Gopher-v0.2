@@ -456,7 +456,7 @@ $(function(){
 </div>
 <div class="clearfix"></div>
 </div>
-<form id="upload" method="post" action="upload.php" enctype="multipart/form-data">
+<form id="upload" method="post" action="upload.php?code=<?php echo $_GET["code"]; ?>" enctype="multipart/form-data">
 
 			<div id="drop">
 

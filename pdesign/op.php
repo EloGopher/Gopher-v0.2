@@ -26,6 +26,14 @@ $GlobalRoot = '/Gopher-v0.2/pdesign/';
 // Insert this new document into the users collection
 //$c_users->save($user);
 
+$CurrentCode = '';
+$CurrentVersion = '';
+
+$CurrentPath = $_SERVER['REQUEST_URI'];
+$CurrentPath = str_replace($GlobalRoot,'',$CurrentPath);
+$CurrentPathPart = explode('/', $CurrentPath);
+$CurrentCode = $CurrentPathPart[0];
+$CurrentVersion = $CurrentPathPart[1];
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 function generateRandomString($length = 10) {
@@ -41,7 +49,7 @@ function generateRandomString($length = 10) {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 function GenerateNewPage()
 {
-   global $mongodb;
+   global $mongodb,$CurrentCode,$CurrentVersion;
    $FoundUnique = false;
 
    while (!$FoundUnique)
@@ -51,7 +59,7 @@ function GenerateNewPage()
       $c_projects = $mongodb->projects;
       $project = $c_projects->find( array('code' => (string) $code ) );
       $project->next();
-      $project = $project->current();
+      $project = $project->Current();
 
       if ($project==null) {
 
@@ -68,8 +76,8 @@ function GenerateNewPage()
 
          $FoundUnique = true;
 
-         $_SESSION["code"] = $code;
-         $_SESSION["version"] = '1';
+         $CurrentCode = $code;
+         $CurrentVersion = '1';
       }
    }
    return $code."/1";
@@ -95,12 +103,12 @@ function recurse_copy($src,$dst) {
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 function GenerateNewFork()
 {
-   global $mongodb;
+   global $mongodb,$CurrentCode,$CurrentVersion;
 
    $c_projects = $mongodb->projects;
-   $origproject = $c_projects->find( array('code' => (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]) );
+   $origproject = $c_projects->find( array('code' => (string) $_POST["code"], 'version' => (int) $_POST["version"]) );
    $origproject->next();
-   $origproject = $origproject->current();
+   $origproject = $origproject->Current();
    $origproject['project']['status'] = 'draft';
 
 //   var_dump($origproject);
@@ -115,21 +123,21 @@ function GenerateNewFork()
       $c_projects = $mongodb->projects;
       $project = $c_projects->find( array('code' => (string) $code ) );
       $project->next();
-      $project = $project->current();
+      $project = $project->Current();
 
       if ($project==null) {
          $temphtml = $_POST["html"];
-         $temphtml = str_replace( $_SESSION['code'] , $code, $temphtml);
+         $temphtml = str_replace( $_POST['code'] , $code, $temphtml);
 
          $tempcss = $_POST["css"];
-         $tempcss = str_replace( $_SESSION['code'] , $code, $tempcss);
+         $tempcss = str_replace( $_POST['code'] , $code, $tempcss);
 
          $tempjs = $_POST["js"];
-         $tempjs = str_replace( $_SESSION['code'] , $code, $tempjs);
+         $tempjs = str_replace( $_POST['code'] , $code, $tempjs);
 
          $forkproject = array(
          	'code' => $code,
-            'originalcode' => $_SESSION['code'],
+            'originalcode' => $_POST['code'],
             'html' => $temphtml,
             'css' => $tempcss,
             'js' => $tempjs,
@@ -143,10 +151,10 @@ function GenerateNewFork()
          mkdir(dirname(__FILE__).'/pimages/'.$code);
          file_put_contents(dirname(__FILE__).'/pimages/'.$code.'/index.html','first commit!');
 
-         recurse_copy(dirname(__FILE__).'/pimages/'.$_SESSION['code'],dirname(__FILE__).'/pimages/'.$code);
+         recurse_copy(dirname(__FILE__).'/pimages/'.$_POST['code'],dirname(__FILE__).'/pimages/'.$code);
 
-         $_SESSION["code"] = $code;
-         $_SESSION["version"] = '1';
+         $CurrentCode =  $code;
+         $CurrentVersion = '1';
 
          $FoundUnique = true;
       }
@@ -184,7 +192,7 @@ if ($_POST["op"]=="updateprojectinfo") {
 
 
    if ($newdata!=null) {
-      $c_projects->update( array('code'=> (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]),
+      $c_projects->update( array('code'=> (string) $_POST["code"], 'version' => (int) $_POST["version"]),
                            array('$set' => $newdata) );
    }
 
@@ -197,10 +205,10 @@ if ($_POST["op"]=="updateprojectinfo") {
 //update preview files
 if ($_POST["op"]=="updateiframe") {
 
-   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.css',$_POST["css"]);
-   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.js',"$(document).ready(function () {\n\n".$_POST["js"]."\n\n});");
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_POST["code"].'/index.css',$_POST["css"]);
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_POST["code"].'/index.js',"$(document).ready(function () {\n\n".$_POST["js"]."\n\n});");
 
-   file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html',"<html>\n<head>\n<script src='".$GlobalRoot."js/jquery-2.1.4.min.js'></script>\n<script src='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.js?rnd=".rand()."'></script>\n<link href='".$GlobalRoot."pimages/".$_SESSION["code"]."/index.css?rnd=".rand()."'' rel='stylesheet' type='text/css'>\n</head>\n<body>".$_POST["html"]."</body>\n</html>");
+   file_put_contents(dirname(__FILE__).'/pimages/'.$_POST["code"].'/index.html',"<html>\n<head>\n<script src='".$GlobalRoot."js/jquery-2.1.4.min.js'></script>\n<script src='".$GlobalRoot."pimages/".$_POST["code"]."/index.js?rnd=".rand()."'></script>\n<link href='".$GlobalRoot."pimages/".$_POST["code"]."/index.css?rnd=".rand()."'' rel='stylesheet' type='text/css'>\n</head>\n<body>".$_POST["html"]."</body>\n</html>");
 
    $returnDelResult[] = array('success' => (bool) true, 'Message' => 'information updated');
    echo json_encode($returnDelResult);
@@ -215,26 +223,26 @@ if ($_POST["op"]=="update") {
    if (($_POST["html"]!="") || ($_POST["js"]!="") || ($_POST["css"]!="")) {
 
       $c_projects = $mongodb->projects;
-      $project = $c_projects->find( array('code' => (string) $_SESSION["code"]) );
+      $project = $c_projects->find( array('code' => (string) $_POST["code"]) );
       $project->sort( array( 'version' => -1 ) );
       $project->limit(1);
       $project->next();
-      $project = $project->current();
+      $project = $project->Current();
 
       if ($project!=null) {
 
-         file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html'.$_SESSION["code"],'first commit!');
+         file_put_contents(dirname(__FILE__).'/pimages/'.$_POST["code"].'/index.html'.$_POST["code"],'first commit!');
 
          $version = $project["version"];
 
-         $origproject = $c_projects->find( array('code' => (string) $_SESSION["code"], 'version' => (int) $_SESSION["version"]) );
+         $origproject = $c_projects->find( array('code' => (string) $_POST["code"], 'version' => (int) $_POST["version"]) );
          $origproject->limit(1);
          $origproject->next();
-         $origproject = $origproject->current();
+         $origproject = $origproject->Current();
 
 
          $updateproject = array(
-         	'code' => $_SESSION["code"],
+         	'code' => $_POST["code"],
             'html' => $_POST["html"],
             'css' => $_POST["css"],
             'js' => $_POST["js"],
@@ -245,9 +253,9 @@ if ($_POST["op"]=="update") {
          $c_projects = $mongodb->projects;
          $c_projects->save($updateproject);
 
-         $_SESSION["version"] = ($version+1);
+         $CurrentVersion = ($version+1);
 
-         $returnDelResult[] = array('success' => (bool) true, 'code' => (string) $_SESSION["code"], 'version' => (int) ($version+1));
+         $returnDelResult[] = array('success' => (bool) true, 'code' => (string) $_POST["code"], 'version' => (int) ($version+1));
          echo json_encode($returnDelResult);
 
 //         $returnDelResult[] = array('success' => (bool) false);
@@ -276,7 +284,6 @@ if ($_POST["op"]=="fork") {
 }
 
 
-//echo $_SESSION["code"]." ".$_SESSION["version"]."  - ".$_SESSION["dbid"];
 
 $html = "";
 $css = "";
@@ -296,14 +303,14 @@ if ((count($compactcode)==3) && ($code=="preview")) {
    $project = $c_projects->find( array('code' => (string) $code, 'version' => (int) $version) );
 
    $project->next();
-   $project = $project->current();
+   $project = $project->Current();
 
 //   var_dump($project);
 //   die();
 
    if ($project!=null) {
-      $_SESSION["code"] = $code;
-      $_SESSION["version"] = $version;
+      $CurrentCode = $code;
+      $CurrentVersion = $version;
 
       $ProjectTitle = $project["project"]["title"];
       if ($ProjectTitle=='') { $ProjectTitle = 'Project Title'; }
@@ -314,8 +321,8 @@ if ((count($compactcode)==3) && ($code=="preview")) {
       $ProjectStatus = $project["project"]["status"];
       if ($ProjectStatus=='') { $ProjectStatus = 'draft'; }
 
-      $ProjectImage = '../pimages/'.$_SESSION["code"].'/thumbnail/'.$project["project"]["image"];
-      $ProjectRealImage = 'pimages/'.$_SESSION["code"].'/thumbnail/'.$project["project"]["image"];
+      $ProjectImage = '../pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
+      $ProjectRealImage = 'pimages/'.$code.'/thumbnail/'.$project["project"]["image"];
       if ($project["project"]["image"]=='') { $ProjectImage = '../placeholder.jpg'; $ProjectRealImage = 'placeholder.jpg';}
 
       $imagewidth=80;
@@ -349,16 +356,16 @@ if ( ((count($compactcode)==1) && ($code!="")) || ((count($compactcode)==2) && (
    $project->sort( array( 'version' => -1 ) );
    $project->limit(1);
    $project->next();
-   $project = $project->current();
+   $project = $project->Current();
 
 //   var_dump($project);
 //   die();
 
    if ($project!=null) {
       $version = $project["version"];
-      $_SESSION["code"] = $code;
-      $_SESSION["version"] = $project['version'];
-      header("Location: /Gopher-v0.2/pdesign/".$_SESSION["code"]."/".$version);
+      $CurrentCode = $code;
+      $CurrentVersion = $project['version'];
+      header("Location: /Gopher-v0.2/pdesign/".$CurrentCode."/".$version);
       die();
    } else {
       header("Location: /Gopher-v0.2/pdesign/".GenerateNewPage());
@@ -373,14 +380,14 @@ if ( (count($compactcode)==2) && ($code!="") && ($compactcode[1]!="")) {
    $project = $c_projects->find( array('code' => (string) $code, 'version' => (int) $version) );
 
    $project->next();
-   $project = $project->current();
+   $project = $project->Current();
 
 //   var_dump($project);
 //   die();
 
    if ($project!=null) {
-      $_SESSION["code"] = $code;
-      $_SESSION["version"] = $version;
+      $CurrentCode = $code;
+      $CurrentVersion = $version;
 
       $ProjectTitle = $project["project"]["title"];
       if ($ProjectTitle=='') { $ProjectTitle = 'Project Title'; }

@@ -2,11 +2,23 @@
 
 session_start();
 
+$GlobalRoot = '/Gopher-v0.2/pdesign/';
+
+$CurrentCode = $_GET["code"];
+if ($CurrentCode=='') { $CurrentCode = 'unknownfolder'; }
+
+if (!preg_match('/[^A-Za-z0-9]/', $CurrentCode))
+{
+  // string contains only english letters & digits
+} else {
+	$CurrentCode = 'unknownfolder';
+}
+
 /** Full path to the folder that images will be used as library and upload. Include trailing slash */
-define('FOLDER_PATH', '//users/Ekim/phpworkspace/Gopher-v0.2/pdesign/pimages/'.$_SESSION["code"].'/');
+define('FOLDER_PATH', '//users/Ekim/phpworkspace/Gopher-v0.2/pdesign/pimages/'.$CurrentCode.'/');
 
 /** Full URL to the folder that images will be used as library and upload. Include trailing slash and protocol (i.e. http://) */
-define('FOLDER_URL', '/Gopher-v0.2/pdesign/pimages/'.$_SESSION["code"].'/');
+define('FOLDER_URL', '/Gopher-v0.2/pdesign/pimages/'.$CurrentCode.'/');
 
 /** The extensions for to use in validation */
 define('ALLOWED_IMG_EXTENSIONS', 'gif,jpg,jpeg,png,json');

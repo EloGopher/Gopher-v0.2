@@ -10,7 +10,7 @@ var requestTimerIFrame;
 var xhr;
 var xhrIFrame;
 var updateIFrameTimer;
-var updateIFrame=true;
+var updateIFrame=false;
 var LastEditor;
 var paramArray = [];
 var ParametersModalCloseWithSave = false;
@@ -20,6 +20,18 @@ var GlobalRoot = '/Gopher-v0.2/pdesign/';
 var rtime;
 var timeout = false;
 var delta = 200;
+
+
+var CurrentCode = '';
+var CurrentVersion = '';
+
+var CurrentPath = window.location.pathname;
+CurrentPath = CurrentPath.replace(GlobalRoot,'');
+
+console.log(CurrentPath);
+var CurrentPathParts = CurrentPath.split('/');
+CurrentCode = CurrentPathParts[1];
+CurrentVersion = CurrentPathParts[2];
 
 
 //------------------------------------------------------------------------------------------------------------------
@@ -198,6 +210,8 @@ function updateiframefunc(refreshparams) {
 	if (xhrIFrame) xhrIFrame.abort(); //kill active Ajax request
 	var PostValues = {
 		"op": "updateiframe",
+		"code": CurrentCode,
+		"version": CurrentVersion,
 		"js": newjs,
 		"css": newcss,
 		"html": newhtml

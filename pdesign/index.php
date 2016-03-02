@@ -79,8 +79,8 @@
 	</head>
 
 	<script>
-		var ThisPageCode = '<?php echo $_SESSION["code"]; ?>';
-		var ThisPageVersion = '<?php echo $_SESSION["version"]; ?>';
+		var ThisPageCode = '<?php echo $CurrentCode; ?>';
+		var ThisPageVersion = '<?php echo $CurrentVersion; ?>';
 	</script>
 
 	<script>
@@ -213,11 +213,11 @@
 					<div id="csseditor_div_hint" class="EditorHint">CSS</div>
 				</div>
 				<div class="xPanel split content" id="PreviewPanel" style="overflow:hidden;">
-					<iframe id="iframesource" src="<?php if (file_exists(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html')) {
-						echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+					<iframe id="iframesource" src="<?php if (file_exists(dirname(__FILE__).'/pimages/'.$CurrentCode.'/index.html')) {
+						echo $GlobalRoot.'pimages/'.$CurrentCode.'/index.html?rnd='.rand();
 					} else {
-						file_put_contents(dirname(__FILE__).'/pimages/'.$_SESSION["code"].'/index.html','first commit!');
-						echo $GlobalRoot.'pimages/'.$_SESSION["code"].'/index.html?rnd='.rand();
+						file_put_contents(dirname(__FILE__).'/pimages/'.$CurrentCode.'/index.html','first commit!');
+						echo $GlobalRoot.'pimages/'.$CurrentCode.'/index.html?rnd='.rand();
 					} ?>" class="iframebox"></iframe>
 				</div>
 			</div>
@@ -255,7 +255,8 @@
 
 ** make preview in editor use real files loaded from server (separate file for html, css and js, files should be saved to the code folder)  ...OK
 ** optional min-max for integers  ...OK
-** Preview code
+** Preview code ...OK
+** stop using session so can have multiple tabs open ...OK
 ** Preview unsaved changes
 
 ** sign up (use mysql/php component)
@@ -263,11 +264,14 @@
 ** membership panel (use mysql/php component)
 ** own code with cookie (only owner can update)
 ** own code (only member can update, if it is not private others can see and fork it)
+** check user session when uploading/viewing images and project image upload dont only use url parameters for security
 
 ** make history slider work
 
 ** membership page with list of own projects
 ** index page with online public codes
 ** download customized version
+
+** go live for QA
 
 -->
