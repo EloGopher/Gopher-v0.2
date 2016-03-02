@@ -257,7 +257,7 @@
 ** optional min-max for integers  ...OK
 ** Preview code ...OK
 ** stop using session so can have multiple tabs open ...OK
-** Preview unsaved changes
+** Preview unsaved changes ...OK (save to temp_ fields in mongo )
 
 ** sign up (use mysql/php component)
 ** login (use mysql/php component)

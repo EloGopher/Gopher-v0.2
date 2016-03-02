@@ -270,6 +270,23 @@ if ($_POST["op"]=="update") {
 
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
 //update editor content
+if ($_POST["op"]=="updatetemp") {
+   $c_projects = $mongodb->projects;
+
+   $newdata = null;
+
+   $newdata = array('temp_html' => $_POST["html"],      'temp_css' => $_POST["css"],      'temp_js' => $_POST["js"] );
+
+   $c_projects->update( array('code'=> (string) $_POST["code"], 'version' => (int) $_POST["version"]), array('$set' => $newdata) );
+
+
+   $returnDelResult[] = array('success' => (bool) true, 'code' => (string) $_POST["code"] );
+   echo json_encode($returnDelResult);
+   die();
+} else
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------
+//update editor content
 if ($_POST["op"]=="fork") {
    $ForkPath = GenerateNewFork();
 
@@ -337,9 +354,9 @@ if ((count($compactcode)==3) && ($code=="preview")) {
          $ProjectBrowsers = implode (",", $project["project"]["browsers"] );
       }
 
-      $html = $project["html"];
-      $css = $project["css"];
-      $js = $project["js"];
+      $html = $project["temp_html"];
+      $css = $project["temp_css"];
+      $js = $project["temp_js"];
    }
 
 //   var_dump($compactcode);

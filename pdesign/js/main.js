@@ -732,10 +732,36 @@ $(document).ready(function() {
 	});
 
 	$("#PreviewButton").on('click', function(e) {
+		var js = JSeditor.getValue();
+		var css = CSSeditor.getValue();
+		var html = HTMLeditor.getValue();
 
+		if (xhr) xhr.abort(); //kill active Ajax request
+		var PostValues = {
+			"op": "updatetemp",
+			"code": CurrentCode,
+			"version": CurrentVersion,
+			"js": js,
+			"css": css,
+			"html": html
+		};
+
+		xhr = $.ajax({
+			type: 'POST',
+			url: GlobalRoot + "op.php",
+			data: PostValues,
+			dataType: "json",
+			success: function(resultData) {
+				if (resultData[0].success) {
+					window.open(GlobalRoot+'preview/'+ThisPageCode+'/'+ThisPageVersion, '_blank_preview');
+				}
+			},
+			error: function(xhr, status, error) {
+				console.log("Network connection error. Please check with your network administrator. Error:" + status);
+			}
+		});
 		e.preventDefault();
 
-	   window.open(GlobalRoot+'preview/'+ThisPageCode+'/'+ThisPageVersion, '_blank_preview');
 	});
 
 
