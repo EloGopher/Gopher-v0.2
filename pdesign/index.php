@@ -126,7 +126,7 @@
 				</div>
 
 				<div style="margin-right:20px;  text-align:right">
-					<button class="btn btn-default" data-toggle="modal" id="RunButton"><i class="fa fa-play"></i> Run</button>
+					<button class="btn btn-default btn-pdesign" data-toggle="modal" id="RunButton"><i class="fa fa-play"></i> Run</button>
 					<button class="btn btn-default" data-toggle="modal" id="UpdateButton"><i class="fa fa-pencil-square-o"></i> Update</button>
 					<button class="btn btn-default" data-toggle="modal" id="PreviewButton"><i class="fa fa-eye"></i> Preview</button>
 
@@ -135,6 +135,9 @@
 					<button class="btn btn-default file-manager-linked" data-input-id=""><i class="fa fa-picture-o"></i> Images</button>
 					<button class="btn btn-default" id="NewProject"><i class="fa fa-file-o"></i> New</button>
 					<button class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-code-fork"></i> Fork</button>
+
+					<a href='../member/login.php' class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-sign-in"></i> Sign in</a>
+
 
 				</div>
 		</div>
