@@ -524,7 +524,7 @@ input[type=range]:focus::-ms-fill-upper {
     padding: 0 10px 5px;
 }
 
-#sidebar .ebCont .avatar {
+#sidebar .ebCont .avatar2 {
     font-size: 13px;
     font-weight: 700;
 }
@@ -557,7 +557,7 @@ input[type=range]:focus::-ms-fill-upper {
 
 
 
-#sidebar .ebCont .avatar img {
+#sidebar .ebCont .avatar2 img {
 	float: left;
 	margin-right: 10px;
 	overflow: hidden;

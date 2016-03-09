@@ -1,4 +1,6 @@
-<?php include_once 'op.php';
+<?php require_once 'member/app/init.php';
+include_once 'op.php';
+
 ?><!DOCTYPE html>
 	<html lang="en">
 
@@ -78,6 +80,21 @@
 		<script src="../js/main.js"></script>
 	</head>
 
+	<link href="<?php echo asset_url('css/main.css') ?>" rel="stylesheet">
+
+	<?php $color = Config::get('app.color_scheme'); ?>
+
+	<script src="<?php echo asset_url('js/easylogin.js') ?>"></script>
+	<script src="<?php echo asset_url('js/main.js') ?>"></script>
+	<script>
+		EasyLogin.options = {
+			ajaxUrl: '<?php echo App::url("ajax.php") ?>',
+			lang: <?php echo json_encode(trans('main.js')) ?>,
+			debug: <?php echo Config::get('app.debug')?1:0 ?>,
+		};
+	</script>
+
+
 	<script>
 		var ThisPageCode = '<?php echo $CurrentCode; ?>';
 		var ThisPageVersion = '<?php echo $CurrentVersion; ?>';
@@ -136,8 +153,24 @@
 					<button class="btn btn-default" id="NewProject"><i class="fa fa-file-o"></i> New</button>
 					<button class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-code-fork"></i> Fork</button>
 
-					<a href='../member/login.php' class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-sign-in"></i> Sign in</a>
+					<?php if (Auth::check()): ?>
+							<?php if (Auth::userCan('dashboard')): ?>
 
+									<a href="admin.php" class="btn btn-default" data-toggle="tooltip" data-placement="bottom" title="<?php _e('main.admin_dashboard'); ?>">
+										<span class="glyphicon glyphicon-cog"></span>
+									</a>
+							<?php endif ?>
+							<div class="btn-group dropdown">
+								<button class="btn btn-default" id="UserDetails" data-toggle="dropdown" data-hover="dropdown"><img src="<?php echo Auth::user()->avatar ?>" class="avatar"> </a> <?php echo Auth::user()->display_name ?> <b class="caret"></b></button>
+								<ul class="dropdown-menu dropdown-menu-right">
+									<li><a href="<?php echo $GlobalRoot; ?>member/profile.php?u=<?php echo Auth::user()->id ?>"><?php _e('main.my_profile'); ?></a></li>
+									<li><a href="<?php echo $GlobalRoot; ?>member/settings.php"><?php _e('main.settings'); ?></a></li>
+									<li><a href="<?php echo $GlobalRoot; ?>member/logout.php"><?php _e('main.logout'); ?></a></li>
+								</ul>
+							</div>
+					<?php else: ?>
+						<a href='../member/login.php' class="btn btn-default" data-toggle="modal" id="ForkButton"><i class="fa fa-sign-in"></i> Sign in</a>
+					<?php endif; ?>
 
 				</div>
 		</div>
@@ -148,7 +181,7 @@
 			<div class="element">
 		    <div class="elementBody" style="padding-top: 0px; border-top-style: none; padding-bottom: 0px; border-bottom-style: none; overflow: hidden; opacity: 1; height: auto;">
 		      <div class="ebCont">
-		        <div class="avatar">
+		        <div class="avatar2">
 		          <img src="//www.gravatar.com/avatar/f16362708c253b0b17199935ff7c2cb6/?default=&amp;s=80" height="40" width="40">
 		          <a title="See public fiddles" href="/user/lovlka/fiddles/">Lerumus Ipsumus</a>
 
