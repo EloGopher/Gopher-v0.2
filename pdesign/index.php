@@ -295,9 +295,9 @@ include_once 'op.php';
 ** stop using session so can have multiple tabs open ...OK
 ** Preview unsaved changes ...OK (save to temp_ fields in mongo )
 
-** sign up (use mysql/php component)
-** login (use mysql/php component)
-** membership panel (use mysql/php component)
+** sign up (use mysql/php component) ...OK
+** login (use mysql/php component) ...OK
+** membership panel (use mysql/php component) ...OK
 ** own code with cookie (only owner can update)
 ** own code (only member can update, if it is not private others can see and fork it)
 ** check user session when uploading/viewing images and project image upload dont only use url parameters for security
