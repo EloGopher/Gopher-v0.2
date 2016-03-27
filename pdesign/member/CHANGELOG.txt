@@ -1,0 +1,86 @@
+# Change Log
+
+Visit https://git.hazzardweb.com for the latest changes.
+
+## 1.2.4 - 2016-01-22
+
+- UPGRADE GUIDE: http://bit.ly/elp-124
+- Allow `->orderBy('rand()')`.
+- Add `User::getRoleAttribute` method.
+- Fix css comment text.
+- Fix avatar type.
+- Fix `mb_substr` helper.
+- Fix comment date format.
+
+## 1.2.3 - 2015-08-28
+
+- UPGRADE GUIDE: http://bit.ly/elp-123
+- Fix LinkedIn and Facebook OAuth
+- Fix avatar
+- OAuth data extractor improvements
+
+## 1.2.2 - 07/03/2015-03-07
+
+- Fix captcha key
+- Fix messages modal
+
+## 1.2.1 (22/02/2015)
+
+- Fix captcha keys
+- Fix comment selector
+ 
+## 1.2.0 - 2015-02-17
+
+- Fixed comment moderation option
+- CSRF type check
+- Fixed signup callback for modal
+- Fixed embedded comment page url
+- Removed Geoplugin
+- Switched to the new reCAPTCHA
+- Replace \n with <br> when displaying comments
+- Added "All contacts" button
+- Added "Cancel contact" button
+- Direct PM with EasyLogin.openPMS(userID)
+ 
+## 1.1.4 - 2015-01-14
+
+- Fixed comment moderation option.
+- Extra check for http accept language.
+- Fixed issues with html entities.
+
+## 1.1.3 - 2014-11-14
+
+- Fixed language switch issue.
+- Fixed 2 bugs for PHP<5.4.
+ 
+## 1.1.2 - 2014-11-10
+
+- Fixed signup callback.
+
+## 1.1.1 - 2014-11-06
+
+- Fixed bug where the user is not found.
+- Fixed admin reply button link.
+- Fixed check for getallheaders().
+ 
+## 1.1.0 - 2014-10-26
+
+- Added Commments.
+- The modal version now works without conflicting other CSS.
+- Added support for detecting browser language.
+- Reworked ajax action handling.
+- Improvements and bug fixes.
+- Improved documentation.
+ 
+## 1.0.2 - 2014-09-03
+
+- Fixed JavaScript signup callback.
+- Fixed ValidationServiceProvider scope.
+ 
+## 1.0.1 - 2014-08-28
+
+- Fixed translation function typo.
+
+## 1.0.0 - 2014-08-19
+
+- Initial release.
