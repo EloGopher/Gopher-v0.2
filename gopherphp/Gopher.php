@@ -21,26 +21,25 @@
 $SourceFolder = __DIR__.'/../GopherMiniTest';
 //$SourceFolder = '/users/ekim/phpworkspace/phishproof';
 
-$TargerFolder = __DIR__;
 $FileList = array();
 
-if (file_exists(__DIR__."/no-gopher.txt")) {
-  die("no-gopher.txt found. stopping execution!");
-}
-
-if (file_exists($TargerFolder.'/gopher-files.txt')) {
-    $str = file_get_contents($TargerFolder.'/gopher-files.txt');
+if (file_exists($SourceFolder.'/gopher-files.txt')) {
+    $str = file_get_contents($SourceFolder.'/gopher-files.txt');
     $FileList = unserialize($str);
 }
 //print_r($FileList);
 
 $t0 = microtime(true);
 
-recurse_copy($SourceFolder, $TargerFolder);
+$tracklines = [];
+
+$tracklines = recurse_copy($SourceFolder,[]);
+var_dump($tracklines);
+echo 'done scan<br>';
 
 //echo '<pre>time taken: '.(microtime(true) - $t0)."\n";
 
-$fh = fopen($TargerFolder.'/gopher-files.txt', 'w');
+$fh = fopen($SourceFolder.'/gopher-files.txt', 'w');
 fwrite($fh, serialize($FileList));
 fclose($fh);
 
@@ -48,125 +47,111 @@ fclose($fh);
 
 if (isset($_POST['op'])) {
     if ($_POST['op'] == 'hello') {
-        echo "Hi, I'm here. \n";
+        echo "Hi, I'm here. <br>\n";
         die(1);
     }
 }
 
-function recurse_copy($src, $dst)
+function recurse_copy($src,$tracklines)
 {
    global $SourceFolder,$FileList;
    $dir = opendir($src);
 
    $result = ($dir === false ? false : true);
 
-   if ($result !== false) {
-      $result = @mkdir($dst);
-      $result = true;
+   if ($result === false) { die(1); }
 
-      if ($result === true) {
-         while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..') && $result) {
-               if (is_dir($src.'/'.$file)) {
-                  //echo $src.'/'.$file.'<br>';
-                  if ($file == '.git') {
+   while (false !== ($file = readdir($dir))) {
+      if (($file != '.') && ($file != '..') && $result) {
+         if (is_dir($src.'/'.$file)) {
+            //echo $src.'/'.$file.'<br>';
+            if ($file == '.git') {
+            } else {
+                $tracklines = recurse_copy($src.'/'.$file,$tracklines);
+            }
+         } else
+         if ( (stripos($file,'.php')!==false) || (stripos($file,'.js')!==false) || (stripos($file,'.html')!==false) )
+         {
+//            echo $CurrentFileName.'<br>';
+            $CurrentFileName = $src.'/'.$file;
+            $CurrentFileChecksum = md5_file($src.'/'.$file);
+
+            $skipfile = false;
+            $filefound = false;
+
+            foreach ($FileList as &$TheFile) {
+               if ($CurrentFileName == $TheFile['filename']) {
+                  $filefound = true;
+
+                  if ($CurrentFileChecksum == $TheFile['checksum']) {
+                     //echo "skip ".$CurrentFileName."\n";
+                     $skipfile=true;
                   } else {
-                      $result = recurse_copy($src.'/'.$file, $dst.'/'.$file);
+                     echo $CurrentFileName ." is modified.<br>\n";
+                     $TheFile['checksum'] = $CurrentFileChecksum;
                   }
-               } else {
-                  $CurrentFileName = $src.'/'.$file;
-                  $CurrentFileChecksum = md5_file($src.'/'.$file);
+                  break;
+               }
+            }
 
-                  $skipfile = false;
-                  $filefound = false;
+            if (!$skipfile) {
+               if (!$filefound) {
+                  $FileList[] = array('filename' => $CurrentFileName, 'checksum' => $CurrentFileChecksum);
+                  //echo $CurrentFileName ." is new scanning it over.<br>\n";
+               }
 
-                  foreach ($FileList as &$TheFile) {
-                     if ($CurrentFileName == $TheFile['filename']) {
-                        $filefound = true;
+               $file_ext = pathinfo($file, PATHINFO_EXTENSION);
 
-                        if ($CurrentFileChecksum == $TheFile['checksum']) {
-                           //echo "skip ".$CurrentFileName."\n";
-                           $skipfile=true;
-                        } else {
-                           echo $CurrentFileName ." is modified.\n";
-                           $TheFile['checksum'] = $CurrentFileChecksum;
-                        }
-                        break;
-                     }
+               if (($file_ext == 'php') || ($file_ext == 'js') ) {
+                  $shortpath = $src;
+                  $shortpath = str_replace($SourceFolder, '', $shortpath);
+
+                  $temppaths = explode('/', $shortpath);
+                  $upfolder = '';
+                  for ($i = 0; $i < count($temppaths) - 1; ++$i) {
+                     $upfolder .= '../';
                   }
 
-                  if (!$skipfile) {
-                     if (!$filefound) {
-                        $FileList[] = array('filename' => $CurrentFileName, 'checksum' => $CurrentFileChecksum);
-                        echo $CurrentFileName ." is new copying it over.\n";
-                     }
+                  $PhpSource = file_get_contents($src.'/'.$file);
 
-                     $file_ext = pathinfo($file, PATHINFO_EXTENSION);
+                  $index = -1;
 
-                     if (($file_ext == 'php') || ($file_ext == 'js') ) {
-                        $shortpath = $src;
-                        $shortpath = str_replace($SourceFolder, '', $shortpath);
+                  $re = '/gopher\((.+?)\);/msi';
 
-                        $temppaths = explode('/', $shortpath);
-                        $upfolder = '';
-                        for ($i = 0; $i < count($temppaths) - 1; ++$i) {
-                           $upfolder .= '../';
-                        }
+                  $fh = fopen($src.'/'.$file, 'rb');
+                  //$out = fopen($dst.'/'.$file, 'w');
 
-                        $PhpSource = file_get_contents($src.'/'.$file);
-
-                        $index = -1;
-
-                        $re = '/\\/\\*gopher(?=\\:):(.+?)(?=\\*\\/)/im';
-
-                        $fh = fopen($src.'/'.$file, 'rb');
-                        $out = fopen($dst.'/'.$file, 'w');
-
-                        if ($file_ext == 'php') {
-                           fputs($out, '<?php include_once "'.$upfolder.'Gopher.php"; ?>');
-                        }
-
-                        //echo $src.'/'.$file.'<br>';
-
-                        $linex = 1;
-                        while ($line = fgets($fh)) {
-                           preg_match_all($re, $line, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
-                           if (count($matches) > 0) {
-                              //print_r($matches);
-                              $offsetX = 0;
-                              foreach ($matches as $match) {
-                              //echo $linex." ".$match[1][0]. " ". $match[1][1]."<br>";
-
-                                 $shortpath2 = str_replace('\'', '\\\'', $shortpath);
-                                 $shortpath2 = str_replace('"', '\\"', $shortpath2);
-
-                                 $match2 = str_replace('\'', '\\\'', $match[1][0]);
-                                 $match2 = str_replace('"', '\\"', $match2);
-                                 $GopherInsertString = 'gopher('.$linex.', \''.$shortpath2.'\',\''.$match2.'\','.$match[1][0].'); ';
-                                 //echo
-                                 $line = substr_replace($line, $GopherInsertString, $match[1][0] + $offsetX, 0);
-                                 $offsetX += strlen($match[1][0]);
-                              }
-                           }
-                           fputs($out, $line);
-                           ++$linex;
-                        }
-                        fclose($fh);
-                        fclose($out);
-                     } else {
-                        $result = copy($src.'/'.$file, $dst.'/'.$file);
-                     }
+                  if ($file_ext == 'php') {
+                     //fputs($out, '<?php include_once "'.$upfolder.'Gopher.php"; ? >');
                   }
+
+                  //echo $src.'/'.$file.'<br>';
+
+                  $linex = 1;
+                  while ($line = fgets($fh)) {
+                     preg_match_all($re, $line, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+                     if (count($matches) > 0) {
+                        //print_r($matches);
+                        $offsetX = 0;
+                        foreach ($matches as $match) {
+                           echo $linex." ".$shortpath.'/'.$file." ".$match[1][0]."<br>";
+                           $tracklines[] = array('line' => $linex, 'path' => $shortpath.'/'.$file, 'match' => $match[1][0]) ;
+                           //var_dump($tracklines);
+                        }
+                     }
+                     //fputs($out, $line);
+                     ++$linex;
+                  }
+                  fclose($fh);
+                  //fclose($out);
                }
             }
          }
-         closedir($dir);
       }
-   } else {
-      echo $dir.' problem ';
    }
+   closedir($dir);
 
-   return $result;
+   return $tracklines;
 }
 
 if (!isset($GopherIsHere)) { //prevent php from trying to icnlude Gopher.php twice or more and fail
