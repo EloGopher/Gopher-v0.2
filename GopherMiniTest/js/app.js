@@ -1,5 +1,7 @@
 $(document).ready( function() {
 	/*gopher:'start'*/
+	
+	gopher('1213311-ege',start);
 
 	var postData = {
 		task: 'getCampaignImages'
@@ -30,7 +32,7 @@ $(document).ready( function() {
        }
    }
 
-	/*gopher:obj*/
-	/*gopher:blockA*/
-	/*gopher:blockB*/
+	gopher('1-ekim',obj);
+	gopher('2-ekim',blockA);
+	gopher('3-ekim',blockB);
 });

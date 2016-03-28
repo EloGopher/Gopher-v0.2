@@ -2,6 +2,7 @@
 for ($i=0; $i<10; $i++)
 {
 	/*gopher:"Test Call 2"*/
+	gopher('123311331',$i);
 }
 
 /*gopher:"Test Call 2"*/

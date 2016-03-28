@@ -1,4 +1,5 @@
 <?php
+require '../gopherphp/Gopher.php';
 require 'funcs.php';
 
 strpos();
