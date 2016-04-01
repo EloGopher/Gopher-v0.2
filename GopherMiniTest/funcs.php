@@ -2,8 +2,8 @@
 for ($i=0; $i<10; $i++)
 {
 	/*gopher:"Test Call 2"*/
-	gopher('123311331',$i);
 }
+gopher('1000-funcs',$i);
 
 /*gopher:"Test Call 2"*/
 /*gopher:"PHP Funcs Start"*/
@@ -16,8 +16,7 @@ function TestCall2()
 	{
 		/*gopher:$localvar*/
 	}
-
-	/*gopher:"Test Call 2"*/
+	gopher('1001-funcs','Test Call 2');
 }
 
 ?>

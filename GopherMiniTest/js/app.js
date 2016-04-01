@@ -1,7 +1,7 @@
 $(document).ready( function() {
 	/*gopher:'start'*/
 	
-	gopher('1213311-ege',start);
+	gopher('1001-app.js','start');
 
 	var postData = {
 		task: 'getCampaignImages'
@@ -12,7 +12,7 @@ $(document).ready( function() {
 		dataType: "JSON",
 		data: postData,
 		success: function(data) {
-			/*gopher:data*/
+			gopher('1005-app.js',data);
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 		},
@@ -32,7 +32,7 @@ $(document).ready( function() {
        }
    }
 
-	gopher('1-ekim',obj);
-	gopher('2-ekim',blockA);
-	gopher('3-ekim',blockB);
+	gopher('1002-app.js',obj);
+	gopher('1003-app.js',blockA);
+	gopher('1004-app.js',blockB);
 });

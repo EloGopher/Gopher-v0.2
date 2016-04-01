@@ -1,15 +1,17 @@
 <?php
-require '../gopherphp/Gopher.php';
+require '../gopherSimple/Gopher.php';
 require 'funcs.php';
 
 strpos();
 
 $var1 = "xyz";
 
-/*gopher:"PHP Start ".$var1*/
+gopher('1001-index',$var1);
 
 $cars = array("Vol vo", "BMW", "Toyota");
 $car = "Honda2";
+
+gopher('1002-index',$cars);
 
 class Car2
 {
@@ -27,18 +29,12 @@ $yourCar->type = 'suv';
 
 $cars2 = array($myCar, $yourCar);
 
+gopher('1003-index',$cars2);
 
+usleep(150000);
 
-/*gopher:$cars*/
-/*gopher:$car*/
-
-/*gopher:$cars2*/
-
-/*gopher:"Start Timer"*/
-
-usleep(1500000);
-
-/*gopher:"End Timer"*/
+gopher('1004-index',$cars,$myCar,$yourCar);
+gopher('1005-index');
 
 TestCall2();
 
@@ -49,6 +45,7 @@ TestCall2();
 		<link href="css/ui-lightness/jquery-ui-1.10.4.css" rel="stylesheet">
 		<script src="js/jquery-1.10.2.js"></script>
 		<script src="js/jquery-ui-1.10.4.js"></script>
+		<script src="../gopherSimple/gopher.php?o=js"></script>
 
 		<link href="css/style.css" rel="stylesheet">
       <script src="js/calculator.js"></script>
