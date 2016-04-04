@@ -1,9 +1,0 @@
-Options -MultiViews +FollowSymLinks
-RewriteEngine On
-RewriteCond %{REQUEST_URI} !file-manager
-RewriteCond %{REQUEST_URI} !pimages
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-RewriteRule ^(.*)$ index.php?id=$1 [NC,L]
